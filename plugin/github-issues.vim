@@ -14,38 +14,24 @@ if exists("g:github_issues_loaded") || &cp
 endif
 let g:github_issues_loaded = "shi"
 
+python <<NOMAS
+import sys
+import threading
+import time
+import vim
+import json
+import urllib2
+
+def pullGithubAPIData():
+	data = urllib2.urlopen("https://api.github.com/repos/jaxbot/chrome-devtools.vim/issues").read()
+	issues = json.loads(data)
+	for issue in issues:
+		print str(issue["number"]) + " " + issue["title"]
+NOMAS
+
 function! s:getGithubIssues() 
-	python ws.send(vim.eval("a:js"))
+	python pullGithubAPIData()
 endfunction
 
-function! s:get_visual_selection()
-  let [lnum1, col1] = getpos("'<")[1:2]
-  let [lnum2, col2] = getpos("'>")[1:2]
-  let lines = getline(lnum1, lnum2)
-  let lines[-1] = lines[-1][: col2 - 2]
-  let lines[0] = lines[0][col1 - 1:]
-  return join(lines, " ")
-endfunction
-
-function! s:setupHandlers() 
-    au BufWritePost *.html,*.js,*.php :BLReloadPage
-endfunction
-
-command! -range -nargs=0 BLEvaluateSelection call s:EvaluateSelection()
-command!        -nargs=0 BLEvaluateBuffer    call s:EvaluateBuffer()
-command!        -nargs=0 BLEvaluateWord      call s:EvaluateWord()
-command!        -nargs=1 BLEval              call s:evaluateJS(<f-args>)
-command!        -nargs=0 BLReloadPage        call s:ReloadPage()
-command!        -nargs=0 BLReloadTemplate    call s:ReloadTemplate()
-command!        -nargs=0 BLReloadCSS         call s:ReloadCSS()
-command!        -nargs=0 BLDisconnect        call s:Disconnect()
-command!        -nargs=0 BLStart             call s:Start()
-
-if !exists("g:bl_no_mappings")
-    vmap <silent><Leader>be :BLEvaluateSelection<CR>
-    nmap <silent><Leader>be :BLEvaluateBuffer<CR>
-    nmap <silent><Leader>bf :BLEvaluateWord<CR>
-    nmap <silent><Leader>br :BLReloadPage<CR>
-    nmap <silent><Leader>bc :BLReloadCSS<CR>
-endif
+command!        -nargs=0 GIssues             call s:getGithubIssues()
 
