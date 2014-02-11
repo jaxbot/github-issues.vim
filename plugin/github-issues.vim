@@ -31,10 +31,10 @@ def pullGithubAPIData():
 NOMAS
 
 function! s:getGithubIssues() 
-	silent edit github://issues
+	silent split github://issues
 	normal ggdG
 	set buftype=nofile
-	nnoremap <buffer> <cr> :normal ^y$<cr><C-^>p
+	nnoremap <buffer> <cr> :normal ^y$<cr>:q<cr><C-w>pp
 	python pullGithubAPIData()
 endfunction
 
