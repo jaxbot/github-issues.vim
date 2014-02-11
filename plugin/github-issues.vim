@@ -27,10 +27,12 @@ def pullGithubAPIData():
 	issues = json.loads(data)
 	for issue in issues:
 		vim.current.buffer.append(str(issue["number"]) + " " + issue["title"])
+	vim.command("1delete _")
 NOMAS
 
 function! s:getGithubIssues() 
-	silent hide edit github://issues
+	silent edit github://issues
+	normal ggdG
 	set buftype=nofile
 	nnoremap <buffer> <cr> :normal ^y$<cr><C-^>p
 	python pullGithubAPIData()
