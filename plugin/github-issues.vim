@@ -32,6 +32,7 @@ NOMAS
 function! s:getGithubIssues() 
 	silent hide edit github://issues
 	set buftype=nofile
+	nnoremap <buffer> <cr> :normal ^y$<cr><C-^>p
 	python pullGithubAPIData()
 endfunction
 
