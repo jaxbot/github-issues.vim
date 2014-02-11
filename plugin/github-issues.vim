@@ -26,10 +26,12 @@ def pullGithubAPIData():
 	data = urllib2.urlopen("https://api.github.com/repos/jaxbot/chrome-devtools.vim/issues").read()
 	issues = json.loads(data)
 	for issue in issues:
-		print str(issue["number"]) + " " + issue["title"]
+		vim.current.buffer.append(str(issue["number"]) + " " + issue["title"])
 NOMAS
 
 function! s:getGithubIssues() 
+	silent hide edit github://issues
+	set buftype=nofile
 	python pullGithubAPIData()
 endfunction
 
