@@ -23,7 +23,16 @@ import json
 import urllib2
 
 def pullGithubAPIData():
-	data = urllib2.urlopen("https://api.github.com/repos/jaxbot/chrome-devtools.vim/issues").read()
+	filedata = open('.git/config','r').read()
+	url = filedata.split("url = git@github.com:")
+
+	github_repo = ""
+
+	if len(url) > 1:
+		s = url[1].split(".git")
+		github_repo = s[0]
+
+	data = urllib2.urlopen("https://api.github.com/repos/" + github_repo + "/issues").read()
 	issues = json.loads(data)
 	for issue in issues:
 		vim.current.buffer.append(str(issue["number"]) + " " + issue["title"])
