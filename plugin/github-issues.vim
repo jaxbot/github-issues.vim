@@ -40,6 +40,10 @@ def pullGithubAPIData():
 
 	# if we split it and find what we're looking for
 	if len(url) > 1:
+		pass
+	else:
+		url = filedata.split("url = https://github.com/")
+	if len(url) > 1:
 		# remotes have .git appended, but the API does not want this, so we trim it out
 		s = url[1].split(".git")
 		github_repo = s[0]
