@@ -21,7 +21,6 @@ Created as a Hack Day project at Center for Distributed Learning at UCF, New Med
 
 # Todo
 - Better error handling
-- HTTP remote support
 - Ability to create issues
 - Any others? Make an issue
 
