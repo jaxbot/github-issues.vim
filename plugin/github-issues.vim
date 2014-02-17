@@ -47,7 +47,10 @@ def pullGithubAPIData():
 		# remotes have .git appended, but the API does not want this, so we trim it out
 		s = url[1].split()[0].split(".git")
 		github_repo = s[0]
-	
+
+	# Set buffer name to include repo.
+	vim.current.buffer.name = 'github://' + github_repo + '/issues'
+
 	# nothing found? can't continue
 	if github_repo == "":
 		vim.current.buffer.append("Failed to find a suitable Github remote, sorry!")
@@ -70,11 +73,8 @@ NOMAS
 " script function for GETing issues
 function! s:getGithubIssues() 
 	" open a spit window to a dummy file
-	silent split github://issues
+	silent new
 	
-	" delete any contents that may exist
-	normal ggdG
-
 	" its not a real file
 	set buftype=nofile
 
