@@ -53,7 +53,7 @@ def pullGithubAPIData():
 
 	# nothing found? can't continue
 	if github_repo == "":
-		vim.current.buffer.append("Failed to find a suitable Github remote, sorry!")
+		vim.current.buffer[:] = ["Failed to find a suitable Github remote, sorry!"]
 		return
 
 	# load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
