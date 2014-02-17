@@ -3,11 +3,11 @@
 " Description: Pulls github issues into Vim
 " Maintainer:  Jonathan Warner <jaxbot@gmail.com> <http://github.com/jaxbot>
 " Homepage:    http://jaxbot.me/
-" Repository:  https://github.com/jaxbot/github-issues.vim 
+" Repository:  https://github.com/jaxbot/github-issues.vim
 " License:     Copyright (C) 2014 Jonathan Warner
-"              Released under the MIT license 
+"              Released under the MIT license
 "			   ======================================================================
-"              
+"
 
 " do not load twice
 if exists("g:github_issues_loaded") || &cp
@@ -45,12 +45,15 @@ def pullGithubAPIData():
 		url = filedata.split("https://github.com/")
 	if len(url) > 1:
 		# remotes have .git appended, but the API does not want this, so we trim it out
-		s = url[1].split(".git")
+		s = url[1].split()[0].split(".git")
 		github_repo = s[0]
-	
+
+	# Set buffer name to include repo.
+	vim.current.buffer.name = 'github://' + github_repo + '/issues'
+
 	# nothing found? can't continue
 	if github_repo == "":
-		vim.current.buffer.append("Failed to find a suitable Github remote, sorry!")
+		vim.current.buffer[:] = ["Failed to find a suitable Github remote, sorry!"]
 		return
 
 	# load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
@@ -58,11 +61,11 @@ def pullGithubAPIData():
 
 	# JSON parse the API response
 	issues = json.loads(data)
-	
+
 	# its an array, so dump these into the current (issues) buffer
 	for issue in issues:
 		vim.current.buffer.append(str(issue["number"]) + " " + issue["title"])
-	
+
 	# append leaves an unwanted beginning line. delete it.
 	vim.command("1delete _")
 NOMAS
@@ -70,16 +73,13 @@ NOMAS
 " script function for GETing issues
 function! s:getGithubIssues() 
 	" open a spit window to a dummy file
-	silent split github://issues
+	silent new
 	
-	" delete any contents that may exist
-	normal ggdG
-
 	" its not a real file
 	set buftype=nofile
 
 	" map the enter key to copy the line, close the window, and paste it
-	nnoremap <buffer> <cr> :normal ^y$<cr>:q<cr><C-w>pp
+	nnoremap <buffer> <cr> :normal! yy<cr>:q<cr>p
 
 	" load issues into buffer
 	python pullGithubAPIData()
