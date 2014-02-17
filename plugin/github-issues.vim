@@ -33,7 +33,13 @@ import urllib2
 
 def pullGithubAPIData():
 	# read the git config
-	filedata = os.popen('git remote -v').read()
+	# TODO: THIS RETURNS GITHUB BECAUSE THE PREVIEW WINDOW IS ALREADY OPEN! NOT GOOD!
+	cmd = 'git -C "' + vim.eval("expand('%:p:h')") + '" remote -v'
+	print cmd
+	return
+	filedata = os.popen().read()
+	print filedata
+	return
 
 	# look for git@github.com (ssh url)
 	url = filedata.split("git@github.com:")
