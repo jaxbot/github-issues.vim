@@ -1,5 +1,5 @@
 " File:        github-issues.vim
-" Version:     1.0.1
+" Version:     1.5.0
 " Description: Pulls github issues into Vim
 " Maintainer:  Jonathan Warner <jaxbot@gmail.com> <http://github.com/jaxbot>
 " Homepage:    http://jaxbot.me/
@@ -31,39 +31,48 @@ import vim
 import json
 import urllib2
 
-def pullGithubAPIData():
-	# read the git config
-	# TODO: THIS RETURNS GITHUB BECAUSE THE PREVIEW WINDOW IS ALREADY OPEN! NOT GOOD!
-	cmd = 'git -C "' + vim.eval("expand('%:p:h')") + '" remote -v'
-	print cmd
-	return
-	filedata = os.popen().read()
-	print filedata
-	return
+github_repos = {}
+current_repo = ""
+
+def getRepoURI():
+	global current_repo, github_repos
+
+	# get the directory the current file is in
+	filepath = vim.eval("expand('%:p:h')")
+
+	if github_repos.get(filepath,'') != '':
+		current_repo = github_repos[filepath]
+		return
+
+	cmd = 'git -C "' + filepath + '" remote -v'
+
+	filedata = os.popen(cmd).read()
 
 	# look for git@github.com (ssh url)
 	url = filedata.split("git@github.com:")
-
-	github_repo = ""
 
 	# if we split it and find what we're looking for
 	if len(url) < 1:
 		url = filedata.split("https://github.com/")
 	if len(url) > 1:
-		# remotes have .git appended, but the API does not want this, so we trim it out
+		# remotes may have .git appended, but the API does not want this, so we trim it out
 		s = url[1].split()[0].split(".git")
-		github_repo = s[0]
+		github_repos[filepath] = s[0]
+		current_repo = s[0]
+	else:
+		current_repo = ""
+	
 
-	# Set buffer name to include repo.
-	vim.current.buffer.name = 'github://' + github_repo + '/issues'
+def pullGithubAPIData():
+	global current_repo
 
 	# nothing found? can't continue
-	if github_repo == "":
+	if current_repo == "":
 		vim.current.buffer[:] = ["Failed to find a suitable Github remote, sorry!"]
 		return
 
 	# load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
-	data = urllib2.urlopen("https://api.github.com/repos/" + github_repo + "/issues").read()
+	data = urllib2.urlopen("https://api.github.com/repos/" + current_repo + "/issues").read()
 
 	# JSON parse the API response
 	issues = json.loads(data)
@@ -78,14 +87,22 @@ NOMAS
 
 " script function for GETing issues
 function! s:getGithubIssues() 
-	" open a spit window to a dummy file
-	silent new
+	" load the repo URI of the current file
+	python getRepoURI()
+
+	" open a split window to a dummy file
+	" TODO: make this use "new" again
+	silent split github://issues
+	
+	" delete any contents that may exist
+	normal ggdG
 	
 	" its not a real file
 	set buftype=nofile
 
 	" map the enter key to copy the line, close the window, and paste it
-	nnoremap <buffer> <cr> :normal! yy<cr>:q<cr><C-w>pp
+	nnoremap <buffer> <cr> :normal! yy<cr>:bd<cr><C-w>pp
+	nnoremap <buffer> q :q<cr>
 
 	" load issues into buffer
 	python pullGithubAPIData()
