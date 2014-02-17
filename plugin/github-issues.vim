@@ -1,5 +1,5 @@
 " File:        github-issues.vim
-" Version:     1.0.0
+" Version:     1.0.1
 " Description: Pulls github issues into Vim
 " Maintainer:  Jonathan Warner <jaxbot@gmail.com> <http://github.com/jaxbot>
 " Homepage:    http://jaxbot.me/
@@ -23,6 +23,7 @@ endif
 
 " core is written in Python for easy JSON/HTTP support
 python <<NOMAS
+import os
 import sys
 import threading
 import time
@@ -32,17 +33,16 @@ import urllib2
 
 def pullGithubAPIData():
 	# read the git config
-	filedata = open('.git/config','r').read()
+	filedata = os.popen('git remote -v').read()
+
 	# look for git@github.com (ssh url)
-	url = filedata.split("url = git@github.com:")
+	url = filedata.split("git@github.com:")
 
 	github_repo = ""
 
 	# if we split it and find what we're looking for
-	if len(url) > 1:
-		pass
-	else:
-		url = filedata.split("url = https://github.com/")
+	if len(url) < 1:
+		url = filedata.split("https://github.com/")
 	if len(url) > 1:
 		# remotes have .git appended, but the API does not want this, so we trim it out
 		s = url[1].split(".git")
