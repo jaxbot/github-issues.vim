@@ -3,11 +3,11 @@
 " Description: Pulls github issues into Vim
 " Maintainer:  Jonathan Warner <jaxbot@gmail.com> <http://github.com/jaxbot>
 " Homepage:    http://jaxbot.me/
-" Repository:  https://github.com/jaxbot/github-issues.vim 
+" Repository:  https://github.com/jaxbot/github-issues.vim
 " License:     Copyright (C) 2014 Jonathan Warner
-"              Released under the MIT license 
+"              Released under the MIT license
 "			   ======================================================================
-"              
+"
 
 " do not load twice
 if exists("g:github_issues_loaded") || &cp
@@ -61,11 +61,11 @@ def pullGithubAPIData():
 
 	# JSON parse the API response
 	issues = json.loads(data)
-	
+
 	# its an array, so dump these into the current (issues) buffer
 	for issue in issues:
 		vim.current.buffer.append(str(issue["number"]) + " " + issue["title"])
-	
+
 	# append leaves an unwanted beginning line. delete it.
 	vim.command("1delete _")
 NOMAS
