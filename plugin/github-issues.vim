@@ -79,7 +79,7 @@ function! s:getGithubIssues()
 	set buftype=nofile
 
 	" map the enter key to copy the line, close the window, and paste it
-	nnoremap <buffer> <cr> :normal ^y$<cr>:q<cr><C-w>pp
+	nnoremap <buffer> <cr> :normal! yy<cr>:q<cr>p
 
 	" load issues into buffer
 	python pullGithubAPIData()
