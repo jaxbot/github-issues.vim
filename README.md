@@ -19,8 +19,13 @@ This will add the number and issue title to my commit message, so I don't have t
 
 Created as a Hack Day project at Center for Distributed Learning at UCF, New Media team.
 
+# Requirements
+
+Vim with Python 2.7, Python 2.7 installed and working with Vim, and Git **1.8.5**.
+
 # Todo
 - Better error handling
+- Support private repos
 - Ability to create issues
 - Any others? Make an issue
 
