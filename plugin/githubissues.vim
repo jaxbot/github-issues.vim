@@ -35,6 +35,8 @@ github_repos = {}
 current_repo = ""
 current_issues = []
 debug_remotes = ""
+github_datacache = {}
+cache_count = 0
 
 def getRepoURI():
 	global current_repo, github_repos, debug_remotes
@@ -42,6 +44,7 @@ def getRepoURI():
 	# get the directory the current file is in
 	filepath = vim.eval("expand('%:p:h')")
 
+	# cache the github repo for performance
 	if github_repos.get(filepath,'') != '':
 		current_repo = github_repos[filepath]
 		return
@@ -65,19 +68,22 @@ def getRepoURI():
 	else:
 		current_repo = ""
 	
-
 def pullGithubAPIData():
-	global current_repo, current_issues
+	global current_repo, current_issues, cache_count, github_datacache
 
 	# nothing found? can't continue
 	if current_repo == "":
 		return
-
-	# load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
-	data = urllib2.urlopen("https://api.github.com/repos/" + current_repo + "/issues").read()
+	
+	if github_datacache.get(current_repo,'') == '' or cache_count > 3:
+		# load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
+		github_datacache[current_repo] = urllib2.urlopen("https://api.github.com/repos/" + current_repo + "/issues").read()
+		cache_count = 0
+	else:
+		cache_count += 1
 
 	# JSON parse the API response
-	current_issues = json.loads(data)
+	current_issues = json.loads(github_datacache[current_repo])
 
 def dumpIssuesIntoBuffer():
 	global current_repo, current_issues, debug_remotes
