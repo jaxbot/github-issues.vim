@@ -33,6 +33,7 @@ import urllib2
 
 github_repos = {}
 current_repo = ""
+current_issues = []
 
 def getRepoURI():
 	global current_repo, github_repos
@@ -64,7 +65,7 @@ def getRepoURI():
 	
 
 def pullGithubAPIData():
-	global current_repo
+	global current_repo, current_issues
 
 	# nothing found? can't continue
 	if current_repo == "":
@@ -75,14 +76,24 @@ def pullGithubAPIData():
 	data = urllib2.urlopen("https://api.github.com/repos/" + current_repo + "/issues").read()
 
 	# JSON parse the API response
-	issues = json.loads(data)
+	current_issues = json.loads(data)
 
+def dumpIssuesIntoBuffer():
+	global current_repo, current_issues
 	# its an array, so dump these into the current (issues) buffer
-	for issue in issues:
-		vim.current.buffer.append(str(issue["number"]) + " " + issue["title"])
+	for issue in current_issues:
+		issuestr = str(issue["number"]) + " " + issue["title"]
+		vim.current.buffer.append(issuestr)
 
 	# append leaves an unwanted beginning line. delete it.
 	vim.command("1delete _")
+
+def populateOmniComplete():
+	global current_repo, current_issues
+	for issue in current_issues:
+		issuestr = str(issue["number"]) + " " + issue["title"]
+		vim.command("call add(b:omni_variables, \""+issuestr+"\")")
+
 NOMAS
 
 " script function for GETing issues
@@ -106,6 +117,7 @@ function! s:getGithubIssues()
 
 	" load issues into buffer
 	python pullGithubAPIData()
+	python dumpIssuesIntoBuffer()
 endfunction
 
 " define the :Gissues command
@@ -123,7 +135,7 @@ fun! githubissues#CompleteIssues(findstart, base)
 		return start
 	else
 		let res = []
-		for m in ["14 Omnicomplete", "23 fix issues", "25 who am i kidding"]
+		for m in b:omni_variables
 			if m =~ '^' . b:compl_context
 				call add(res, m)
 			endif
@@ -132,10 +144,19 @@ fun! githubissues#CompleteIssues(findstart, base)
 	endif
 endfun
 
+fun! s:setupOmni()
+	setlocal omnifunc=githubissues#CompleteIssues
+	let b:omni_variables = []
+
+	python getRepoURI()
+	python pullGithubAPIData()
+	python populateOmniComplete()
+endfun
+
 if !exists('g:neocomplete#sources#omni#input_patterns')
   let g:neocomplete#sources#omni#input_patterns = {}
 endif
 let g:neocomplete#sources#omni#input_patterns.gitcommit = '\#\d*'
 
-autocmd FileType gitcommit setlocal omnifunc=githubissues#CompleteIssues
+autocmd FileType gitcommit call s:setupOmni()
 
