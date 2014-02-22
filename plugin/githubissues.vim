@@ -111,3 +111,31 @@ endfunction
 " define the :Gissues command
 command!        -nargs=0 Gissues             call s:getGithubIssues()
 
+fun! githubissues#CompleteIssues(findstart, base)
+	if a:findstart
+		" locate the start of the word
+		let line = getline('.')
+		let start = col('.') - 1
+		while start > 0 && line[start - 1] =~ '\w'
+			let start -= 1
+		endwhile
+		let b:compl_context = getline('.')[start : col('.')]
+		return start
+	else
+		let res = []
+		for m in ["14 Omnicomplete", "23 fix issues", "25 who am i kidding"]
+			if m =~ '^' . b:compl_context
+				call add(res, m)
+			endif
+		endfor
+		return res
+	endif
+endfun
+
+if !exists('g:neocomplete#sources#omni#input_patterns')
+  let g:neocomplete#sources#omni#input_patterns = {}
+endif
+let g:neocomplete#sources#omni#input_patterns.gitcommit = '\#\d*'
+
+autocmd FileType gitcommit setlocal omnifunc=githubissues#CompleteIssues
+
