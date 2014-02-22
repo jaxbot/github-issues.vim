@@ -89,7 +89,7 @@ def dumpIssuesIntoBuffer():
 	global current_repo, current_issues, debug_remotes
 
 	if current_repo == "":
-		vim.current.buffer[:] = ["Failed to find a suitable Github remote, sorry! We found these remotes: "+debug_remotes]
+		vim.current.buffer[:] = ["Failed to find a suitable Github remote, sorry!"]
 		return
 
 	# its an array, so dump these into the current (issues) buffer
