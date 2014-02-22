@@ -34,9 +34,10 @@ import urllib2
 github_repos = {}
 current_repo = ""
 current_issues = []
+debug_remotes = ""
 
 def getRepoURI():
-	global current_repo, github_repos
+	global current_repo, github_repos, debug_remotes
 
 	# get the directory the current file is in
 	filepath = vim.eval("expand('%:p:h')")
@@ -48,6 +49,7 @@ def getRepoURI():
 	cmd = 'git -C "' + filepath + '" remote -v'
 
 	filedata = os.popen(cmd).read()
+	debug_remotes = filedata
 
 	# look for git@github.com (ssh url)
 	url = filedata.split("git@github.com:")
@@ -69,7 +71,6 @@ def pullGithubAPIData():
 
 	# nothing found? can't continue
 	if current_repo == "":
-		vim.current.buffer[:] = ["Failed to find a suitable Github remote, sorry!"]
 		return
 
 	# load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
@@ -79,7 +80,12 @@ def pullGithubAPIData():
 	current_issues = json.loads(data)
 
 def dumpIssuesIntoBuffer():
-	global current_repo, current_issues
+	global current_repo, current_issues, debug_remotes
+
+	if current_repo == "":
+		vim.current.buffer[:] = ["Failed to find a suitable Github remote, sorry! We found these remotes: "+debug_remotes]
+		return
+
 	# its an array, so dump these into the current (issues) buffer
 	for issue in current_issues:
 		issuestr = str(issue["number"]) + " " + issue["title"]
@@ -92,7 +98,7 @@ def populateOmniComplete():
 	global current_repo, current_issues
 	for issue in current_issues:
 		issuestr = str(issue["number"]) + " " + issue["title"]
-		vim.command("call add(b:omni_variables, \""+issuestr+"\")")
+		vim.command("call add(b:omni_options, "+json.dumps(issuestr)+")")
 
 NOMAS
 
@@ -120,10 +126,8 @@ function! s:getGithubIssues()
 	python dumpIssuesIntoBuffer()
 endfunction
 
-" define the :Gissues command
-command!        -nargs=0 Gissues             call s:getGithubIssues()
-
-fun! githubissues#CompleteIssues(findstart, base)
+" omnicomplete function, also used by neocomplete
+function! githubissues#CompleteIssues(findstart, base)
 	if a:findstart
 		" locate the start of the word
 		let line = getline('.')
@@ -135,28 +139,37 @@ fun! githubissues#CompleteIssues(findstart, base)
 		return start
 	else
 		let res = []
-		for m in b:omni_variables
+		for m in b:omni_options
 			if m =~ '^' . b:compl_context
 				call add(res, m)
 			endif
 		endfor
 		return res
 	endif
-endfun
+endfunction
 
-fun! s:setupOmni()
+" set omnifunc for the buffer
+function! s:setupOmni()
 	setlocal omnifunc=githubissues#CompleteIssues
-	let b:omni_variables = []
 
+	" empty array will store the menu items
+	let b:omni_options = []
+
+	" figure out the repo URI, download issues, and add to omnicomplete
 	python getRepoURI()
 	python pullGithubAPIData()
 	python populateOmniComplete()
-endfun
+endfunction
 
+" define the :Gissues command
+command!        -nargs=0 Gissues             call s:getGithubIssues()
+
+" Neocomplete support
 if !exists('g:neocomplete#sources#omni#input_patterns')
   let g:neocomplete#sources#omni#input_patterns = {}
 endif
 let g:neocomplete#sources#omni#input_patterns.gitcommit = '\#\d*'
 
+" Install omnifunc on gitcommit files
 autocmd FileType gitcommit call s:setupOmni()
 
