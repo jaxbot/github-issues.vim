@@ -170,12 +170,14 @@ endfunction
 " define the :Gissues command
 command!        -nargs=0 Gissues             call s:getGithubIssues()
 
-" Neocomplete support
-if !exists('g:neocomplete#sources#omni#input_patterns')
-  let g:neocomplete#sources#omni#input_patterns = {}
-endif
-let g:neocomplete#sources#omni#input_patterns.gitcommit = '\#\d*'
+if !exists("g:github_issues_no_omni")
+	" Neocomplete support
+	if !exists('g:neocomplete#sources#omni#input_patterns')
+	  let g:neocomplete#sources#omni#input_patterns = {}
+	endif
+	let g:neocomplete#sources#omni#input_patterns.gitcommit = '\#\d*'
 
-" Install omnifunc on gitcommit files
-autocmd FileType gitcommit call s:setupOmni()
+	" Install omnifunc on gitcommit files
+	autocmd FileType gitcommit call s:setupOmni()
+endif
 
