@@ -57,8 +57,8 @@ def getRepoURI():
 	# look for git@github.com (ssh url)
 	url = filedata.split("git@github.com:")
 
-	# if we split it and find what we're looking for
-	if len(url) < 1:
+	# if its 1, we didnt find what we're looking for, so try https
+	if len(url) == 1:
 		url = filedata.split("https://github.com/")
 	if len(url) > 1:
 		# remotes may have .git appended, but the API does not want this, so we trim it out
@@ -76,8 +76,12 @@ def pullGithubAPIData():
 		return
 	
 	if github_datacache.get(current_repo,'') == '' or cache_count > 3:
+		params = ""
+		token = vim.eval("g:github_access_token")
+		if token != "":
+			params = "?access_token=" + token
 		# load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
-		github_datacache[current_repo] = urllib2.urlopen("https://api.github.com/repos/" + current_repo + "/issues").read()
+		github_datacache[current_repo] = urllib2.urlopen("https://api.github.com/repos/" + current_repo + "/issues" + params).read()
 		cache_count = 0
 	else:
 		cache_count += 1
@@ -179,5 +183,9 @@ if !exists("g:github_issues_no_omni")
 
 	" Install omnifunc on gitcommit files
 	autocmd FileType gitcommit call s:setupOmni()
+endif
+
+if !exists("g:github_access_token")
+	let g:github_access_token = ""
 endif
 
