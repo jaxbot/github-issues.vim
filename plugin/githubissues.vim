@@ -49,7 +49,7 @@ def getRepoURI():
 		current_repo = github_repos[filepath]
 		return
 
-	cmd = 'git -C "' + filepath + '" remote -v'
+	cmd = '(cd ' + filepath + ' && git remote -v)'
 
 	filedata = os.popen(cmd).read()
 	debug_remotes = filedata
