@@ -3,7 +3,7 @@ github-issues.vim
 
 Github issue lookup in Vim. Super simple. Now comes with two options.
 
-## Omnicomplete
+### Omnicomplete
 
 If you use Fugitive or edit gitcommit files in Vim, github-issues will automatically populate the omnicomplete menu with issues on Github.
 
@@ -15,13 +15,14 @@ Here's how it works with Neocomplete:
 
 Not bad, huh?
 
-## Lookup menu
+### Lookup menu
 
-Run
+To show issues for the current repository that are listed on Github:
 ```
 :Gissues
 ```
-To show issues for the current repository that are listed on Github. Press enter to close and paste them into the buffer.
+
+Press enter to close and paste them into the buffer.
 
 Example using Fugitive:
 
@@ -34,9 +35,11 @@ Example using Fugitive:
 
 <img src='http://jaxbot.me/pics/vim/vim_gissues.gif'>
 
-# Requirements
+# Requirements and Installation
 
-Vim with Python 2.7, Python 2.7 installed and working with Vim, and Git **1.8.5**.
+Vim with Python 2.7, Python 2.7 installed and working with Vim.
+
+I recommend using [Pathogen](https://github.com/tpope/vim-pathogen) and Git cloning the sucker into ~/.vim/bundle. You can also just download the plugin and paste it into your plugin directory.
 
 # Todo
 - Better error handling
