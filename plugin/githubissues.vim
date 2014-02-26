@@ -54,19 +54,17 @@ def getRepoURI():
 	filedata = os.popen(cmd).read()
 	debug_remotes = filedata
 
-	# look for git@github.com (ssh url)
-	url = filedata.split("git@github.com:")
+	current_repo = ""
 
-	# if its 1, we didnt find what we're looking for, so try https
-	if len(url) == 1:
-		url = filedata.split("https://github.com/")
-	if len(url) > 1:
-		# remotes may have .git appended, but the API does not want this, so we trim it out
-		s = url[1].split()[0].split(".git")
-		github_repos[filepath] = s[0]
-		current_repo = s[0]
-	else:
-		current_repo = ""
+	# possible URLs
+	urls = vim.eval("g:github_issues_urls")
+	for url in urls:
+		s = filedata.split(url)
+		if len(s) > 1:
+			s = s[1].split()[0].split(".git")
+			github_repos[filepath] = s[0]
+			current_repo = s[0]
+			break
 	
 def pullGithubAPIData():
 	global current_repo, current_issues, cache_count, github_datacache
@@ -81,7 +79,8 @@ def pullGithubAPIData():
 		if token != "":
 			params = "?access_token=" + token
 		# load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
-		github_datacache[current_repo] = urllib2.urlopen("https://api.github.com/repos/" + urllib2.quote(current_repo) + "/issues" + params).read()
+		url = "https://api.github.com/repos/" + urllib2.quote(current_repo) + "/issues" + params
+		github_datacache[current_repo] = urllib2.urlopen(url).read()
 		cache_count = 0
 	else:
 		cache_count += 1
@@ -188,4 +187,6 @@ endif
 if !exists("g:github_access_token")
 	let g:github_access_token = ""
 endif
+
+let g:github_issues_urls = ["git@github.com:","https://github.com/"]
 
