@@ -160,7 +160,7 @@ function! s:getGithubIssues()
 	set buftype=nofile
 
 	" map the enter key to copy the line, close the window, and paste it
-	nnoremap <buffer> <cr> :normal! 0<cr>:GissueDetails<cr>
+	nnoremap <buffer> <cr> :normal! 0<cr>:call <SID>getGithubIssueDetails()<cr>
 	nnoremap <buffer> q :q<cr>
 
 	" load issues into buffer
@@ -213,8 +213,7 @@ function! s:get_visual_selection()
 endfunction
 
 " define the :Gissues command
-command!        -nargs=0 Gissues             call s:getGithubIssues()
-command! -nargs=0 GissueDetails call s:getGithubIssueDetails()
+command! -nargs=0 Gissues call s:getGithubIssues()
 
 if !exists("g:github_issues_no_omni")
 	" Neocomplete support
