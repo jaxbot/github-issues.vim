@@ -109,7 +109,40 @@ def populateOmniComplete():
 		issuestr = str(issue["number"]) + " " + issue["title"]
 		vim.command("call add(b:omni_options, "+json.dumps(issuestr)+")")
 
+def pullGithubIssue():
+	global current_repo, current_issues, cache_count, github_datacache
+
+	# nothing found? can't continue
+	if current_repo == "":
+		return
+	
+	params = ""
+	token = vim.eval("g:github_access_token")
+	if token != "":
+		params = "?access_token=" + token
+	# load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
+	url = "https://api.github.com/repos/" + urllib2.quote(current_repo) + "/issues/" + vim.eval("expand('<cword>')") + params
+	data = urllib2.urlopen(url).read()
+
+	vim.command("normal ggdG")
+
+	# JSON parse the API response
+	issue = json.loads(data)
+	# its an array, so dump these into the current (issues) buffer
+	vim.current.buffer.append("#" + str(issue["number"]) + " " + issue["title"])
+	vim.current.buffer.append("=========")
+	vim.current.buffer.append("Reported By: " + issue["user"]["login"])
+	vim.current.buffer.append("")
+	vim.current.buffer.append(issue["body"])
+
+	# append leaves an unwanted beginning line. delete it.
+	vim.command("1delete _")
+
 NOMAS
+
+function! s:getGithubIssueDetails()
+	python pullGithubIssue()
+endfunction
 
 " script function for GETing issues
 function! s:getGithubIssues() 
@@ -127,7 +160,7 @@ function! s:getGithubIssues()
 	set buftype=nofile
 
 	" map the enter key to copy the line, close the window, and paste it
-	nnoremap <buffer> <cr> :normal! yy<cr>:bd<cr><C-w>pp
+	nnoremap <buffer> <cr> :normal! 0<cr>:GissueDetails<cr>
 	nnoremap <buffer> q :q<cr>
 
 	" load issues into buffer
@@ -170,8 +203,18 @@ function! s:setupOmni()
 	python populateOmniComplete()
 endfunction
 
+function! s:get_visual_selection()
+  let [lnum1, col1] = getpos("'<")[1:2]
+  let [lnum2, col2] = getpos("'>")[1:2]
+  let lines = getline(lnum1, lnum2)
+  let lines[-1] = lines[-1][: col2 - 2]
+  let lines[0] = lines[0][col1 - 1:]
+  return join(lines, " ")
+endfunction
+
 " define the :Gissues command
 command!        -nargs=0 Gissues             call s:getGithubIssues()
+command! -nargs=0 GissueDetails call s:getGithubIssueDetails()
 
 if !exists("g:github_issues_no_omni")
 	" Neocomplete support
