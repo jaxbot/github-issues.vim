@@ -81,7 +81,11 @@ def pullGithubAPIData():
 		if token != "":
 			params = "?access_token=" + token
 		# load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
-		github_datacache[current_repo] = urllib2.urlopen("https://api.github.com/repos/" + urllib2.quote(current_repo) + "/issues" + params).read()
+		try:
+			github_datacache[current_repo] = urllib2.urlopen("https://api.github.com/repos/" + urllib2.quote(current_repo) + "/issues" + params).read()
+		except urllib2.HTTPError as e:
+			if e.code == 410:
+				github_datacache[current_repo] = json.dumps([])
 		cache_count = 0
 	else:
 		cache_count += 1
