@@ -135,10 +135,25 @@ def pullGithubIssue():
 	issue = json.loads(data)
 	# its an array, so dump these into the current (issues) buffer
 	vim.current.buffer.append("#" + str(issue["number"]) + " " + issue["title"])
-	vim.current.buffer.append("=========")
+	vim.current.buffer.append("==================================================")
 	vim.current.buffer.append("Reported By: " + issue["user"]["login"])
 	vim.current.buffer.append("")
-	vim.current.buffer.append(issue["body"])
+	vim.current.buffer.append(issue["body"].split("\n"))
+	vim.current.buffer.append("")
+
+	if issue["comments"] > 0:
+		url = "https://api.github.com/repos/" + urllib2.quote(current_repo) + "/issues/" + number + "/comments" + params
+		data = urllib2.urlopen(url).read()
+		comments = json.loads(data)
+
+		if len(comments) > 0:
+			vim.current.buffer.append("Comments")
+			vim.current.buffer.append("==================================================")
+			for comment in comments:
+				vim.current.buffer.append("")
+				vim.current.buffer.append(comment["user"]["login"])
+				vim.current.buffer.append("--------------------------------------------------")
+				vim.current.buffer.append(comment["body"].split("\n"))
 
 	# append leaves an unwanted beginning line. delete it.
 	vim.command("1delete _")
