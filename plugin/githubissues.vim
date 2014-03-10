@@ -120,10 +120,15 @@ def pullGithubIssue():
 	token = vim.eval("g:github_access_token")
 	if token != "":
 		params = "?access_token=" + token
+	
+	number = vim.eval("expand('<cword>')")
+
 	# load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
-	url = "https://api.github.com/repos/" + urllib2.quote(current_repo) + "/issues/" + vim.eval("expand('<cword>')") + params
+	url = "https://api.github.com/repos/" + urllib2.quote(current_repo) + "/issues/" + number + params
 	data = urllib2.urlopen(url).read()
 
+	vim.command("edit github://issues/"+number)
+	vim.command("set buftype=nofile")
 	vim.command("normal ggdG")
 
 	# JSON parse the API response
