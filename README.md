@@ -1,7 +1,7 @@
 github-issues.vim
 =================
 
-Github issue lookup in Vim. Super simple. Comes with two options:
+Github issue lookup in Vim. Super simple. Comes with two main features:
 
 ### Omnicomplete
 
@@ -10,6 +10,8 @@ If you use Fugitive or edit gitcommit files in Vim, github-issues will automatic
 Here's how it works with Neocomplete:
 
 <img src='http://jaxbot.me/pics/vim/vim_gissues2.gif'>
+
+If you use pure omnicomplete, use `C-x C-o` to pull up the menu.
 
 No need to run commands, no need to configure. It just works. ;) (And if it doesn't, it should, so submit an issue) Not bad, huh?
 
@@ -20,16 +22,7 @@ To show Github issues for the current repository:
 :Gissues
 ```
 
-Press enter to close and paste them into the previous buffer.
-
-Example using Fugitive:
-
-```
-:Gcommit
-<insert> Fix #
-:Gissues
-<select issue and press enter>
-```
+Press enter to view more details.
 
 <img src='http://jaxbot.me/pics/vim/vim_gissues.gif'>
 
