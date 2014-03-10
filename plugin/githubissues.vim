@@ -1,5 +1,5 @@
 " File:        github-issues.vim
-" Version:     1.6.0
+" Version:     2.0.0
 " Description: Pulls github issues into Vim
 " Maintainer:  Jonathan Warner <jaxbot@gmail.com> <http://github.com/jaxbot>
 " Homepage:    http://jaxbot.me/
@@ -24,22 +24,23 @@ endif
 " core is written in Python for easy JSON/HTTP support
 python <<NOMAS
 import os
-import sys
-import threading
-import time
 import vim
 import json
 import urllib2
 
+# dictionary of github repo URLs for caching
 github_repos = {}
-current_repo = ""
-current_issues = []
-debug_remotes = ""
+# dictionary of issue data for caching
 github_datacache = {}
+# reset web cache after this value grows too large
 cache_count = 0
 
+# since Vim is single threaded, we cheat a little and track the current state
+current_repo = ""
+current_issues = []
+
 def getRepoURI():
-	global current_repo, github_repos, debug_remotes
+	global current_repo, github_repos
 
 	# get the directory the current file is in
 	filepath = vim.eval("expand('%:p:h')")
@@ -52,7 +53,6 @@ def getRepoURI():
 	cmd = '(cd ' + filepath + ' && git remote -v)'
 
 	filedata = os.popen(cmd).read()
-	debug_remotes = filedata
 
 	current_repo = ""
 
@@ -66,7 +66,7 @@ def getRepoURI():
 			current_repo = s[0]
 			break
 	
-def pullGithubAPIData():
+def pullGithubIssueList():
 	global current_repo, current_issues, cache_count, github_datacache
 
 	# nothing found? can't continue
@@ -87,27 +87,6 @@ def pullGithubAPIData():
 
 	# JSON parse the API response
 	current_issues = json.loads(github_datacache[current_repo])
-
-def dumpIssuesIntoBuffer():
-	global current_repo, current_issues, debug_remotes
-
-	if current_repo == "":
-		vim.current.buffer[:] = ["Failed to find a suitable Github remote, sorry!"]
-		return
-
-	# its an array, so dump these into the current (issues) buffer
-	for issue in current_issues:
-		issuestr = str(issue["number"]) + " " + issue["title"]
-		vim.current.buffer.append(issuestr)
-
-	# append leaves an unwanted beginning line. delete it.
-	vim.command("1delete _")
-
-def populateOmniComplete():
-	global current_repo, current_issues
-	for issue in current_issues:
-		issuestr = str(issue["number"]) + " " + issue["title"]
-		vim.command("call add(b:omni_options, "+json.dumps(issuestr)+")")
 
 def pullGithubIssue():
 	global current_repo, current_issues, cache_count, github_datacache
@@ -158,6 +137,27 @@ def pullGithubIssue():
 	# append leaves an unwanted beginning line. delete it.
 	vim.command("1delete _")
 
+def dumpIssuesIntoBuffer():
+	global current_repo, current_issues
+
+	if current_repo == "":
+		vim.current.buffer[:] = ["Failed to find a suitable Github remote, sorry!"]
+		return
+
+	# its an array, so dump these into the current (issues) buffer
+	for issue in current_issues:
+		issuestr = str(issue["number"]) + " " + issue["title"]
+		vim.current.buffer.append(issuestr)
+
+	# append leaves an unwanted beginning line. delete it.
+	vim.command("1delete _")
+
+def populateOmniComplete():
+	global current_repo, current_issues
+	for issue in current_issues:
+		issuestr = str(issue["number"]) + " " + issue["title"]
+		vim.command("call add(b:omni_options, "+json.dumps(issuestr)+")")
+
 NOMAS
 
 function! s:getGithubIssueDetails()
@@ -184,7 +184,7 @@ function! s:getGithubIssues()
 	nnoremap <buffer> q :q<cr>
 
 	" load issues into buffer
-	python pullGithubAPIData()
+	python pullGithubIssueList()
 	python dumpIssuesIntoBuffer()
 endfunction
 
@@ -219,17 +219,8 @@ function! s:setupOmni()
 
 	" figure out the repo URI, download issues, and add to omnicomplete
 	python getRepoURI()
-	python pullGithubAPIData()
+	python pullGithubIssueList()
 	python populateOmniComplete()
-endfunction
-
-function! s:get_visual_selection()
-  let [lnum1, col1] = getpos("'<")[1:2]
-  let [lnum2, col2] = getpos("'>")[1:2]
-  let lines = getline(lnum1, lnum2)
-  let lines[-1] = lines[-1][: col2 - 2]
-  let lines[0] = lines[0][col1 - 1:]
-  return join(lines, " ")
 endfunction
 
 " define the :Gissues command
