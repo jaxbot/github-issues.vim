@@ -147,7 +147,7 @@ def dumpIssuesIntoBuffer():
 	# its an array, so dump these into the current (issues) buffer
 	for issue in current_issues:
 		issuestr = str(issue["number"]) + " " + issue["title"]
-		vim.current.buffer.append(issuestr)
+		vim.current.buffer.append(issuestr.encode('utf-8'))
 
 	# append leaves an unwanted beginning line. delete it.
 	vim.command("1delete _")
