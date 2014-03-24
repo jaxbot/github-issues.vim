@@ -36,21 +36,26 @@ I recommend using [Pathogen](https://github.com/tpope/vim-pathogen) and Git clon
 
 Github-issues.vim should work out of the box for most cases. That's the goal, anyway. There are some options, however:
 
-`g:github_issues_no_omni`
+```
+g:github_issues_no_omni
+```
 
 When this is set to any value, github-issues will not set Neocomplete and Omnicomplete hooks.
 
-`g:github_access_token`
+```
+g:github_access_token
+```
 
 This is used if you work on private repositories. Grab an access token [from here](
 https://github.com/settings/tokens/new), then set this variable, preferably in your Vimrc, like so:
 
 `let g:github_access_token = "9jb19c1189f083d7013i24367lol"`
 
-`g:github_upstream_issues`
+```
+g:github_upstream_issues
+```
 
-When this is set to 1, github-issues will use upstream issues (if repo is fork). 
-WARNING: it may use more resources.
+When this is set to 1, github-issues will use upstream issues (if repo is fork). This will require extra requests for the Github API, however.
 
 # Todo
 - Better error handling
