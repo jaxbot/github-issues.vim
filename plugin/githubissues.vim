@@ -78,20 +78,21 @@ def pullGithubIssueList():
 		token = vim.eval("g:github_access_token")
 		if token != "":
 			params = "?access_token=" + token
+		upstream_issues = vim.eval("g:github_upstream_issues")
+		if upstream_issues == 1:
+			# try to get from what repo forked
+			data = urllib2.urlopen("https://api.github.com/repos/" + urllib2.quote(current_repo) + params).read()
+			repoinfo = json.loads(data)
+			if repoinfo["fork"]:
+				current_repo = repoinfo["source"]["full_name"]
+				pullGithubIssueList()
 		# load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
 		url = "https://api.github.com/repos/" + urllib2.quote(current_repo) + "/issues" + params
 		try:
 			github_datacache[current_repo] = urllib2.urlopen(url).read()
 		except urllib2.HTTPError as e:
 			if e.code == 410:
-				# try to get fork
-				data = urllib2.urlopen("https://api.github.com/repos/" + urllib2.quote(current_repo) + params).read()
-				repoinfo = json.loads(data)
-				if repoinfo["fork"]:
-					current_repo = repoinfo["source"]["full_name"]
-					pullGithubIssueList()
-				else:
-					github_datacache[current_repo] = json.dumps([])
+				github_datacache[current_repo] = json.dumps([])
 		cache_count = 0
 	else:
 		cache_count += 1
@@ -250,6 +251,10 @@ endif
 
 if !exists("g:github_access_token")
 	let g:github_access_token = ""
+endif
+
+if !exists("g:github_upstream_issues")
+	let g:github_upstream_issues = 0
 endif
 
 let g:github_issues_urls = ["git@github.com:","https://github.com/"]

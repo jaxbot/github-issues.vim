@@ -47,6 +47,11 @@ https://github.com/settings/tokens/new), then set this variable, preferably in y
 
 `let g:github_access_token = "9jb19c1189f083d7013i24367lol"`
 
+`g:github_upstream_issues`
+
+When this is set to 1, github-issues will use upstream issues (if repo is fork). 
+WARNING: it may use more resources.
+
 # Todo
 - Better error handling
 - Ability to create issues
