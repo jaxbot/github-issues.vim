@@ -43,7 +43,7 @@ def getRepoURI():
 	global current_repo, github_repos
 
 	# get the directory the current file is in
-	filepath = vim.eval("expand('%:p:h')")
+	filepath = vim.eval("shellescape(expand('%:p:h'))")
 
 	# cache the github repo for performance
 	if github_repos.get(filepath,'') != '':
