@@ -81,7 +81,7 @@ def pullGithubIssueList():
 		upstream_issues = vim.eval("g:github_upstream_issues")
 		if upstream_issues == 1:
 			# try to get from what repo forked
-			data = urllib2.urlopen("https://api.github.com/repos/" + urllib2.quote(current_repo) + params).read()
+			data = urllib2.urlopen(vim.eval("expand(g:github_api_url)") + "repos/" + urllib2.quote(current_repo) + params).read()
 			repoinfo = json.loads(data)
 			if repoinfo["fork"]:
 				current_repo = repoinfo["source"]["full_name"]
@@ -258,4 +258,5 @@ if !exists("g:github_upstream_issues")
 endif
 
 let g:github_issues_urls = ["git@github.com:","https://github.com/"]
+let g:github_api_url = "https://api.github.com/"
 

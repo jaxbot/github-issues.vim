@@ -57,6 +57,13 @@ g:github_upstream_issues
 
 When this is set to 1, github-issues will use upstream issues (if repo is fork). This will require extra requests for the Github API, however.
 
+```
+g:github_api_url = "https://api.github.com/"
+```
+
+If you use Github Enterprise, where the Github server is hosted somewhere other than Github.com, set this parameter to your API path. This is specifically for Github Enterprise and will not work for Bitbucket, Gitlab, etc.
+
+
 # Todo
 - Better error handling
 - Ability to create issues
