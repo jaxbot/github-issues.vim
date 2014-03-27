@@ -94,7 +94,6 @@ def pullGithubIssueList():
 		try:
 			github_datacache[current_repo] = []
 			while pages_loaded < int(vim.eval("g:github_issues_max_pages")):
-				print vim.eval("g:github_issues_max_pages")
 				response = urllib2.urlopen(url)
 				# JSON parse the API response, add page to previous pages if any
 				github_datacache[current_repo] += json.loads(response.read())
