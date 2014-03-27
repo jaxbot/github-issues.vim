@@ -125,11 +125,11 @@ def pullGithubIssue():
 	# JSON parse the API response
 	issue = json.loads(data)
 	# its an array, so dump these into the current (issues) buffer
-	vim.current.buffer.append("#" + str(issue["number"]) + " " + issue["title"])
+	vim.current.buffer.append("#" + str(issue["number"]) + " " + issue["title"].encode(vim.eval("&encoding")))
 	vim.current.buffer.append("==================================================")
-	vim.current.buffer.append("Reported By: " + issue["user"]["login"])
+	vim.current.buffer.append("Reported By: " + issue["user"]["login"].encode(vim.eval("&encoding")))
 	vim.current.buffer.append("")
-	vim.current.buffer.append(issue["body"].split("\n"))
+	vim.current.buffer.append(issue["body"].encode(vim.eval("&encoding")).split("\n"))
 	vim.current.buffer.append("")
 
 	if issue["comments"] > 0:
@@ -142,9 +142,9 @@ def pullGithubIssue():
 			vim.current.buffer.append("==================================================")
 			for comment in comments:
 				vim.current.buffer.append("")
-				vim.current.buffer.append(comment["user"]["login"])
+				vim.current.buffer.append(comment["user"]["login"].encode(vim.eval("&encoding")))
 				vim.current.buffer.append("--------------------------------------------------")
-				vim.current.buffer.append(comment["body"].split("\n"))
+				vim.current.buffer.append(comment["body"].encode(vim.eval("&encoding")).split("\n"))
 
 	# append leaves an unwanted beginning line. delete it.
 	vim.command("1delete _")
@@ -159,7 +159,7 @@ def dumpIssuesIntoBuffer():
 	# its an array, so dump these into the current (issues) buffer
 	for issue in current_issues:
 		issuestr = str(issue["number"]) + " " + issue["title"]
-		vim.current.buffer.append(issuestr.encode('utf-8'))
+		vim.current.buffer.append(issuestr.encode(vim.eval("&encoding")))
 
 	# append leaves an unwanted beginning line. delete it.
 	vim.command("1delete _")
