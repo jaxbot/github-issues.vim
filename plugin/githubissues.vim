@@ -27,6 +27,7 @@ import os
 import vim
 import json
 import urllib2
+import re
 
 # dictionary of github repo URLs for caching
 github_repos = {}
@@ -86,22 +87,36 @@ def pullGithubIssueList():
 			if repoinfo["fork"]:
 				current_repo = repoinfo["source"]["full_name"]
 				pullGithubIssueList()
+
+		pages_loaded = 0
 		# load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
 		url = vim.eval("expand(g:github_api_url)") + "repos/" + urllib2.quote(current_repo) + "/issues" + params
 		try:
-			github_datacache[current_repo] = urllib2.urlopen(url).read()
+			github_datacache[current_repo] = []
+			while pages_loaded < int(vim.eval("g:github_issues_max_pages")):
+				print vim.eval("g:github_issues_max_pages")
+				response = urllib2.urlopen(url)
+				# JSON parse the API response, add page to previous pages if any
+				github_datacache[current_repo] += json.loads(response.read())
+				pages_loaded += 1
+				headers = response.info() # try to find the next page
+				if 'Link' not in headers:
+					break
+				next_url_match = re.match(r"<(?P<next_url>[^>]+)>; rel=\"next\"", headers['Link'])
+				if not next_url_match:
+					break
+				url = next_url_match.group('next_url')
 		except urllib2.HTTPError as e:
 			if e.code == 410:
-				github_datacache[current_repo] = json.dumps([])
+				github_datacache[current_repo] = []
 		cache_count = 0
 	else:
 		cache_count += 1
 
-	# JSON parse the API response
-	current_issues = json.loads(github_datacache[current_repo])
+	current_issues = github_datacache[current_repo]
 
 def pullGithubIssue():
-	global current_repo, current_issues, cache_count, github_datacache
+	global current_repo
 
 	# nothing found? can't continue
 	if current_repo == "":
@@ -263,4 +278,8 @@ endif
 
 if !exists("g:github_api_url")
 	let g:github_api_url = "https://api.github.com/"
+endif
+
+if !exists("g:github_issues_max_pages")
+	let g:github_issues_max_pages = 1
 endif
