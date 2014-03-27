@@ -87,7 +87,7 @@ def pullGithubIssueList():
 				current_repo = repoinfo["source"]["full_name"]
 				pullGithubIssueList()
 		# load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
-		url = "https://api.github.com/repos/" + urllib2.quote(current_repo) + "/issues" + params
+		url = vim.eval("expand(g:github_api_url)") + "repos/" + urllib2.quote(current_repo) + "/issues" + params
 		try:
 			github_datacache[current_repo] = urllib2.urlopen(url).read()
 		except urllib2.HTTPError as e:
@@ -115,7 +115,7 @@ def pullGithubIssue():
 	number = vim.eval("expand('<cword>')")
 
 	# load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
-	url = "https://api.github.com/repos/" + urllib2.quote(current_repo) + "/issues/" + number + params
+	url = vim.eval("expand(g:github_api_url)") + "repos/" + urllib2.quote(current_repo) + "/issues/" + number + params
 	data = urllib2.urlopen(url).read()
 
 	vim.command("edit github://issues/"+number)
@@ -125,15 +125,15 @@ def pullGithubIssue():
 	# JSON parse the API response
 	issue = json.loads(data)
 	# its an array, so dump these into the current (issues) buffer
-	vim.current.buffer.append("#" + str(issue["number"]) + " " + issue["title"])
+	vim.current.buffer.append("#" + str(issue["number"]) + " " + issue["title"].encode(vim.eval("&encoding")))
 	vim.current.buffer.append("==================================================")
-	vim.current.buffer.append("Reported By: " + issue["user"]["login"])
+	vim.current.buffer.append("Reported By: " + issue["user"]["login"].encode(vim.eval("&encoding")))
 	vim.current.buffer.append("")
-	vim.current.buffer.append(issue["body"].split("\n"))
+	vim.current.buffer.append(issue["body"].encode(vim.eval("&encoding")).split("\n"))
 	vim.current.buffer.append("")
 
 	if issue["comments"] > 0:
-		url = "https://api.github.com/repos/" + urllib2.quote(current_repo) + "/issues/" + number + "/comments" + params
+		url = vim.eval("expand(g:github_api_url)") + "repos/" + urllib2.quote(current_repo) + "/issues/" + number + "/comments" + params
 		data = urllib2.urlopen(url).read()
 		comments = json.loads(data)
 
@@ -142,9 +142,9 @@ def pullGithubIssue():
 			vim.current.buffer.append("==================================================")
 			for comment in comments:
 				vim.current.buffer.append("")
-				vim.current.buffer.append(comment["user"]["login"])
+				vim.current.buffer.append(comment["user"]["login"].encode(vim.eval("&encoding")))
 				vim.current.buffer.append("--------------------------------------------------")
-				vim.current.buffer.append(comment["body"].split("\n"))
+				vim.current.buffer.append(comment["body"].encode(vim.eval("&encoding")).split("\n"))
 
 	# append leaves an unwanted beginning line. delete it.
 	vim.command("1delete _")
@@ -159,7 +159,7 @@ def dumpIssuesIntoBuffer():
 	# its an array, so dump these into the current (issues) buffer
 	for issue in current_issues:
 		issuestr = str(issue["number"]) + " " + issue["title"]
-		vim.current.buffer.append(issuestr.encode('utf-8'))
+		vim.current.buffer.append(issuestr.encode(vim.eval("&encoding")))
 
 	# append leaves an unwanted beginning line. delete it.
 	vim.command("1delete _")
@@ -257,6 +257,10 @@ if !exists("g:github_upstream_issues")
 	let g:github_upstream_issues = 0
 endif
 
-let g:github_issues_urls = ["git@github.com:","https://github.com/"]
-let g:github_api_url = "https://api.github.com/"
+if !exists("g:github_issues_urls")
+	let g:github_issues_urls = ["git@github.com:", "https://github.com/"]
+endif
 
+if !exists("g:github_api_url")
+	let g:github_api_url = "https://api.github.com/"
+endif
