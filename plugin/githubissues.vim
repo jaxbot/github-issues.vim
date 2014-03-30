@@ -82,7 +82,7 @@ def pullGithubIssueList():
 		upstream_issues = vim.eval("g:github_upstream_issues")
 		if upstream_issues == 1:
 			# try to get from what repo forked
-			data = urllib2.urlopen(vim.eval("expand(g:github_api_url)") + "repos/" + urllib2.quote(current_repo) + params).read()
+			data = urllib2.urlopen(vim.eval("g:github_api_url") + "repos/" + urllib2.quote(current_repo) + params).read()
 			repoinfo = json.loads(data)
 			if repoinfo["fork"]:
 				current_repo = repoinfo["source"]["full_name"]
@@ -90,7 +90,7 @@ def pullGithubIssueList():
 
 		pages_loaded = 0
 		# load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
-		url = vim.eval("expand(g:github_api_url)") + "repos/" + urllib2.quote(current_repo) + "/issues" + params
+		url = vim.eval("g:github_api_url") + "repos/" + urllib2.quote(current_repo) + "/issues" + params
 		try:
 			github_datacache[current_repo] = []
 			while pages_loaded < int(vim.eval("g:github_issues_max_pages")):
@@ -129,7 +129,7 @@ def pullGithubIssue():
 	number = vim.eval("expand('<cword>')")
 
 	# load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
-	url = vim.eval("expand(g:github_api_url)") + "repos/" + urllib2.quote(current_repo) + "/issues/" + number + params
+	url = vim.eval("g:github_api_url") + "repos/" + urllib2.quote(current_repo) + "/issues/" + number + params
 	data = urllib2.urlopen(url).read()
 
 	vim.command("edit github://issues/"+number)
@@ -147,7 +147,7 @@ def pullGithubIssue():
 	vim.current.buffer.append("")
 
 	if issue["comments"] > 0:
-		url = vim.eval("expand(g:github_api_url)") + "repos/" + urllib2.quote(current_repo) + "/issues/" + number + "/comments" + params
+		url = vim.eval("g:github_api_url") + "repos/" + urllib2.quote(current_repo) + "/issues/" + number + "/comments" + params
 		data = urllib2.urlopen(url).read()
 		comments = json.loads(data)
 
@@ -282,3 +282,4 @@ endif
 if !exists("g:github_issues_max_pages")
 	let g:github_issues_max_pages = 1
 endif
+
