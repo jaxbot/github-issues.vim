@@ -272,7 +272,7 @@ if !exists("g:github_upstream_issues")
 endif
 
 if !exists("g:github_issues_urls")
-	let g:github_issues_urls = ["git@github.com:", "https://github.com/"]
+	let g:github_issues_urls = ["github.com:", "https://github.com/"]
 endif
 
 if !exists("g:github_api_url")
