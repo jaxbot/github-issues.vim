@@ -105,6 +105,8 @@ def pullGithubIssueList():
 				if not next_url_match:
 					break
 				url = next_url_match.group('next_url')
+		except urllib2.URLError as e:
+			github_datacache[current_repo] = []
 		except urllib2.HTTPError as e:
 			if e.code == 410:
 				github_datacache[current_repo] = []
