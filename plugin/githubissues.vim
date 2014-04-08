@@ -13,7 +13,8 @@
 if exists("g:github_issues_loaded") || &cp
     finish
 endif
-let g:github_issues_loaded = "shi"
+
+let g:github_issues_loaded = 1
 
 " do not continue if Vim is not compiled with Python2.7 support
 if !has("python")
@@ -25,8 +26,7 @@ function! s:getGithubIssueDetails()
 	python pullGithubIssue()
 endfunction
 
-" script function for GETing issues
-function! s:getGithubIssues() 
+function! s:showGithubIssues() 
 	call ghissues#init()
 
 	" load the repo URI of the current file
@@ -89,7 +89,7 @@ function! s:setupOmni()
 endfunction
 
 " define the :Gissues command
-command! -nargs=0 Gissues call s:getGithubIssues()
+command! -nargs=0 Gissues call s:showGithubIssues()
 
 if !exists("g:github_issues_no_omni")
 	" Neocomplete support

@@ -1,5 +1,6 @@
-" core is written in Python for easy JSON/HTTP support " do not continue if Vim is not compiled with Python2.7 support
-if !has("python")
+" core is written in Python for easy JSON/HTTP support
+" do not continue if Vim is not compiled with Python2.7 support
+if !has("python") || exists("g:github_issues_pyloaded")
 	finish
 endif
 
@@ -121,13 +122,14 @@ def pullGithubIssue():
 
 	# JSON parse the API response
 	issue = json.loads(data)
-	# its an array, so dump these into the current (issues) buffer
-	vim.current.buffer.append("#" + str(issue["number"]) + " " + issue["title"].encode(vim.eval("&encoding")))
-	vim.current.buffer.append("==================================================")
-	vim.current.buffer.append("Reported By: " + issue["user"]["login"].encode(vim.eval("&encoding")))
-	vim.current.buffer.append("")
-	vim.current.buffer.append(issue["body"].encode(vim.eval("&encoding")).split("\n"))
-	vim.current.buffer.append("")
+
+	b = vim.current.buffer
+	b.append("#" + str(issue["number"]) + " " + issue["title"].encode(vim.eval("&encoding")))
+	b.append("==================================================")
+	b.append("Reported By: " + issue["user"]["login"].encode(vim.eval("&encoding")))
+	b.append("")
+	b.append(issue["body"].encode(vim.eval("&encoding")).split("\n"))
+	b.append("")
 
 	if issue["comments"] > 0:
 		url = vim.eval("g:github_api_url") + "repos/" + urllib2.quote(current_repo) + "/issues/" + number + "/comments" + params
@@ -135,13 +137,13 @@ def pullGithubIssue():
 		comments = json.loads(data)
 
 		if len(comments) > 0:
-			vim.current.buffer.append("Comments")
-			vim.current.buffer.append("==================================================")
+			b.append("Comments")
+			b.append("==================================================")
 			for comment in comments:
-				vim.current.buffer.append("")
-				vim.current.buffer.append(comment["user"]["login"].encode(vim.eval("&encoding")))
-				vim.current.buffer.append("--------------------------------------------------")
-				vim.current.buffer.append(comment["body"].encode(vim.eval("&encoding")).split("\n"))
+				b.append("")
+				b.append(comment["user"]["login"].encode(vim.eval("&encoding")))
+				b.append("--------------------------------------------------")
+				b.append(comment["body"].encode(vim.eval("&encoding")).split("\n"))
 
 	# append leaves an unwanted beginning line. delete it.
 	vim.command("1delete _")
