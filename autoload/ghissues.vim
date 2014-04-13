@@ -37,7 +37,7 @@ def getRepoURI():
 
 	filedata = os.popen(cmd).read()
 
-	current_repo = ""
+	#current_repo = ""
 
 	# possible URLs
 	urls = vim.eval("g:github_issues_urls")
@@ -199,7 +199,6 @@ def editIssue(number):
 
 	vim.command("let b:gissue_repo = \"" + current_repo + "\"")
 	vim.command("set ft=markdown")
-	vim.command("setlocal nomodified")
 
 def updateGissue():
 	parens = vim.current.buffer.name.split("/")
@@ -237,7 +236,7 @@ def updateGissue():
 	if number == "new":
 		url += params
 		request = urllib2.Request(url, json.dumps(issue))
-		data = json.loads(urllib2.urlopen(request))
+		data = json.loads(urllib2.urlopen(request).read())
 		vim.current.buffer.name = parens[0] + "/" + parens[1] + "/" + str(data['number'])
 	else:
 		url += "/" + number + params

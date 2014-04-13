@@ -56,11 +56,13 @@ function! s:editIssue(id)
 
 	silent new
 	autocmd BufWriteCmd <buffer> call s:updateIssue()
+	autocmd BufLeave <buffer> :bd!
 
 	python editIssue(vim.eval("a:id"))
 
 	normal ggdd
-	normal lli
+	normal 0lli
+	setlocal nomodified
 endfunction
 
 function! s:updateIssue()
