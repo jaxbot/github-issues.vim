@@ -22,10 +22,6 @@ if !has("python")
 	finish
 endif
 
-function! s:getGithubIssueDetails()
-	python pullGithubIssue()
-endfunction
-
 function! s:showGithubIssues() 
 	call ghissues#init()
 
@@ -43,7 +39,7 @@ function! s:showGithubIssues()
 	set buftype=nofile
 
 	" map the enter key to copy the line, close the window, and paste it
-	nnoremap <buffer> <cr> :normal! 0<cr>:call <SID>getGithubIssueDetails()<cr>
+	nnoremap <buffer> <cr> :normal! 0<cr>:call <SID>editIssue(expand("<cword>"))<cr>
 	nnoremap <buffer> q :q<cr>
 
 	" load issues into buffer
@@ -54,7 +50,9 @@ endfunction
 function! s:editIssue(id)
 	call ghissues#init()
 
-	python getRepoURI()
+	if a:id == "new"
+		python getRepoURI()
+	endif
 
 	silent new
 	autocmd BufWriteCmd <buffer> call s:updateIssue()

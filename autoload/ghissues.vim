@@ -174,7 +174,11 @@ def editIssue(number):
 		# new issue
 		issue = { 'title': '',
 			'body': '',
-			'number': 'new'
+			'number': 'new',
+			'user': {
+				'login': ''
+			},
+			'assignee': ''
 		}
 		print issue
 	else:
@@ -183,7 +187,10 @@ def editIssue(number):
 
 	b = vim.current.buffer
 	b.append("# " + issue["title"].encode(vim.eval("&encoding")) + " (" + str(issue["number"]) + ")")
-	#b.append("Reported By: " + issue["user"]["login"].encode(vim.eval("&encoding")))
+	if issue["user"]["login"]:
+		b.append("## Reported By: " + issue["user"]["login"].encode(vim.eval("&encoding")))
+	if issue["assignee"]:
+		b.append("## Assignee: " + issue["assignee"].encode(vim.eval("&encoding")))
 	b.append("")
 	b.append(issue["body"].encode(vim.eval("&encoding")).split("\n"))
 	b.append("")
@@ -192,6 +199,7 @@ def editIssue(number):
 
 	vim.command("let b:gissue_repo = \"" + current_repo + "\"")
 	vim.command("set ft=markdown")
+	vim.command("setlocal nomodified")
 
 def updateGissue():
 	parens = vim.current.buffer.name.split("/")
@@ -199,7 +207,7 @@ def updateGissue():
 
 	issue = {
 		'title': '',
-		'body': ''
+		'body': '',
 	}
 
 	issue['title'] = vim.current.buffer[0].split("# ")[1].split(" (" + number + ")")[0]
@@ -207,14 +215,22 @@ def updateGissue():
 	for line in vim.current.buffer[1:]:
 		if line == "## Comments":
 			break
-		issue['body'] += line + "\n"
+		if len(line.split("## Reported By:")) > 1:
+			continue
 
+		assignee = line.split("## Assignee: ")
+		if len(assignee) > 1:
+			issue['assignee'] = assignee
+			continue
+
+		issue['body'] += line + "\n"
+	
 	print issue
 
 	url = vim.eval("g:github_api_url") + "repos/" + urllib2.quote(vim.eval("b:gissue_repo")) + "/issues"
-	print url
 	params = ""
 	token = vim.eval("g:github_access_token")
+
 	if token != "":
 		params = "?access_token=" + token
 
@@ -224,10 +240,10 @@ def updateGissue():
 		data = json.loads(urllib2.urlopen(request))
 		vim.current.buffer.name = parens[0] + "/" + parens[1] + "/" + str(data['number'])
 	else:
-		url += "/" + number
-		request = urllib2.Request(url, issue)
+		url += "/" + number + params
+		request = urllib2.Request(url, json.dumps(issue))
 		request.get_method = lambda: 'PATCH'
-		urllib2.urlopen(request, issue)
+		urllib2.urlopen(request)
 
 	# mark it as "saved"
 	vim.command("setlocal nomodified")
