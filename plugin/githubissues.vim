@@ -7,7 +7,6 @@
 " License:     Copyright (C) 2014 Jonathan Warner
 "              Released under the MIT license
 "			   ======================================================================
-"
 
 " do not load twice
 if exists("g:github_issues_loaded") || &cp
@@ -25,15 +24,7 @@ endif
 function! s:showGithubIssues() 
 	call ghissues#init()
 
-	" load the repo URI of the current file
-	python getRepoURI()
-
-	" open a split window to a dummy file
-	" TODO: make this use "new" again
-	silent split github://issues
-	
-	" delete any contents that may exist
-	normal ggdG
+	python showIssueList()
 	
 	" its not a real file
 	set buftype=nofile
@@ -42,23 +33,15 @@ function! s:showGithubIssues()
 	nnoremap <buffer> <cr> :normal! 0<cr>:call <SID>editIssue(expand("<cword>"))<cr>
 	nnoremap <buffer> q :q<cr>
 
-	" load issues into buffer
-	python pullGithubIssueList()
-	python dumpIssuesIntoBuffer()
 endfunction
 
 function! s:editIssue(id)
 	call ghissues#init()
 
-	if a:id == "new"
-		python getRepoURI()
-	endif
+	python editIssue(vim.eval("a:id"))
 
-	silent new
 	autocmd BufWriteCmd <buffer> call s:updateIssue()
 	autocmd BufLeave <buffer> :bd!
-
-	python editIssue(vim.eval("a:id"))
 
 	normal ggdd
 	normal 0ll
@@ -75,7 +58,6 @@ function! s:updateIssue()
 	python updateGissue()
 	silent execute 'doautocmd BufWritePost '.expand('%:p')
 endfunction
-
 
 " omnicomplete function, also used by neocomplete
 function! githubissues#CompleteIssues(findstart, base)
@@ -108,9 +90,6 @@ function! s:setupOmni()
 	" empty array will store the menu items
 	let b:omni_options = []
 
-	" figure out the repo URI, download issues, and add to omnicomplete
-	python getRepoURI()
-	python pullGithubIssueList()
 	python populateOmniComplete()
 endfunction
 

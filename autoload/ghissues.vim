@@ -18,26 +18,23 @@ github_datacache = {}
 # reset web cache after this value grows too large
 cache_count = 0
 
-# since Vim is single threaded, we cheat a little and track the current state
-current_repo = ""
-current_issues = []
-
 def getRepoURI():
-	global current_repo, github_repos
+	global github_repos
+
+	if "gissues:" in vim.current.buffer.name:
+		s = vim.current.buffer.name.split("/")
+		return s[1] + "/" + s[2]
 
 	# get the directory the current file is in
 	filepath = vim.eval("shellescape(expand('%:p:h'))")
 
 	# cache the github repo for performance
 	if github_repos.get(filepath,'') != '':
-		current_repo = github_repos[filepath]
-		return
+		return github_repos[filepath]
 
 	cmd = '(cd ' + filepath + ' && git remote -v)'
 
 	filedata = os.popen(cmd).read()
-
-	#current_repo = ""
 
 	# possible URLs
 	urls = vim.eval("g:github_issues_urls")
@@ -46,39 +43,55 @@ def getRepoURI():
 		if len(s) > 1:
 			s = s[1].split()[0].split(".git")
 			github_repos[filepath] = s[0]
-			current_repo = s[0]
-			break
-	
-def pullGithubIssueList():
-	global current_repo, current_issues, cache_count, github_datacache
+			return s[0]
+	return ""
 
-	# nothing found? can't continue
-	if current_repo == "":
+def showIssueList():
+	repourl = getRepoURI()
+
+	vim.command("silent new")
+
+	b = vim.current.buffer
+
+	if repourl == "":
+		b[:] = ["Failed to find a suitable Github repository URL, sorry!"]
 		return
 	
-	if github_datacache.get(current_repo,'') == '' or cache_count > 3:
-		params = ""
-		token = vim.eval("g:github_access_token")
-		if token != "":
-			params = "?access_token=" + token
+	b.name = "gissues:/" + repourl + "/issues"
+
+	issues = getIssueList(repourl)
+
+	# its an array, so dump these into the current (issues) buffer
+	for issue in issues:
+		issuestr = str(issue["number"]) + " " + issue["title"]
+		b.append(issuestr.encode(vim.eval("&encoding")))
+
+	# append leaves an unwanted beginning line. delete it.
+	vim.command("1delete _")
+	
+def getIssueList(repourl):
+	global cache_count, github_datacache
+
+	if github_datacache.get(repourl,'') == '' or cache_count > 3:
 		upstream_issues = vim.eval("g:github_upstream_issues")
 		if upstream_issues == 1:
 			# try to get from what repo forked
-			data = urllib2.urlopen(vim.eval("g:github_api_url") + "repos/" + urllib2.quote(current_repo) + params).read()
+			data = urllib2.urlopen(ghUrl("/")).read()
 			repoinfo = json.loads(data)
 			if repoinfo["fork"]:
-				current_repo = repoinfo["source"]["full_name"]
-				pullGithubIssueList()
+				pullGithubIssueList(repoinfo["source"]["full_name"])
 
 		pages_loaded = 0
+
 		# load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
-		url = vim.eval("g:github_api_url") + "repos/" + urllib2.quote(current_repo) + "/issues" + params
+		url = ghUrl("/issues")
+		print url
 		try:
-			github_datacache[current_repo] = []
+			github_datacache[repourl] = []
 			while pages_loaded < int(vim.eval("g:github_issues_max_pages")):
 				response = urllib2.urlopen(url)
 				# JSON parse the API response, add page to previous pages if any
-				github_datacache[current_repo] += json.loads(response.read())
+				github_datacache[repourl] += json.loads(response.read())
 				pages_loaded += 1
 				headers = response.info() # try to find the next page
 				if 'Link' not in headers:
@@ -88,80 +101,28 @@ def pullGithubIssueList():
 					break
 				url = next_url_match.group('next_url')
 		except urllib2.URLError as e:
-			github_datacache[current_repo] = []
+			github_datacache[repourl] = []
 		except urllib2.HTTPError as e:
 			if e.code == 410:
-				github_datacache[current_repo] = []
+				github_datacache[repourl] = []
 		cache_count = 0
 	else:
 		cache_count += 1
 
-	current_issues = github_datacache[current_repo]
-
-def pullGithubIssue():
-	global current_repo
-
-	# nothing found? can't continue
-	if current_repo == "":
-		return
-	
-	params = ""
-	token = vim.eval("g:github_access_token")
-	if token != "":
-		params = "?access_token=" + token
-	
-	number = vim.eval("expand('<cword>')")
-
-	# load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
-	url = vim.eval("g:github_api_url") + "repos/" + urllib2.quote(current_repo) + "/issues/" + number + params
-	data = urllib2.urlopen(url).read()
-
-	vim.command("edit github://issues/"+number)
-	vim.command("set buftype=nofile")
-	vim.command("normal ggdG")
-
-	# JSON parse the API response
-	issue = json.loads(data)
-
-	b = vim.current.buffer
-	b.append("#" + str(issue["number"]) + " " + issue["title"].encode(vim.eval("&encoding")))
-	b.append("==================================================")
-	b.append("Reported By: " + issue["user"]["login"].encode(vim.eval("&encoding")))
-	b.append("")
-	b.append(issue["body"].encode(vim.eval("&encoding")).split("\n"))
-	b.append("")
-
-
-	# append leaves an unwanted beginning line. delete it.
-	vim.command("1delete _")
-
-def dumpIssuesIntoBuffer():
-	global current_repo, current_issues
-
-	if current_repo == "":
-		vim.current.buffer[:] = ["Failed to find a suitable Github remote, sorry!"]
-		return
-
-	# its an array, so dump these into the current (issues) buffer
-	for issue in current_issues:
-		issuestr = str(issue["number"]) + " " + issue["title"]
-		vim.current.buffer.append(issuestr.encode(vim.eval("&encoding")))
-
-	# append leaves an unwanted beginning line. delete it.
-	vim.command("1delete _")
+	return github_datacache[repourl]
 
 def populateOmniComplete():
-	global current_repo, current_issues
+	issues = getIssueList(getRepoURI())
 	for issue in current_issues:
 		issuestr = str(issue["number"]) + " " + issue["title"]
 		vim.command("call add(b:omni_options, "+json.dumps(issuestr)+")")
 
 def editIssue(number):
-	params = ""
-	token = vim.eval("g:github_access_token")
+	repourl = getRepoURI()
 
-	if token != "":
-		params = "?access_token=" + token
+	vim.command("silent new")
+	b = vim.current.buffer
+	b.name = "gissues:/" + repourl + "/" + number
 
 	if number == "new":
 		# new issue
@@ -173,12 +134,10 @@ def editIssue(number):
 			},
 			'assignee': ''
 		}
-		print issue
 	else:
-		url = vim.eval("g:github_api_url") + "repos/" + urllib2.quote(current_repo) + "/issues/" + number + params
+		url = ghUrl("/issues/" + number)
 		issue = json.loads(urllib2.urlopen(url).read())
 
-	b = vim.current.buffer
 	b.append("# " + issue["title"].encode(vim.eval("&encoding")) + " (" + str(issue["number"]) + ")")
 	if issue["user"]["login"]:
 		b.append("## Reported By: " + issue["user"]["login"].encode(vim.eval("&encoding")))
@@ -191,7 +150,7 @@ def editIssue(number):
 	b.append("## Comments")
 
 	if issue["comments"] > 0:
-		url = vim.eval("g:github_api_url") + "repos/" + urllib2.quote(current_repo) + "/issues/" + number + "/comments" + params
+		url = ghUrl("/issues/" + number + "/comments")
 		data = urllib2.urlopen(url).read()
 		comments = json.loads(data)
 
@@ -209,14 +168,11 @@ def editIssue(number):
 	b.append("## Add a comment")
 	b.append("")
 	
-	b.name = "gissues:" + current_repo + "/" + number
-
-	vim.command("let b:gissue_repo = \"" + current_repo + "\"")
 	vim.command("set ft=markdown")
 
 def updateGissue():
 	parens = vim.current.buffer.name.split("/")
-	number = parens[2]
+	number = parens[3]
 
 	issue = {
 		'title': '',
@@ -256,40 +212,37 @@ def updateGissue():
 
 		issue['body'] += line + "\n"
 	
-	print issue
-
-	url = vim.eval("g:github_api_url") + "repos/" + urllib2.quote(vim.eval("b:gissue_repo")) + "/issues"
-	params = ""
-	token = vim.eval("g:github_access_token")
-
-	if token != "":
-		params = "?access_token=" + token
-
 	if number == "new":
-		url += params
+		url = ghUrl("/issues")
 		request = urllib2.Request(url, json.dumps(issue))
 		data = json.loads(urllib2.urlopen(request).read())
-		parens[2] = str(data['number'])
-		vim.current.buffer.name = parens[0] + "/" + parens[1] + "/" + parens[2]
+		parens[3] = str(data['number'])
+		vim.current.buffer.name = parens[0] + "/" + parens[1] + "/" + parens[2] + "/" + parens[3]
 	else:
-		url += "/" + number + params
+		url = ghUrl("/issues/" + number)
 		request = urllib2.Request(url, json.dumps(issue))
 		request.get_method = lambda: 'PATCH'
 		urllib2.urlopen(request)
 	
 	if commentmode == 3:
-		url = vim.eval("g:github_api_url") + "repos/" + urllib2.quote(vim.eval("b:gissue_repo")) + "/issues/" + parens[2] + "/comments" + params
+		url = ghUrl("/issues/" + parens[3] + "/comments")
 		data = json.dumps({ 'body': comment })
-		print data
 		request = urllib2.Request(url, data)
 		urllib2.urlopen(request)
 
-		vim.command("normal ggdG")
-		editIssue(parens[2])
+		vim.command("bd!")
+		editIssue(parens[3])
 		vim.command("normal ggddG")
 
 	# mark it as "saved"
 	vim.command("setlocal nomodified")
+
+def ghUrl(endpoint):
+	params = ""
+	token = vim.eval("g:github_access_token")
+	if token:
+		params = "?access_token=" + token
+	return vim.eval("g:github_api_url") + "repos/" + urllib2.quote(getRepoURI()) + endpoint + params
 EOF
 
 function! ghissues#init()
