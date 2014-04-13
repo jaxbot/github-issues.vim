@@ -131,19 +131,6 @@ def pullGithubIssue():
 	b.append(issue["body"].encode(vim.eval("&encoding")).split("\n"))
 	b.append("")
 
-	if issue["comments"] > 0:
-		url = vim.eval("g:github_api_url") + "repos/" + urllib2.quote(current_repo) + "/issues/" + number + "/comments" + params
-		data = urllib2.urlopen(url).read()
-		comments = json.loads(data)
-
-		if len(comments) > 0:
-			b.append("Comments")
-			b.append("==================================================")
-			for comment in comments:
-				b.append("")
-				b.append(comment["user"]["login"].encode(vim.eval("&encoding")))
-				b.append("--------------------------------------------------")
-				b.append(comment["body"].encode(vim.eval("&encoding")).split("\n"))
 
 	# append leaves an unwanted beginning line. delete it.
 	vim.command("1delete _")
@@ -170,6 +157,12 @@ def populateOmniComplete():
 		vim.command("call add(b:omni_options, "+json.dumps(issuestr)+")")
 
 def editIssue(number):
+	params = ""
+	token = vim.eval("g:github_access_token")
+
+	if token != "":
+		params = "?access_token=" + token
+
 	if number == "new":
 		# new issue
 		issue = { 'title': '',
@@ -182,7 +175,7 @@ def editIssue(number):
 		}
 		print issue
 	else:
-		url = vim.eval("g:github_api_url") + "repos/" + urllib2.quote(current_repo) + "/issues/" + number
+		url = vim.eval("g:github_api_url") + "repos/" + urllib2.quote(current_repo) + "/issues/" + number + params
 		issue = json.loads(urllib2.urlopen(url).read())
 
 	b = vim.current.buffer
@@ -193,6 +186,27 @@ def editIssue(number):
 		b.append("## Assignee: " + issue["assignee"].encode(vim.eval("&encoding")))
 	b.append("")
 	b.append(issue["body"].encode(vim.eval("&encoding")).split("\n"))
+	b.append("")
+
+	b.append("## Comments")
+
+	if issue["comments"] > 0:
+		url = vim.eval("g:github_api_url") + "repos/" + urllib2.quote(current_repo) + "/issues/" + number + "/comments" + params
+		data = urllib2.urlopen(url).read()
+		comments = json.loads(data)
+
+		if len(comments) > 0:
+			for comment in comments:
+				b.append("")
+				b.append(comment["user"]["login"].encode(vim.eval("&encoding")) + "(" + comment["created_at"] + ")")
+				b.append(comment["body"].encode(vim.eval("&encoding")).split("\n"))
+	
+	else:
+		b.append("")
+		b.append("No comments.")
+		b.append("")
+	
+	b.append("## Add a comment")
 	b.append("")
 	
 	b.name = "gissues:" + current_repo + "/" + number
@@ -210,10 +224,28 @@ def updateGissue():
 	}
 
 	issue['title'] = vim.current.buffer[0].split("# ")[1].split(" (" + number + ")")[0]
+
+	commentmode = 0
+
+	comment = ""
 	
 	for line in vim.current.buffer[1:]:
+		if commentmode == 1:
+			if line == "## Add a comment":
+				commentmode = 2
+			continue
+		if commentmode == 2:
+			if line != "":
+				commentmode = 3
+				comment += line + "\n"
+			continue
+		if commentmode == 3:
+			comment += line + "\n"
+			continue
+			
 		if line == "## Comments":
-			break
+			commentmode = 1
+			continue
 		if len(line.split("## Reported By:")) > 1:
 			continue
 
@@ -237,12 +269,24 @@ def updateGissue():
 		url += params
 		request = urllib2.Request(url, json.dumps(issue))
 		data = json.loads(urllib2.urlopen(request).read())
-		vim.current.buffer.name = parens[0] + "/" + parens[1] + "/" + str(data['number'])
+		parens[2] = str(data['number'])
+		vim.current.buffer.name = parens[0] + "/" + parens[1] + "/" + parens[2]
 	else:
 		url += "/" + number + params
 		request = urllib2.Request(url, json.dumps(issue))
 		request.get_method = lambda: 'PATCH'
 		urllib2.urlopen(request)
+	
+	if commentmode == 3:
+		url = vim.eval("g:github_api_url") + "repos/" + urllib2.quote(vim.eval("b:gissue_repo")) + "/issues/" + parens[2] + "/comments" + params
+		data = json.dumps({ 'body': comment })
+		print data
+		request = urllib2.Request(url, data)
+		urllib2.urlopen(request)
+
+		vim.command("normal ggdG")
+		editIssue(parens[2])
+		vim.command("normal ggddG")
 
 	# mark it as "saved"
 	vim.command("setlocal nomodified")

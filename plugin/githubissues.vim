@@ -61,7 +61,12 @@ function! s:editIssue(id)
 	python editIssue(vim.eval("a:id"))
 
 	normal ggdd
-	normal 0lli
+	normal 0ll
+
+	if a:id == "new"
+		startinsert
+	endif
+
 	setlocal nomodified
 endfunction
 
