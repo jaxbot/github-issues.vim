@@ -169,6 +169,68 @@ def populateOmniComplete():
 		issuestr = str(issue["number"]) + " " + issue["title"]
 		vim.command("call add(b:omni_options, "+json.dumps(issuestr)+")")
 
+def editIssue(number):
+	if number == "new":
+		# new issue
+		issue = { 'title': '',
+			'body': '',
+			'number': 'new'
+		}
+		print issue
+	else:
+		url = vim.eval("g:github_api_url") + "repos/" + urllib2.quote(current_repo) + "/issues/" + number
+		issue = json.loads(urllib2.urlopen(url).read())
+
+	b = vim.current.buffer
+	b.append("# " + issue["title"].encode(vim.eval("&encoding")) + " (" + str(issue["number"]) + ")")
+	#b.append("Reported By: " + issue["user"]["login"].encode(vim.eval("&encoding")))
+	b.append("")
+	b.append(issue["body"].encode(vim.eval("&encoding")).split("\n"))
+	b.append("")
+	
+	b.name = "gissues:" + current_repo + "/" + number
+
+	vim.command("let b:gissue_repo = \"" + current_repo + "\"")
+	vim.command("set ft=markdown")
+
+def updateGissue():
+	parens = vim.current.buffer.name.split("/")
+	number = parens[2]
+
+	issue = {
+		'title': '',
+		'body': ''
+	}
+
+	issue['title'] = vim.current.buffer[0].split("# ")[1].split(" (" + number + ")")[0]
+	
+	for line in vim.current.buffer[1:]:
+		if line == "## Comments":
+			break
+		issue['body'] += line + "\n"
+
+	print issue
+
+	url = vim.eval("g:github_api_url") + "repos/" + urllib2.quote(vim.eval("b:gissue_repo")) + "/issues"
+	print url
+	params = ""
+	token = vim.eval("g:github_access_token")
+	if token != "":
+		params = "?access_token=" + token
+
+	if number == "new":
+		url += params
+		request = urllib2.Request(url, json.dumps(issue))
+		data = json.loads(urllib2.urlopen(request))
+		vim.current.buffer.name = parens[0] + "/" + parens[1] + "/" + str(data['number'])
+	else:
+		url += "/" + number
+		request = urllib2.Request(url, issue)
+		request.get_method = lambda: 'PATCH'
+		urllib2.urlopen(request, issue)
+
+	# mark it as "saved"
+	vim.command("setlocal nomodified")
 EOF
 
 function! ghissues#init()

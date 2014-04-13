@@ -51,6 +51,27 @@ function! s:showGithubIssues()
 	python dumpIssuesIntoBuffer()
 endfunction
 
+function! s:editIssue(id)
+	call ghissues#init()
+
+	python getRepoURI()
+
+	silent new
+	autocmd BufWriteCmd <buffer> call s:updateIssue()
+
+	python editIssue(vim.eval("a:id"))
+
+	normal ggdd
+	normal lli
+endfunction
+
+function! s:updateIssue()
+	call ghissues#init()
+	python updateGissue()
+	silent execute 'doautocmd BufWritePost '.expand('%:p')
+endfunction
+
+
 " omnicomplete function, also used by neocomplete
 function! githubissues#CompleteIssues(findstart, base)
 	if a:findstart
@@ -90,6 +111,9 @@ endfunction
 
 " define the :Gissues command
 command! -nargs=0 Gissues call s:showGithubIssues()
+command! -nargs=0 Giadd call s:editIssue("new")
+command! -nargs=* Giedit call s:editIssue(<f-args>)
+command! -nargs=0 Giupdate call s:updateIssue()
 
 if !exists("g:github_issues_no_omni")
 	" Neocomplete support
