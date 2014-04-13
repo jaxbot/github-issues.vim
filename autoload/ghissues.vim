@@ -117,12 +117,14 @@ def populateOmniComplete():
 		issuestr = str(issue["number"]) + " " + issue["title"]
 		vim.command("call add(b:omni_options, "+json.dumps(issuestr)+")")
 
-def editIssue(number):
+def editIssue(number, inplace = False):
 	repourl = getRepoURI()
 
-	vim.command("silent new")
+	if not inplace:
+		vim.command("silent new")
+		vim.current.buffer.name = "gissues:/" + repourl + "/" + number
+
 	b = vim.current.buffer
-	b.name = "gissues:/" + repourl + "/" + number
 
 	if number == "new":
 		# new issue
@@ -230,8 +232,8 @@ def updateGissue():
 		request = urllib2.Request(url, data)
 		urllib2.urlopen(request)
 
-		vim.command("bd!")
-		editIssue(parens[3])
+		vim.command("normal ggdG")
+		editIssue(parens[3], True)
 		vim.command("normal ggddG")
 
 	# mark it as "saved"
