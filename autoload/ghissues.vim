@@ -170,7 +170,7 @@ def editIssue(number, inplace = False):
 	
 	vim.command("set ft=markdown")
 
-def updateGissue():
+def saveGissue():
 	parens = vim.current.buffer.name.split("/")
 	number = parens[3]
 
@@ -233,9 +233,17 @@ def updateGissue():
 		urllib2.urlopen(request)
 
 	if commentmode == 3 or number == "new":
-		vim.command("normal ggdG")
-		editIssue(parens[3], True)
-		vim.command("normal ggddG")
+		updateGissue()
+
+	# mark it as "saved"
+	vim.command("setlocal nomodified")
+
+def updateGissue():
+	parens = vim.current.buffer.name.split("/")
+
+	vim.command("normal ggdG")
+	editIssue(parens[3], True)
+	vim.command("normal ggddG")
 
 	# mark it as "saved"
 	vim.command("setlocal nomodified")

@@ -40,7 +40,8 @@ function! s:editIssue(id)
 
 	python editIssue(vim.eval("a:id"))
 
-	autocmd BufWriteCmd <buffer> call s:updateIssue()
+	autocmd BufWriteCmd <buffer> call s:saveIssue()
+	autocmd BufReadCmd <buffer> call s:updateIssue()
 	autocmd BufLeave <buffer> :bd!
 
 	normal ggdd
@@ -56,6 +57,12 @@ endfunction
 function! s:updateIssue()
 	call ghissues#init()
 	python updateGissue()
+	silent execute 'doautocmd BufReadPost '.expand('%:p')
+endfunction
+
+function! s:saveIssue()
+	call ghissues#init()
+	python saveGissue()
 	silent execute 'doautocmd BufWritePost '.expand('%:p')
 endfunction
 
