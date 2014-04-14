@@ -85,7 +85,6 @@ def getIssueList(repourl):
 
 		# load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
 		url = ghUrl("/issues")
-		print url
 		try:
 			github_datacache[repourl] = []
 			while pages_loaded < int(vim.eval("g:github_issues_max_pages")):
@@ -113,7 +112,7 @@ def getIssueList(repourl):
 
 def populateOmniComplete():
 	issues = getIssueList(getRepoURI())
-	for issue in current_issues:
+	for issue in issues:
 		issuestr = str(issue["number"]) + " " + issue["title"]
 		vim.command("call add(b:omni_options, "+json.dumps(issuestr)+")")
 
