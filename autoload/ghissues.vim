@@ -144,9 +144,7 @@ def editIssue(number, inplace = False):
 		b.append("## Reported By: " + issue["user"]["login"].encode(vim.eval("&encoding")))
 	if issue["assignee"]:
 		b.append("## Assignee: " + issue["assignee"].encode(vim.eval("&encoding")))
-	b.append("")
 	b.append(issue["body"].encode(vim.eval("&encoding")).split("\n"))
-	b.append("")
 
 	if number != "new":
 		b.append("## Comments")
@@ -212,7 +210,9 @@ def updateGissue():
 			issue['assignee'] = assignee
 			continue
 
-		issue['body'] += line + "\n"
+		if issue['body'] != '':
+			issue['body'] += '\n'
+		issue['body'] += line
 	
 	if number == "new":
 		url = ghUrl("/issues")
