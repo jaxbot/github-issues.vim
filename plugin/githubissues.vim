@@ -41,6 +41,8 @@ function! s:showIssue(id)
 
 	python showIssue(vim.eval("a:id"))
 
+	call s:setupOmni()
+
 	autocmd BufWriteCmd <buffer> call s:saveIssue()
 	autocmd BufReadCmd <buffer> call s:updateIssue()
 	autocmd BufLeave <buffer> :bd!
@@ -113,6 +115,7 @@ if !exists("g:github_issues_no_omni")
 	  let g:neocomplete#sources#omni#input_patterns = {}
 	endif
 	let g:neocomplete#sources#omni#input_patterns.gitcommit = '\#\d*'
+	let g:neocomplete#sources#omni#input_patterns.markdown = '\#\d*'
 
 	" Install omnifunc on gitcommit files
 	autocmd FileType gitcommit call s:setupOmni()
