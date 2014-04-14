@@ -116,7 +116,7 @@ def populateOmniComplete():
 		issuestr = str(issue["number"]) + " " + issue["title"]
 		vim.command("call add(b:omni_options, "+json.dumps(issuestr)+")")
 
-def editIssue(number, inplace = False):
+def showIssue(number, inplace = False):
 	repourl = getRepoURI()
 
 	if not inplace:
@@ -242,7 +242,7 @@ def updateGissue():
 	parens = vim.current.buffer.name.split("/")
 
 	vim.command("normal ggdG")
-	editIssue(parens[3], True)
+	showIssue(parens[3], True)
 	vim.command("normal ggddG")
 
 	# mark it as "saved"

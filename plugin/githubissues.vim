@@ -30,15 +30,15 @@ function! s:showGithubIssues()
 	set buftype=nofile
 
 	" map the enter key to copy the line, close the window, and paste it
-	nnoremap <buffer> <cr> :normal! 0<cr>:call <SID>editIssue(expand("<cword>"))<cr>
+	nnoremap <buffer> <cr> :normal! 0<cr>:call <SID>showIssue(expand("<cword>"))<cr>
 	nnoremap <buffer> q :q<cr>
 
 endfunction
 
-function! s:editIssue(id)
+function! s:showIssue(id)
 	call ghissues#init()
 
-	python editIssue(vim.eval("a:id"))
+	python showIssue(vim.eval("a:id"))
 
 	autocmd BufWriteCmd <buffer> call s:saveIssue()
 	autocmd BufReadCmd <buffer> call s:updateIssue()
@@ -102,8 +102,8 @@ endfunction
 
 " define the :Gissues command
 command! -nargs=0 Gissues call s:showGithubIssues()
-command! -nargs=0 Giadd call s:editIssue("new")
-command! -nargs=* Giedit call s:editIssue(<f-args>)
+command! -nargs=0 Giadd call s:showIssue("new")
+command! -nargs=* Giedit call s:showIssue(<f-args>)
 command! -nargs=0 Giupdate call s:updateIssue()
 
 if !exists("g:github_issues_no_omni")
