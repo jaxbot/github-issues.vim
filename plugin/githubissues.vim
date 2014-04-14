@@ -31,6 +31,7 @@ function! s:showGithubIssues()
 
 	" map the enter key to copy the line, close the window, and paste it
 	nnoremap <buffer> <cr> :normal! 0<cr>:call <SID>showIssue(expand("<cword>"))<cr>
+	nnoremap <buffer> i :Giadd<cr>
 	nnoremap <buffer> q :q<cr>
 
 endfunction
