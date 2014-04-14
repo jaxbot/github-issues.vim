@@ -33,6 +33,7 @@ function! s:showGithubIssues()
 	nnoremap <buffer> <cr> :normal! 0<cr>:call <SID>showIssue(expand("<cword>"))<cr>
 	nnoremap <buffer> i :Giadd<cr>
 	nnoremap <buffer> q :q<cr>
+	autocmd BufHidden <buffer> :bd!
 
 endfunction
 
@@ -45,7 +46,7 @@ function! s:showIssue(id)
 
 	autocmd BufWriteCmd <buffer> call s:saveIssue()
 	autocmd BufReadCmd <buffer> call s:updateIssue()
-	autocmd BufLeave <buffer> :bd!
+	autocmd BufHidden <buffer> :bd!
 
 	normal ggdd
 	normal 0ll
