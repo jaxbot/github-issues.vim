@@ -133,7 +133,7 @@ def editIssue(number, inplace = False):
 			'user': {
 				'login': ''
 			},
-			'assignee': ''
+			'assignee': '',
 		}
 	else:
 		url = ghUrl("/issues/" + number)
@@ -148,26 +148,27 @@ def editIssue(number, inplace = False):
 	b.append(issue["body"].encode(vim.eval("&encoding")).split("\n"))
 	b.append("")
 
-	b.append("## Comments")
+	if number != "new":
+		b.append("## Comments")
 
-	if issue["comments"] > 0:
-		url = ghUrl("/issues/" + number + "/comments")
-		data = urllib2.urlopen(url).read()
-		comments = json.loads(data)
+		if issue["comments"] > 0:
+			url = ghUrl("/issues/" + number + "/comments")
+			data = urllib2.urlopen(url).read()
+			comments = json.loads(data)
 
-		if len(comments) > 0:
-			for comment in comments:
-				b.append("")
-				b.append(comment["user"]["login"].encode(vim.eval("&encoding")) + "(" + comment["created_at"] + ")")
-				b.append(comment["body"].encode(vim.eval("&encoding")).split("\n"))
+			if len(comments) > 0:
+				for comment in comments:
+					b.append("")
+					b.append(comment["user"]["login"].encode(vim.eval("&encoding")) + "(" + comment["created_at"] + ")")
+					b.append(comment["body"].encode(vim.eval("&encoding")).split("\n"))
+		
+		else:
+			b.append("")
+			b.append("No comments.")
+			b.append("")
 	
-	else:
+		b.append("## Add a comment")
 		b.append("")
-		b.append("No comments.")
-		b.append("")
-	
-	b.append("## Add a comment")
-	b.append("")
 	
 	vim.command("set ft=markdown")
 
@@ -231,6 +232,7 @@ def updateGissue():
 		request = urllib2.Request(url, data)
 		urllib2.urlopen(request)
 
+	if commentmode == 3 or number == "new":
 		vim.command("normal ggdG")
 		editIssue(parens[3], True)
 		vim.command("normal ggddG")
