@@ -140,6 +140,7 @@ def showIssue(number, inplace = False):
 				'login': ''
 			},
 			'assignee': '',
+			'state': 'open'
 		}
 	else:
 		url = ghUrl("/issues/" + number)
