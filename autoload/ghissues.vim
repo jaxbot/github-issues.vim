@@ -256,7 +256,8 @@ def saveGissue():
 			issue['body'] += '\n'
 		issue['body'] += line
 
-	print issue
+	# remove blank entries
+	issue['labels'] = filter(bool, issue['labels'])
 	
 	if number == "new":
 		url = ghUrl("/issues")
