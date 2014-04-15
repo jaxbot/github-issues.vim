@@ -273,12 +273,15 @@ def saveGissue():
 	# mark it as "saved"
 	vim.command("setlocal nomodified")
 
-def updateGissue():
+def updateGissue(scrolldown = True):
 	parens = vim.current.buffer.name.split("/")
 
 	vim.command("normal ggdG")
 	showIssue(parens[3], True)
-	vim.command("normal ggddG")
+	vim.command("normal ggdd")
+
+	if scrolldown:
+		vim.command("normal G")
 
 	# mark it as "saved"
 	vim.command("setlocal nomodified")
@@ -290,7 +293,7 @@ def setIssueData(issue):
 	request.get_method = lambda: 'PATCH'
 	urllib2.urlopen(request)
 
-	updateGissue()
+	updateGissue(False)
 
 def ghUrl(endpoint):
 	params = ""
