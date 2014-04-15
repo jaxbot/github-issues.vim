@@ -18,6 +18,8 @@ github_datacache = {}
 # reset web cache after this value grows too large
 cache_count = 0
 
+repo_labels = {}
+
 def getRepoURI():
 	global github_repos
 
@@ -119,8 +121,12 @@ def getIssueList(repourl):
 def populateOmniComplete():
 	issues = getIssueList(getRepoURI())
 	for issue in issues:
-		issuestr = str(issue["number"]) + " " + issue["title"]
-		vim.command("call add(b:omni_options, "+json.dumps(issuestr)+")")
+		addToOmni(str(issue["number"]) + " " + issue["title"])
+	for label in getLabels():
+		addToOmni(str(label["name"]))
+
+def addToOmni(toadd):
+	vim.command("call add(b:omni_options, "+json.dumps(toadd)+")")
 
 def showIssue(number, inplace = False):
 	repourl = getRepoURI()
@@ -140,7 +146,8 @@ def showIssue(number, inplace = False):
 				'login': ''
 			},
 			'assignee': '',
-			'state': 'open'
+			'state': 'open',
+			'labels': []
 		}
 	else:
 		url = ghUrl("/issues/" + number)
@@ -159,9 +166,9 @@ def showIssue(number, inplace = False):
 	if issue["labels"]:
 		for label in issue["labels"]:
 			labelstr += label["name"] + ", "
-			vim.command("hi issueColor" + label["name"] + " guifg=#fff guibg=#" + label["color"])
-			vim.command("let m = matchadd(\"issueColor" + label["name"] + "\", \"" + label["name"] + "\")")
 	b.append("## Labels: " + labelstr)
+
+	highlightColoredLabels(getLabels())
 
 	b.append(issue["body"].encode(vim.eval("&encoding")).split("\n"))
 
@@ -229,8 +236,7 @@ def saveGissue():
 		if len(state) > 1:
 			if state[1].lower() == "closed":
 				issue['state'] = "closed"
-			else:
-				issue['state'] = "open"
+			else: issue['state'] = "open"
 			continue
 
 		labels = line.split("## Labels: ")
@@ -294,6 +300,24 @@ def setIssueData(issue):
 	urllib2.urlopen(request)
 
 	updateGissue(False)
+
+def getLabels():
+	global repo_labels
+
+	rpUrl = getRepoURI()
+	
+	if repo_labels.get(rpUrl,''):
+		return repo_labels[rpUrl]
+
+	url = ghUrl("/labels")
+	repo_labels[rpUrl] = json.loads(urllib2.urlopen(url).read())
+
+	return repo_labels[rpUrl]
+
+def highlightColoredLabels(labels):
+	for label in labels:
+		vim.command("hi issueColor" + label["name"] + " guifg=#fff guibg=#" + label["color"])
+		vim.command("let m = matchadd(\"issueColor" + label["name"] + "\", \"" + label["name"] + "\")")
 
 def ghUrl(endpoint):
 	params = ""

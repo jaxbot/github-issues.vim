@@ -122,7 +122,7 @@ if !exists("g:github_issues_no_omni")
 	  let g:neocomplete#sources#omni#input_patterns = {}
 	endif
 	let g:neocomplete#sources#omni#input_patterns.gitcommit = '\#\d*'
-	let g:neocomplete#sources#omni#input_patterns.markdown = '\#\d*'
+	let g:neocomplete#sources#omni#input_patterns.markdown = '.'
 
 	" Install omnifunc on gitcommit files
 	autocmd FileType gitcommit call s:setupOmni()
