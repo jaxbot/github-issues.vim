@@ -47,6 +47,8 @@ function! s:showIssue(id)
 	autocmd BufWriteCmd <buffer> call s:saveIssue()
 	autocmd BufReadCmd <buffer> call s:updateIssue()
 	autocmd BufHidden <buffer> :bd!
+	nnoremap <buffer> cc :call <SID>setIssueState(0)<cr>
+	nnoremap <buffer> co :call <SID>setIssueState(1)<cr>
 
 	normal ggdd
 	normal 0ll
@@ -56,6 +58,10 @@ function! s:showIssue(id)
 	endif
 
 	setlocal nomodified
+endfunction
+
+function! s:setIssueState(state)
+	python setIssueData({ 'state': 'open' if vim.eval("a:state") == '1' else 'closed' })
 endfunction
 
 function! s:updateIssue()

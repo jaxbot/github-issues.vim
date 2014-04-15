@@ -142,6 +142,9 @@ def showIssue(number, inplace = False):
 	b.append("# " + issue["title"].encode(vim.eval("&encoding")) + " (" + str(issue["number"]) + ")")
 	if issue["user"]["login"]:
 		b.append("## Reported By: " + issue["user"]["login"].encode(vim.eval("&encoding")))
+
+	b.append("## State: " + issue["state"])
+
 	if issue["assignee"]:
 		b.append("## Assignee: " + issue["assignee"].encode(vim.eval("&encoding")))
 	b.append(issue["body"].encode(vim.eval("&encoding")).split("\n"))
@@ -205,6 +208,14 @@ def saveGissue():
 		if len(line.split("## Reported By:")) > 1:
 			continue
 
+		state = line.split("## State: ")
+		if len(state) > 1:
+			if state[1].lower() == "closed":
+				issue['state'] = "closed"
+			else:
+				issue['state'] = "open"
+			continue
+
 		assignee = line.split("## Assignee: ")
 		if len(assignee) > 1:
 			issue['assignee'] = assignee
@@ -247,6 +258,15 @@ def updateGissue():
 
 	# mark it as "saved"
 	vim.command("setlocal nomodified")
+
+def setIssueData(issue):
+	parens = vim.current.buffer.name.split("/")
+	url = ghUrl("/issues/" + parens[3])
+	request = urllib2.Request(url, json.dumps(issue))
+	request.get_method = lambda: 'PATCH'
+	urllib2.urlopen(request)
+
+	updateGissue()
 
 def ghUrl(endpoint):
 	params = ""
