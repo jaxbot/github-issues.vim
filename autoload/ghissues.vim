@@ -54,13 +54,12 @@ def showIssueList():
 
 	vim.command("silent new")
 
-	b = vim.current.buffer
-
 	if repourl == "":
-		b[:] = ["Failed to find a suitable Github repository URL, sorry!"]
+		vim.current.buffer[:] = ["Failed to find a suitable Github repository URL, sorry!"]
 		return
 	
-	b.name = "gissues:/" + repourl + "/issues"
+	vim.command("edit " + "gissues:/" + repourl + "/issues")
+	b = vim.current.buffer
 
 	issues = getIssueList(repourl)
 
@@ -136,7 +135,7 @@ def showIssue(number, inplace = False):
 
 	if not inplace:
 		vim.command("silent new")
-		vim.current.buffer.name = "gissues:/" + repourl + "/" + number
+		vim.command("edit " + "gissues:/" + repourl + "/" + number)
 
 	b = vim.current.buffer
 
