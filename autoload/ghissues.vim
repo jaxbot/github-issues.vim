@@ -154,7 +154,17 @@ def showIssue(number, inplace = False):
 
 	if issue["assignee"]:
 		b.append("## Assignee: " + issue["assignee"].encode(vim.eval("&encoding")))
+
+	labelstr = ""
+	if issue["labels"]:
+		for label in issue["labels"]:
+			labelstr += label["name"] + ", "
+			vim.command("hi issueColor" + label["name"] + " guifg=#fff guibg=#" + label["color"])
+			vim.command("let m = matchadd(\"issueColor" + label["name"] + "\", \"" + label["name"] + "\")")
+	b.append("## Labels: " + labelstr)
+
 	b.append(issue["body"].encode(vim.eval("&encoding")).split("\n"))
+
 
 	if number != "new":
 		b.append("## Comments")
@@ -223,6 +233,11 @@ def saveGissue():
 				issue['state'] = "open"
 			continue
 
+		labels = line.split("## Labels: ")
+		if len(labels) > 1:
+			issue['labels'] = labels[1].split(', ')
+			continue
+
 		assignee = line.split("## Assignee: ")
 		if len(assignee) > 1:
 			issue['assignee'] = assignee
@@ -231,6 +246,8 @@ def saveGissue():
 		if issue['body'] != '':
 			issue['body'] += '\n'
 		issue['body'] += line
+
+	print issue
 	
 	if number == "new":
 		url = ghUrl("/issues")
