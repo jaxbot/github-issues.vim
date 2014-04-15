@@ -63,7 +63,13 @@ def showIssueList():
 
 	# its an array, so dump these into the current (issues) buffer
 	for issue in issues:
-		issuestr = str(issue["number"]) + " " + issue["title"]
+		issuestr = str(issue["number"]) + " " + issue["title"] + " "	
+
+		for label in issue["labels"]:
+			issuestr += "#" + label["name"] + " "
+			vim.command("hi issueColor" + label["name"] + " guifg=#fff guibg=#" + label["color"])
+			vim.command("let m = matchadd(\"issueColor" + label["name"] + "\", \"#" + label["name"] + "\")")
+
 		b.append(issuestr.encode(vim.eval("&encoding")))
 
 	# append leaves an unwanted beginning line. delete it.
