@@ -68,9 +68,9 @@ def showIssueList():
 		issuestr = str(issue["number"]) + " " + issue["title"] + " "	
 
 		for label in issue["labels"]:
-			issuestr += "#" + label["name"] + " "
-			vim.command("hi issueColor" + label["name"] + " guifg=#fff guibg=#" + label["color"])
-			vim.command("let m = matchadd(\"issueColor" + label["name"] + "\", \"#" + label["name"] + "\")")
+			issuestr += label["name"] + " "
+
+		highlightColoredLabels(getLabels())
 
 		b.append(issuestr.encode(vim.eval("&encoding")))
 
@@ -315,6 +315,9 @@ def getLabels():
 	return repo_labels[rpUrl]
 
 def highlightColoredLabels(labels):
+	labels.append({ 'name': 'closed', 'color': 'ff0000'})
+	labels.append({ 'name': 'open', 'color': '00aa00'})
+
 	for label in labels:
 		vim.command("hi issueColor" + label["name"] + " guifg=#fff guibg=#" + label["color"])
 		vim.command("let m = matchadd(\"issueColor" + label["name"] + "\", \"" + label["name"] + "\")")
