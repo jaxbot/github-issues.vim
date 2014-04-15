@@ -66,7 +66,6 @@ If you use Github Enterprise, where the Github server is hosted somewhere other 
 
 # Todo
 - Better error handling
-- Ability to create issues
 - Any others? Make an issue
 
 ## Shameless plug
