@@ -19,6 +19,7 @@ github_datacache = {}
 cache_count = 0
 
 repo_labels = {}
+repo_collaborators = {}
 
 def getRepoURI():
 	global github_repos
@@ -124,6 +125,8 @@ def populateOmniComplete():
 		addToOmni(str(issue["number"]) + " " + issue["title"])
 	for label in getLabels():
 		addToOmni(str(label["name"]))
+	for collaborator in getCollaborators():
+		addToOmni(str(collaborator["login"]))
 
 def addToOmni(toadd):
 	vim.command("call add(b:omni_options, "+json.dumps(toadd)+")")
@@ -313,6 +316,19 @@ def getLabels():
 	repo_labels[rpUrl] = json.loads(urllib2.urlopen(url).read())
 
 	return repo_labels[rpUrl]
+
+def getCollaborators():
+	global repo_collaborators
+
+	rpUrl = getRepoURI()
+	
+	if repo_collaborators.get(rpUrl,''):
+		return repo_collaborators[rpUrl]
+
+	url = ghUrl("/collaborators")
+	repo_collaborators[rpUrl] = json.loads(urllib2.urlopen(url).read())
+
+	return repo_collaborators[rpUrl]
 
 def highlightColoredLabels(labels):
 	labels.append({ 'name': 'closed', 'color': 'ff0000'})
