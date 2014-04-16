@@ -44,9 +44,6 @@ function! s:showIssue(id)
 	call s:setupOmni()
 
 	autocmd BufWriteCmd <buffer> call s:saveIssue()
-	autocmd BufReadCmd <buffer> call s:updateIssue()
-	nnoremap <buffer> cc :call <SID>setIssueState(0)<cr>
-	nnoremap <buffer> co :call <SID>setIssueState(1)<cr>
 
 	normal ggdd
 	normal 0ll
@@ -113,6 +110,10 @@ command! -nargs=0 Gissues call s:showGithubIssues()
 command! -nargs=0 Giadd call s:showIssue("new")
 command! -nargs=* Giedit call s:showIssue(<f-args>)
 command! -nargs=0 Giupdate call s:updateIssue()
+
+autocmd BufReadCmd gissues:/*/[0-9]* call s:updateIssue()
+autocmd BufReadCmd gissues:/*/[0-9]* nnoremap <buffer> cc :call <SID>setIssueState(0)<cr>
+autocmd BufReadCmd gissues:/*/[0-9]* nnoremap <buffer> co :call <SID>setIssueState(1)<cr>
 
 if !exists("g:github_issues_no_omni")
 	" Neocomplete support
