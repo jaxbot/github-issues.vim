@@ -130,13 +130,16 @@ def populateOmniComplete():
 def addToOmni(toadd):
 	vim.command("call add(b:omni_options, "+json.dumps(toadd)+")")
 
-def showIssue(number, inplace = False):
+def showIssueBuffer(number):
+	repourl = getRepoURI()
+	vim.command("silent new")
+	vim.command("edit " + "gissues:/" + repourl + "/" + number)
+
+def showIssue():
 	repourl = getRepoURI()
 
-	if not inplace:
-		vim.command("silent new")
-		vim.command("edit " + "gissues:/" + repourl + "/" + number)
-
+	parens = vim.current.buffer.name.split("/")
+	number = parens[3]
 	b = vim.current.buffer
 
 	if number == "new":
@@ -198,6 +201,10 @@ def showIssue(number, inplace = False):
 		b.append("")
 	
 	vim.command("set ft=markdown")
+	vim.command("normal ggdd")
+
+	# mark it as "saved"
+	vim.command("setlocal nomodified")
 
 def saveGissue():
 	parens = vim.current.buffer.name.split("/")
@@ -277,20 +284,7 @@ def saveGissue():
 		urllib2.urlopen(request)
 
 	if commentmode == 3 or number == "new":
-		updateGissue()
-
-	# mark it as "saved"
-	vim.command("setlocal nomodified")
-
-def updateGissue(scrolldown = True):
-	parens = vim.current.buffer.name.split("/")
-
-	vim.command("normal ggdG")
-	showIssue(parens[3], True)
-	vim.command("normal ggdd")
-
-	if scrolldown:
-		vim.command("normal G")
+		showIssue()
 
 	# mark it as "saved"
 	vim.command("setlocal nomodified")
@@ -302,7 +296,7 @@ def setIssueData(issue):
 	request.get_method = lambda: 'PATCH'
 	urllib2.urlopen(request)
 
-	updateGissue(False)
+	showIssue()
 
 def getLabels():
 	global repo_labels

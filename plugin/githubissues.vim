@@ -39,16 +39,12 @@ endfunction
 function! s:showIssue(id)
 	call ghissues#init()
 
-	python showIssue(vim.eval("a:id"))
+	python showIssueBuffer(vim.eval("a:id"))
 
 	call s:setupOmni()
 
-	autocmd BufWriteCmd <buffer> call s:saveIssue()
-
-	normal ggdd
-	normal 0ll
-
 	if a:id == "new"
+		normal 0ll
 		startinsert
 	endif
 
@@ -61,7 +57,7 @@ endfunction
 
 function! s:updateIssue()
 	call ghissues#init()
-	python updateGissue()
+	python showIssue()
 	silent execute 'doautocmd BufReadPost '.expand('%:p')
 endfunction
 
@@ -114,6 +110,7 @@ command! -nargs=0 Giupdate call s:updateIssue()
 autocmd BufReadCmd gissues:/*/[0-9]* call s:updateIssue()
 autocmd BufReadCmd gissues:/*/[0-9]* nnoremap <buffer> cc :call <SID>setIssueState(0)<cr>
 autocmd BufReadCmd gissues:/*/[0-9]* nnoremap <buffer> co :call <SID>setIssueState(1)<cr>
+autocmd BufWriteCmd gissues:/*/[0-9]* <buffer> call s:saveIssue()
 
 if !exists("g:github_issues_no_omni")
 	" Neocomplete support
