@@ -110,7 +110,7 @@ command! -nargs=0 Giupdate call s:updateIssue()
 autocmd BufReadCmd gissues:/*/[0-9]* call s:updateIssue()
 autocmd BufReadCmd gissues:/*/[0-9]* nnoremap <buffer> cc :call <SID>setIssueState(0)<cr>
 autocmd BufReadCmd gissues:/*/[0-9]* nnoremap <buffer> co :call <SID>setIssueState(1)<cr>
-autocmd BufWriteCmd gissues:/*/[0-9]* <buffer> call s:saveIssue()
+autocmd BufWriteCmd gissues:/*/[0-9]* call s:saveIssue()
 
 if !exists("g:github_issues_no_omni")
 	" Neocomplete support
