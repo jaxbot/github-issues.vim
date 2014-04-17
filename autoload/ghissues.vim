@@ -49,7 +49,7 @@ def getRepoURI():
 			return s[0]
 	return ""
 
-def showIssueList():
+def showIssueList(labels):
 	repourl = getRepoURI()
 
 	vim.command("silent new")
@@ -63,7 +63,7 @@ def showIssueList():
 
 	b = vim.current.buffer
 
-	issues = getIssueList(repourl)
+	issues = getIssueList(repourl, labels)
 
 	# its an array, so dump these into the current (issues) buffer
 	for issue in issues:
@@ -79,7 +79,7 @@ def showIssueList():
 	# append leaves an unwanted beginning line. delete it.
 	vim.command("1delete _")
 	
-def getIssueList(repourl):
+def getIssueList(repourl, labels):
 	global cache_count, github_datacache
 	
 	if github_datacache.get(repourl,'') == '' or len(github_datacache[repourl]) < 1 or cache_count > 3:
@@ -94,7 +94,10 @@ def getIssueList(repourl):
 		pages_loaded = 0
 
 		# load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
-		url = ghUrl("/issues")
+		if labels:
+			url = ghUrl("/issues?labels="+labels)
+		else:
+			url = ghUrl("/issues")
 		try:
 			github_datacache[repourl] = []
 			while pages_loaded < int(vim.eval("g:github_issues_max_pages")):
@@ -121,7 +124,7 @@ def getIssueList(repourl):
 	return github_datacache[repourl]
 
 def populateOmniComplete():
-	issues = getIssueList(getRepoURI())
+	issues = getIssueList(getRepoURI(), 0)
 	for issue in issues:
 		addToOmni(str(issue["number"]) + " " + issue["title"])
 	for label in getLabels():
@@ -339,7 +342,11 @@ def ghUrl(endpoint):
 	params = ""
 	token = vim.eval("g:github_access_token")
 	if token:
-		params = "?access_token=" + token
+		if "?" in endpoint:
+			params = "&"
+		else:
+			params = "?"
+		params += "access_token=" + token
 	return vim.eval("g:github_api_url") + "repos/" + urllib2.quote(getRepoURI()) + endpoint + params
 EOF
 

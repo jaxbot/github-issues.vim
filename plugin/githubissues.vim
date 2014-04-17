@@ -21,10 +21,14 @@ if !has("python")
 	finish
 endif
 
-function! s:showGithubIssues() 
+function! s:showGithubIssues(...) 
 	call ghissues#init()
 
-	python showIssueList()
+	if a:0 < 1
+		python showIssueList(0)
+	else
+		python showIssueList(vim.eval("a:1"))
+	endif
 	
 	" its not a real file
 	set buftype=nofile
@@ -102,7 +106,7 @@ function! s:setupOmni()
 endfunction
 
 " define the :Gissues command
-command! -nargs=0 Gissues call s:showGithubIssues()
+command! -nargs=* Gissues call s:showGithubIssues(<f-args>)
 command! -nargs=0 Giadd call s:showIssue("new")
 command! -nargs=* Giedit call s:showIssue(<f-args>)
 command! -nargs=0 Giupdate call s:updateIssue()
