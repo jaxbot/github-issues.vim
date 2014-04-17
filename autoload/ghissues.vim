@@ -52,12 +52,11 @@ def getRepoURI():
 def showIssueList(labels):
 	repourl = getRepoURI()
 
-	vim.command("silent new")
-
 	if repourl == "":
-		vim.current.buffer[:] = ["Failed to find a suitable Github repository URL, sorry!"]
+		print "Failed to find a suitable Github repository URL, sorry!"
 		return
-	
+
+	vim.command("silent new")
 	vim.command("edit " + "gissues/" + repourl + "/issues")
 	vim.command("normal ggdG")
 
@@ -196,17 +195,19 @@ def showIssue():
 
 		if len(events) > 0:
 			for event in events:
-				print event
 				b.append("")
 				if "user" in event:
-					event["actor"] = event["user"]
+					user = event["user"]["login"]
+				else:
+					user = event["actor"]["login"]
 
-				b.append(event["actor"]["login"].encode(vim.eval("&encoding")) + "(" + event["created_at"] + ")")
+				b.append(user.encode(vim.eval("&encoding")) + "(" + event["created_at"] + ")")
+
 				if "body" in event:
 					b.append(event["body"].encode(vim.eval("&encoding")).split("\n"))
 				else:
 					eventstr = event["event"].encode(vim.eval("&encoding"))
-					if "commit_id" in event:
+					if "commit_id" in event and event["commit_id"]:
 						eventstr += " from " + event["commit_id"]
 					b.append(eventstr)
 	
