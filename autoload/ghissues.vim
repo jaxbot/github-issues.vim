@@ -59,6 +59,8 @@ def showIssueList():
 		return
 	
 	vim.command("edit " + "gissues:/" + repourl + "/issues")
+	vim.command("normal ggdG")
+
 	b = vim.current.buffer
 
 	issues = getIssueList(repourl)
@@ -79,7 +81,7 @@ def showIssueList():
 	
 def getIssueList(repourl):
 	global cache_count, github_datacache
-
+	
 	if github_datacache.get(repourl,'') == '' or len(github_datacache[repourl]) < 1 or cache_count > 3:
 		upstream_issues = vim.eval("g:github_upstream_issues")
 		if upstream_issues == 1:
@@ -141,6 +143,7 @@ def showIssue():
 	parens = vim.current.buffer.name.split("/")
 	number = parens[3]
 	b = vim.current.buffer
+	vim.command("normal ggdG")
 
 	if number == "new":
 		# new issue
