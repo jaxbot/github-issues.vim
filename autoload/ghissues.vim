@@ -179,10 +179,7 @@ def showIssue():
 			labelstr += label["name"] + ", "
 	b.append("## Labels: " + labelstr)
 
-	highlightColoredLabels(getLabels())
-
 	b.append(issue["body"].encode(vim.eval("&encoding")).split("\n"))
-
 
 	if number != "new":
 		b.append("## Comments")
@@ -223,6 +220,8 @@ def showIssue():
 	
 	vim.command("set ft=markdown")
 	vim.command("normal ggdd")
+
+	highlightColoredLabels(getLabels())
 
 	# mark it as "saved"
 	vim.command("setlocal nomodified")
