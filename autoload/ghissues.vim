@@ -187,17 +187,32 @@ def showIssue():
 	if number != "new":
 		b.append("## Comments")
 
-		if issue["comments"] > 0:
-			url = ghUrl("/issues/" + number + "/comments")
-			data = urllib2.urlopen(url).read()
-			comments = json.loads(data)
+		url = ghUrl("/issues/" + number + "/comments")
+		data = urllib2.urlopen(url).read()
+		comments = json.loads(data)
 
-			if len(comments) > 0:
-				for comment in comments:
-					b.append("")
-					b.append(comment["user"]["login"].encode(vim.eval("&encoding")) + "(" + comment["created_at"] + ")")
-					b.append(comment["body"].encode(vim.eval("&encoding")).split("\n"))
-		
+		url = ghUrl("/issues/" + number + "/events")
+		data = urllib2.urlopen(url).read()
+		events = json.loads(data)
+
+		events = comments + events
+
+		if len(events) > 0:
+			for event in events:
+				print event
+				b.append("")
+				if "user" in event:
+					event["actor"] = event["user"]
+
+				b.append(event["actor"]["login"].encode(vim.eval("&encoding")) + "(" + event["created_at"] + ")")
+				if "body" in event:
+					b.append(event["body"].encode(vim.eval("&encoding")).split("\n"))
+				else:
+					eventstr = event["event"].encode(vim.eval("&encoding"))
+					if "commit_id" in event:
+						eventstr += " from " + event["commit_id"]
+					b.append(eventstr)
+	
 		else:
 			b.append("")
 			b.append("No comments.")
@@ -337,6 +352,8 @@ def highlightColoredLabels(labels):
 	for label in labels:
 		vim.command("hi issueColor" + label["name"] + " guifg=#fff guibg=#" + label["color"])
 		vim.command("let m = matchadd(\"issueColor" + label["name"] + "\", \"" + label["name"] + "\")")
+
+	vim.command("let m = matchadd(\"Constant\", \"[A-Za-z0-9]\\\\{40}\")")
 
 def ghUrl(endpoint):
 	params = ""
