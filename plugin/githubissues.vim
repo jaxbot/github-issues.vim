@@ -105,16 +105,24 @@ function! s:setupOmni()
 	python populateOmniComplete()
 endfunction
 
+function! s:handleEnter()
+	if len(expand("<cword>")) == 40
+		echo expand("<cword>")
+		execute ":Gedit " . expand("<cword>")
+	endif
+endfunction
+
 " define the :Gissues command
 command! -nargs=* Gissues call s:showGithubIssues(<f-args>)
 command! -nargs=0 Giadd call s:showIssue("new")
 command! -nargs=* Giedit call s:showIssue(<f-args>)
 command! -nargs=0 Giupdate call s:updateIssue()
 
-autocmd BufReadCmd gissues:/*/[0-9]* call s:updateIssue()
-autocmd BufReadCmd gissues:/*/[0-9]* nnoremap <buffer> cc :call <SID>setIssueState(0)<cr>
-autocmd BufReadCmd gissues:/*/[0-9]* nnoremap <buffer> co :call <SID>setIssueState(1)<cr>
-autocmd BufWriteCmd gissues:/*/[0-9]* call s:saveIssue()
+autocmd BufReadCmd gissues/*/[0-9]* call s:updateIssue()
+autocmd BufReadCmd gissues/*/[0-9]* nnoremap <buffer> cc :call <SID>setIssueState(0)<cr>
+autocmd BufReadCmd gissues/*/[0-9]* nnoremap <buffer> co :call <SID>setIssueState(1)<cr>
+autocmd BufReadCmd gissues/*/[0-9]* nnoremap <buffer> <cr> :call <SID>handleEnter()<cr>
+autocmd BufWriteCmd gissues/*/[0-9]* call s:saveIssue()
 
 if !exists("g:github_issues_no_omni")
 	" Neocomplete support

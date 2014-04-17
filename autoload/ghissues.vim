@@ -24,7 +24,7 @@ repo_collaborators = {}
 def getRepoURI():
 	global github_repos
 
-	if "gissues:" in vim.current.buffer.name:
+	if "gissues/" in vim.current.buffer.name:
 		s = vim.current.buffer.name.split("/")
 		return s[1] + "/" + s[2]
 
@@ -58,7 +58,7 @@ def showIssueList(labels):
 		vim.current.buffer[:] = ["Failed to find a suitable Github repository URL, sorry!"]
 		return
 	
-	vim.command("edit " + "gissues:/" + repourl + "/issues")
+	vim.command("edit " + "gissues/" + repourl + "/issues")
 	vim.command("normal ggdG")
 
 	b = vim.current.buffer
@@ -138,7 +138,7 @@ def addToOmni(toadd):
 def showIssueBuffer(number):
 	repourl = getRepoURI()
 	vim.command("silent new")
-	vim.command("edit " + "gissues:/" + repourl + "/" + number)
+	vim.command("edit gissues/" + repourl + "/" + number)
 
 def showIssue():
 	repourl = getRepoURI()
