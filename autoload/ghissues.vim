@@ -219,7 +219,7 @@ def showIssue():
 		b.append("## Add a comment")
 		b.append("")
 	
-	vim.command("set ft=markdown")
+	vim.command("set ft=gfimarkdown")
 	vim.command("normal ggdd")
 
 	highlightColoredLabels(getLabels())
