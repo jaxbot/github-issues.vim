@@ -76,6 +76,10 @@ syn region markdownGHCodeBlock matchgroup=markdownCodeDelimiter start="^\s*$\n\s
 
 syn match markdownEscape "\\[][\\`*_{}()#+.!-]"
 
+" github-issues.vim stuff:
+syn match Constant "[A-Za-z0-9]\{40}"
+syn match Constant "\#[0-9]\+"
+
 " Copying rst's method of using literal strings
 hi def link markdownGHCodeBlock           String
 hi def link markdownCodeBlock             String
@@ -110,9 +114,9 @@ hi def link markdownCodeDelimiter         Delimiter
 
 hi def link markdownEscape                Special
 
-let b:current_syntax = "ghmarkdown"
+let b:current_syntax = "gfimarkdown"
 
-if main_syntax ==# 'ghmarkdown'
+if main_syntax ==# 'gfimarkdown'
   unlet main_syntax
 endif
 " vim:set sw=2:

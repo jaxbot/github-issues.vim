@@ -353,8 +353,6 @@ def highlightColoredLabels(labels):
 		vim.command("hi issueColor" + label["name"] + " guifg=#fff guibg=#" + label["color"])
 		vim.command("let m = matchadd(\"issueColor" + label["name"] + "\", \"" + label["name"] + "\")")
 
-	vim.command("let m = matchadd(\"Constant\", \"[A-Za-z0-9]\\\\{40}\")")
-
 def ghUrl(endpoint):
 	params = ""
 	token = vim.eval("g:github_access_token")
