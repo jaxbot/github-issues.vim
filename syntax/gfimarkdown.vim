@@ -77,7 +77,9 @@ syn region markdownGHCodeBlock matchgroup=markdownCodeDelimiter start="^\s*$\n\s
 syn match markdownEscape "\\[][\\`*_{}()#+.!-]"
 
 " github-issues.vim stuff:
+" commit hash
 syn match Constant "[A-Za-z0-9]\{40}"
+" issue number
 syn match Constant "\#[0-9]\+"
 
 " Copying rst's method of using literal strings
