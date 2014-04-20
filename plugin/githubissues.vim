@@ -118,10 +118,10 @@ command! -nargs=0 Giadd call s:showIssue("new")
 command! -nargs=* Giedit call s:showIssue(<f-args>)
 command! -nargs=0 Giupdate call s:updateIssue()
 
-autocmd BufReadCmd gissues/*/[0-9a-z]* call s:updateIssue()
-autocmd BufReadCmd gissues/*/[0-9a-z]* nnoremap <buffer> cc :call <SID>setIssueState(0)<cr>
-autocmd BufReadCmd gissues/*/[0-9a-z]* nnoremap <buffer> co :call <SID>setIssueState(1)<cr>
-autocmd BufReadCmd gissues/*/[0-9a-z]* nnoremap <buffer> <cr> :call <SID>handleEnter()<cr>
+autocmd BufReadCmd gissues/*/\([0-9]*\|new\) call s:updateIssue()
+autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <buffer> cc :call <SID>setIssueState(0)<cr>
+autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <buffer> co :call <SID>setIssueState(1)<cr>
+autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <buffer> <cr> :call <SID>handleEnter()<cr>
 autocmd BufWriteCmd gissues/*/[0-9a-z]* call s:saveIssue()
 
 if !exists("g:github_issues_no_omni")

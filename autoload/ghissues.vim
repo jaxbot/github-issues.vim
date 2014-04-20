@@ -71,9 +71,9 @@ def showIssueList(labels):
 		for label in issue["labels"]:
 			issuestr += label["name"] + " "
 
-		highlightColoredLabels(getLabels())
-
 		b.append(issuestr.encode(vim.eval("&encoding")))
+
+	highlightColoredLabels(getLabels())
 
 	# append leaves an unwanted beginning line. delete it.
 	vim.command("1delete _")
