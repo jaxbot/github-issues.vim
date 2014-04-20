@@ -355,8 +355,8 @@ def highlightColoredLabels(labels):
 	labels.append({ 'name': 'open', 'color': '00aa00'})
 
 	for label in labels:
-		vim.command("hi issueColor" + label["name"] + " guifg=#fff guibg=#" + label["color"])
-		vim.command("let m = matchadd(\"issueColor" + label["name"] + "\", \"" + label["name"] + "\")")
+		vim.command("hi issueColor" + label["color"] + " guifg=#fff guibg=#" + label["color"])
+		vim.command("let m = matchadd(\"issueColor" + label["color"] + "\", \"" + label["name"] + "\")")
 
 def ghUrl(endpoint):
 	params = ""
