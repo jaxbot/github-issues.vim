@@ -183,7 +183,8 @@ def showIssue():
 			labelstr += label["name"] + ", "
 	b.append("## Labels: " + labelstr)
 
-	b.append(issue["body"].encode(vim.eval("&encoding")).split("\n"))
+	if issue["body"]:
+		b.append(issue["body"].encode(vim.eval("&encoding")).split("\n"))
 
 	if number != "new":
 		b.append("## Comments")
