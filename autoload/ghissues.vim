@@ -123,7 +123,12 @@ def getIssueList(repourl, labels):
 	return github_datacache[repourl]
 
 def populateOmniComplete():
-	issues = getIssueList(getRepoURI(), 0)
+	url = getRepoURI()
+
+	if url == "":
+		return
+
+	issues = getIssueList(url, 0)
 	for issue in issues:
 		addToOmni(str(issue["number"]) + " " + issue["title"])
 	for label in getLabels():
