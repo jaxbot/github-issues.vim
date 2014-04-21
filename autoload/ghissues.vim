@@ -78,7 +78,7 @@ def showIssueList(labels):
 	# append leaves an unwanted beginning line. delete it.
 	vim.command("1delete _")
 	
-def getIssueList(repourl, labels):
+def getIssueList(repourl, query):
 	global cache_count, github_datacache
 	
 	if github_datacache.get(repourl,'') == '' or len(github_datacache[repourl]) < 1 or cache_count > 3:
@@ -92,9 +92,19 @@ def getIssueList(repourl, labels):
 
 		pages_loaded = 0
 
+		# non-string args correspond to vanilla issues request 
+		# strings default to label unless they correspond to a state
+		query_type = False
+		if isinstance(query, basestring):
+			query_type = "label"
+		if query in ["open", "closed", "all"]:
+			query_type = "state"
+
 		# load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
-		if labels:
-			url = ghUrl("/issues?labels="+labels)
+		if query_type == "state":
+			url = ghUrl("/issues?state="+query)
+		elif query_type == "label":
+			url = ghUrl("/issues?labels="+query)
 		else:
 			url = ghUrl("/issues")
 		try:
