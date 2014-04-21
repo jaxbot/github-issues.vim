@@ -1,14 +1,29 @@
 " core is written in Python for easy JSON/HTTP support
-" do not continue if Vim is not compiled with Python2.7 support
-if !has("python") || exists("g:github_issues_pyloaded")
+" do not continue if Vim is not compiled with Python support
+if (!has("python") && !has("python3")) || exists("g:github_issues_pyloaded")
 	finish
 endif
 
+if has("python")
+	command! -nargs=1 Python2or3 python <args>
+else
+	command! -nargs=1 Python2or3 python3 <args>
+endif
+
+if has("python")
 python <<EOF
+import urllib2
+EOF
+else
+python3 <<EOF
+import urllib.request as urllib2
+EOF
+endif
+
+Python2or3 <<EOF
 import os
 import vim
 import json
-import urllib2
 import re
 
 # dictionary of github repo URLs for caching
@@ -53,7 +68,7 @@ def showIssueList(labels):
 	repourl = getRepoURI()
 
 	if repourl == "":
-		print "Failed to find a suitable Github repository URL, sorry!"
+		print("Failed to find a suitable Github repository URL, sorry!")
 		return
 
 	vim.command("silent new")
