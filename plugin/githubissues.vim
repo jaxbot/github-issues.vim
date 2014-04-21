@@ -15,19 +15,25 @@ endif
 
 let g:github_issues_loaded = 1
 
-" do not continue if Vim is not compiled with Python2.7 support
-if !has("python")
+" do not continue if Vim is not compiled with Python support
+if !has("python") && !has("python3")
 	echo "github-issues.vim requires Python support, sorry :c"
 	finish
+endif
+
+if has("python")
+	command! -nargs=1 Python2or3 python <args>
+else
+	command! -nargs=1 Python2or3 python3 <args>
 endif
 
 function! s:showGithubIssues(...) 
 	call ghissues#init()
 
 	if a:0 < 1
-		python showIssueList(0)
+		Python2or3 showIssueList(0)
 	else
-		python showIssueList(vim.eval("a:1"))
+		Python2or3 showIssueList(vim.eval("a:1"))
 	endif
 	
 	" its not a real file
@@ -43,7 +49,7 @@ endfunction
 function! s:showIssue(id)
 	call ghissues#init()
 
-	python showIssueBuffer(vim.eval("a:id"))
+	Python2or3 showIssueBuffer(vim.eval("a:id"))
 
 	call s:setupOmni()
 
@@ -56,18 +62,18 @@ function! s:showIssue(id)
 endfunction
 
 function! s:setIssueState(state)
-	python setIssueData({ 'state': 'open' if vim.eval("a:state") == '1' else 'closed' })
+	Python2or3 setIssueData({ 'state': 'open' if vim.eval("a:state") == '1' else 'closed' })
 endfunction
 
 function! s:updateIssue()
 	call ghissues#init()
-	python showIssue()
+	Python2or3 showIssue()
 	silent execute 'doautocmd BufReadPost '.expand('%:p')
 endfunction
 
 function! s:saveIssue()
 	call ghissues#init()
-	python saveGissue()
+	Python2or3 saveGissue()
 	silent execute 'doautocmd BufWritePost '.expand('%:p')
 endfunction
 
@@ -102,7 +108,7 @@ function! s:setupOmni()
 	" empty array will store the menu items
 	let b:omni_options = []
 
-	python populateOmniComplete()
+	Python2or3 populateOmniComplete()
 endfunction
 
 function! s:handleEnter()
