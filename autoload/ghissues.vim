@@ -49,7 +49,7 @@ def getRepoURI():
 			return s[0]
 	return ""
 
-def showIssueList(labels):
+def showIssueList(labels, ignore_cache = False):
 	repourl = getRepoURI()
 
 	if repourl == "":
@@ -62,7 +62,7 @@ def showIssueList(labels):
 
 	b = vim.current.buffer
 
-	issues = getIssueList(repourl, labels)
+	issues = getIssueList(repourl, labels, ignore_cache)
 
 	# its an array, so dump these into the current (issues) buffer
 	for issue in issues:
@@ -78,10 +78,10 @@ def showIssueList(labels):
 	# append leaves an unwanted beginning line. delete it.
 	vim.command("1delete _")
 	
-def getIssueList(repourl, query):
+def getIssueList(repourl, query, ignore_cache = False):
 	global cache_count, github_datacache
 	
-	if github_datacache.get(repourl,'') == '' or len(github_datacache[repourl]) < 1 or cache_count > 3:
+	if ignore_cache or github_datacache.get(repourl,'') == '' or len(github_datacache[repourl]) < 1 or cache_count > 3:
 		upstream_issues = vim.eval("g:github_upstream_issues")
 		if upstream_issues == 1:
 			# try to get from what repo forked
