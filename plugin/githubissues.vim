@@ -25,9 +25,9 @@ function! s:showGithubIssues(...)
 	call ghissues#init()
 
 	if a:0 < 1
-		python showIssueList(0)
+		python showIssueList(0, "True")
 	else
-		python showIssueList(vim.eval("a:1"))
+		python showIssueList(vim.eval("a:1"), "True")
 	endif
 	
 	" its not a real file
