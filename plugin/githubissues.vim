@@ -158,6 +158,6 @@ endif
 
 " force issues and what not to stay in the same window
 if !exists("g:github_same_window")
-  let g:github_same_window = 0
+	let g:github_same_window = 0
 endif
 

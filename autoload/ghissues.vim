@@ -58,7 +58,6 @@ def showIssueList(labels, ignore_cache = False):
 
 	if not vim.eval("g:github_same_window") == "1":
 		vim.command("silent new")
-
 	vim.command("edit " + "gissues/" + repourl + "/issues")
 	vim.command("normal ggdG")
 
@@ -153,7 +152,8 @@ def addToOmni(toadd):
 
 def showIssueBuffer(number):
 	repourl = getRepoURI()
-	vim.command("silent new")
+	if not vim.eval("g:github_same_window") == "1":
+		vim.command("silent new")
 	vim.command("edit gissues/" + repourl + "/" + number)
 
 def showIssue():
