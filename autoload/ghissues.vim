@@ -56,9 +56,9 @@ def showIssueList(labels, ignore_cache = False):
 		print "Failed to find a suitable Github repository URL, sorry!"
 		return
 
-  same_window = vim.eval("g:github_issues_same_window")
-  if not same_window:
-    vim.command("silent new")
+	if not vim.eval("g:github_same_window") == "1":
+		vim.command("silent new")
+
 	vim.command("edit " + "gissues/" + repourl + "/issues")
 	vim.command("normal ggdG")
 
