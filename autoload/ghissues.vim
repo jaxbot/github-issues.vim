@@ -56,7 +56,8 @@ def showIssueList(labels, ignore_cache = False):
 		print "Failed to find a suitable Github repository URL, sorry!"
 		return
 
-	vim.command("silent new")
+	if not vim.eval("g:github_same_window") == "1":
+		vim.command("silent new")
 	vim.command("edit " + "gissues/" + repourl + "/issues")
 	vim.command("normal ggdG")
 
@@ -151,7 +152,8 @@ def addToOmni(toadd):
 
 def showIssueBuffer(number):
 	repourl = getRepoURI()
-	vim.command("silent new")
+	if not vim.eval("g:github_same_window") == "1":
+		vim.command("silent new")
 	vim.command("edit gissues/" + repourl + "/" + number)
 
 def showIssue():
