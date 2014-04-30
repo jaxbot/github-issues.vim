@@ -187,7 +187,7 @@ def showIssue():
 	b.append("## State: " + issue["state"])
 
 	if issue["assignee"]:
-		b.append("## Assignee: " + issue["assignee"].encode(vim.eval("&encoding")))
+		b.append("## Assignee: " + issue["assignee"]["login"].encode(vim.eval("&encoding")))
 
 	labelstr = ""
 	if issue["labels"]:
