@@ -294,7 +294,7 @@ def saveGissue():
 			continue
 
 		assignee = line.split("## Assignee: ")
-		if len(assignee) > 1:
+		if len(assignee) > 1 and assignee[1]:
 			issue['assignee'] = assignee[1]
 			continue
 
