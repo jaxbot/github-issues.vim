@@ -185,9 +185,10 @@ def showIssue():
 		b.append("## Reported By: " + issue["user"]["login"].encode(vim.eval("&encoding")))
 
 	b.append("## State: " + issue["state"])
-
-	if issue["assignee"]:
+	if issue['assignee']:
 		b.append("## Assignee: " + issue["assignee"]["login"].encode(vim.eval("&encoding")))
+	elif number == "new":
+		b.append("## Assignee: ")
 
 	labelstr = ""
 	if issue["labels"]:
