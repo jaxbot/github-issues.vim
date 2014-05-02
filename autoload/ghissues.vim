@@ -86,9 +86,8 @@ def getIssueList(repourl, query, ignore_cache = False):
 		upstream_issues = vim.eval("g:github_upstream_issues")
 		if upstream_issues == 1:
 			# try to get from what repo forked
-			data = urllib2.urlopen(ghUrl("/")).read()
-			repoinfo = json.loads(data)
-			if repoinfo["fork"]:
+			repoinfo = ghApi("/")
+			if repoinfo and repoinfo["fork"]:
 				pullGithubIssueList(repoinfo["source"]["full_name"])
 
 		pages_loaded = 0
@@ -142,10 +141,14 @@ def populateOmniComplete():
 	issues = getIssueList(url, 0)
 	for issue in issues:
 		addToOmni(str(issue["number"]) + " " + issue["title"])
-	for label in getLabels():
-		addToOmni(str(label["name"]))
-	for collaborator in getCollaborators():
-		addToOmni(str(collaborator["login"]))
+	labels = getLabels()
+	if labels:
+		for label in labels:
+			addToOmni(str(label["name"]))
+	collaborators = getCollaborators()
+	if collaborators:
+		for collaborator in collaborators:
+			addToOmni(str(collaborator["login"]))
 
 def addToOmni(toadd):
 	vim.command("call add(b:omni_options, "+json.dumps(toadd)+")")
@@ -345,8 +348,7 @@ def getLabels():
 	if repo_labels.get(rpUrl,''):
 		return repo_labels[rpUrl]
 
-	url = ghUrl("/labels")
-	repo_labels[rpUrl] = json.loads(urllib2.urlopen(url).read())
+	repo_labels[rpUrl] = ghApi("/labels")
 
 	return repo_labels[rpUrl]
 
@@ -358,18 +360,27 @@ def getCollaborators():
 	if repo_collaborators.get(rpUrl,''):
 		return repo_collaborators[rpUrl]
 
-	url = ghUrl("/collaborators")
-	repo_collaborators[rpUrl] = json.loads(urllib2.urlopen(url).read())
+	repo_collaborators[rpUrl] = ghApi("/collaborators")
 
 	return repo_collaborators[rpUrl]
 
 def highlightColoredLabels(labels):
+	if not labels:
+		labels = []
+
 	labels.append({ 'name': 'closed', 'color': 'ff0000'})
 	labels.append({ 'name': 'open', 'color': '00aa00'})
 
 	for label in labels:
 		vim.command("hi issueColor" + label["color"] + " guifg=#fff guibg=#" + label["color"])
 		vim.command("let m = matchadd(\"issueColor" + label["color"] + "\", \"" + label["name"] + "\")")
+
+def ghApi(endpoint):
+	try:
+		req = urllib2.urlopen(ghUrl(req))
+		return json.loads(req.read())
+	except:
+		return None
 
 def ghUrl(endpoint):
 	params = ""
