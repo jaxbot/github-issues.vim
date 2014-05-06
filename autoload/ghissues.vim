@@ -31,6 +31,9 @@ def getRepoURI():
   # get the directory the current file is in
   filepath = vim.eval("shellescape(expand('%:p:h'))")
 
+  if ".git" in filepath:
+    filepath = filepath.replace(".git", "")
+
   # cache the github repo for performance
   if github_repos.get(filepath,'') != '':
     return github_repos[filepath]
@@ -150,8 +153,8 @@ def populateOmniComplete():
     for collaborator in collaborators:
       addToOmni(str(collaborator["login"]))
 
-def addToOmni(toadd):
-  vim.command("call add(b:omni_options, "+json.dumps(toadd)+")")
+def addToOmni(keyword):
+  vim.command("call add(b:omni_options, "+json.dumps(keyword)+")")
 
 def showIssueBuffer(number):
   repourl = getRepoURI()
