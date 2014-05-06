@@ -381,7 +381,7 @@ def highlightColoredLabels(labels):
 
 def ghApi(endpoint):
   try:
-    req = urllib2.urlopen(ghUrl(req))
+    req = urllib2.urlopen(ghUrl(req), timeout = 5)
     return json.loads(req.read())
   except:
     return None
