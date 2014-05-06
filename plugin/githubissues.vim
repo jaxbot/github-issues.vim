@@ -24,12 +24,17 @@ endif
 function! s:showGithubIssues(...) 
   call ghissues#init()
 
+  let github_failed = 0
   if a:0 < 1
     python showIssueList(0, "True")
   else
     python showIssueList(vim.eval("a:1"), "True")
   endif
-  
+
+  if github_failed == "1"
+    return
+  endif
+
   " its not a real file
   set buftype=nofile
 
