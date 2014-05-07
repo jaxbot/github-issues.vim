@@ -57,6 +57,7 @@ def showIssueList(labels, ignore_cache = False):
 
   if repourl == "":
     print "Failed to find a suitable Github repository URL, sorry!"
+    vim.command("let github_failed = " + str("1"))
     return
 
   upstream_issues = int(vim.eval("g:github_upstream_issues"))
