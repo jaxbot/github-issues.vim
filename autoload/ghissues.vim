@@ -25,8 +25,8 @@ def getRepoURI():
   global github_repos
 
   if "gissues" in vim.current.buffer.name:
-    s = vim.current.buffer.name.replace("\\", "/").split("/")
-    return s[1] + "/" + s[2]
+    s = getFilenameParens()
+    return s[0] + "/" + s[1]
 
   # get the directory the current file is in
   filepath = vim.eval("shellescape(expand('%:p:h'))")
@@ -166,8 +166,8 @@ def showIssueBuffer(number):
 def showIssue():
   repourl = getRepoURI()
 
-  parens = vim.current.buffer.name.replace("\\", "/").split("/")
-  number = parens[3]
+  parens = getFilenameParens()
+  number = parens[2]
   b = vim.current.buffer
   vim.command("normal ggdG")
 
@@ -254,8 +254,8 @@ def showIssue():
   vim.command("setlocal nomodified")
 
 def saveGissue():
-  parens = vim.current.buffer.name.replace("\\", "/").split("/")
-  number = parens[3]
+  parens = getFilenameParens()
+  number = parens[2]
 
   issue = {
     'title': '',
@@ -321,8 +321,8 @@ def saveGissue():
       if e.code == 410:
         print "Error: Github returned code 410. Do you have a github_access_token defined?"
 		
-    parens[3] = str(data['number'])
-    vim.current.buffer.name = parens[0] + "/" + parens[1] + "/" + parens[2] + "/" + parens[3]
+    parens[2] = str(data['number'])
+    vim.current.buffer.name = "gissues/" + parens[0] + "/" + parens[1] + "/" + parens[2]
   else:
     url = ghUrl("/issues/" + number)
     request = urllib2.Request(url, json.dumps(issue))
@@ -330,7 +330,7 @@ def saveGissue():
     urllib2.urlopen(request)
   
   if commentmode == 3:
-    url = ghUrl("/issues/" + parens[3] + "/comments")
+    url = ghUrl("/issues/" + parens[2] + "/comments")
     data = json.dumps({ 'body': comment })
     request = urllib2.Request(url, data)
     urllib2.urlopen(request)
@@ -342,8 +342,8 @@ def saveGissue():
   vim.command("setlocal nomodified")
 
 def setIssueData(issue):
-  parens = vim.current.buffer.name.replace("\\", "/").split("/")
-  url = ghUrl("/issues/" + parens[3])
+  parens = getFilenameParens()
+  url = ghUrl("/issues/" + parens[2])
   request = urllib2.Request(url, json.dumps(issue))
   request.get_method = lambda: 'PATCH'
   urllib2.urlopen(request)
@@ -405,6 +405,9 @@ def ghUrl(endpoint, repourl = False):
     repourl = getRepoURI()
 
   return vim.eval("g:github_api_url") + "repos/" + urllib2.quote(repourl) + endpoint + params
+
+def getFilenameParens():
+    return vim.current.buffer.name.replace("\\", "/").split("gissues/")[1].split("/")
 EOF
 
 function! ghissues#init()
