@@ -9,18 +9,21 @@ import os
 import vim
 import json
 import urllib2
-import re
 
-# dictionary of github repo URLs for caching
+# dictionaries for caching
+# repo urls on github by filepath
 github_repos = {}
-# dictionary of issue data for caching
+# issues by repourl
 github_datacache = {}
+# issue labels by repourl
+repo_labels = {}
+# repo collaborators by repourl
+repo_collaborators = {}
+
 # reset web cache after this value grows too large
 cache_count = 0
 
-repo_labels = {}
-repo_collaborators = {}
-
+# returns the Github url (i.e. jaxbot/vimfiles) for the current file
 def getRepoURI():
   global github_repos
 
@@ -52,6 +55,7 @@ def getRepoURI():
       return s[0]
   return ""
 
+# returns the repo uri, taking into account forks
 def getUpstreamRepoURI():
   repourl = getRepoURI()
   if repourl == "":
@@ -84,7 +88,7 @@ def showIssueList(labels, ignore_cache = False):
 
   # its an array, so dump these into the current (issues) buffer
   for issue in issues:
-    issuestr = str(issue["number"]) + " " + issue["title"] + " "  
+    issuestr = str(issue["number"]) + " " + issue["title"] + " "
 
     for label in issue["labels"]:
       issuestr += label["name"] + " "
@@ -95,12 +99,13 @@ def showIssueList(labels, ignore_cache = False):
 
   # append leaves an unwanted beginning line. delete it.
   vim.command("1delete _")
-  
+
+# pulls the issue array from the server
 def getIssueList(repourl, query, ignore_cache = False):
   global cache_count, github_datacache
-  
+
   if ignore_cache or github_datacache.get(repourl,'') == '' or len(github_datacache[repourl]) < 1 or cache_count > 3:
-    # non-string args correspond to vanilla issues request 
+    # non-string args correspond to vanilla issues request
     # strings default to label unless they correspond to a state
     query_type = False
     if isinstance(query, basestring):
@@ -144,6 +149,7 @@ def getIssueList(repourl, query, ignore_cache = False):
 
   return github_datacache[repourl]
 
+# adds issues, labels, and collaborators to omni dictionary
 def populateOmniComplete():
   url = getUpstreamRepoURI()
 
@@ -162,15 +168,18 @@ def populateOmniComplete():
     for collaborator in collaborators:
       addToOmni(str(collaborator["login"]))
 
+# adds <keyword> to omni dictionary. used by populateOmniComplete
 def addToOmni(keyword):
   vim.command("call add(b:omni_options, "+json.dumps(keyword)+")")
 
+# simply opens a buffer based on repourl and issue <number>
 def showIssueBuffer(number):
   repourl = getRepoURI()
   if not vim.eval("g:github_same_window") == "1":
     vim.command("silent new")
   vim.command("edit gissues/" + repourl + "/" + number)
 
+# show an issue buffer in detail
 def showIssue():
   repourl = getRepoURI()
 
@@ -244,15 +253,15 @@ def showIssue():
           if "commit_id" in event and event["commit_id"]:
             eventstr += " from " + event["commit_id"]
           b.append(eventstr)
-  
+
     else:
       b.append("")
       b.append("No comments.")
       b.append("")
-  
+
     b.append("## Add a comment")
     b.append("")
-  
+
   vim.command("set ft=gfimarkdown")
   vim.command("normal ggdd")
 
@@ -261,6 +270,7 @@ def showIssue():
   # mark it as "saved"
   vim.command("setlocal nomodified")
 
+# saves an issue and pushes it to the server
 def saveGissue():
   parens = getFilenameParens()
   number = parens[2]
@@ -275,7 +285,7 @@ def saveGissue():
   commentmode = 0
 
   comment = ""
-  
+
   for line in vim.current.buffer[1:]:
     if commentmode == 1:
       if line == "## Add a comment":
@@ -289,7 +299,7 @@ def saveGissue():
     if commentmode == 3:
       comment += line + "\n"
       continue
-      
+
     if line == "## Comments":
       commentmode = 1
       continue
@@ -319,7 +329,7 @@ def saveGissue():
 
   # remove blank entries
   issue['labels'] = filter(bool, issue['labels'])
-  
+
   if number == "new":
     url = ghUrl("/issues")
     try:
@@ -328,7 +338,7 @@ def saveGissue():
     except urllib2.HTTPError as e:
       if e.code == 410:
         print "Error: Github returned code 410. Do you have a github_access_token defined?"
-		
+
     parens[2] = str(data['number'])
     vim.current.buffer.name = "gissues/" + parens[0] + "/" + parens[1] + "/" + parens[2]
   else:
@@ -336,7 +346,7 @@ def saveGissue():
     request = urllib2.Request(url, json.dumps(issue))
     request.get_method = lambda: 'PATCH'
     urllib2.urlopen(request)
-  
+
   if commentmode == 3:
     url = ghUrl("/issues/" + parens[2] + "/comments")
     data = json.dumps({ 'body': comment })
@@ -349,6 +359,7 @@ def saveGissue():
   # mark it as "saved"
   vim.command("setlocal nomodified")
 
+# updates an issues data, such as opening/closing
 def setIssueData(issue):
   parens = getFilenameParens()
   url = ghUrl("/issues/" + parens[2])
@@ -358,11 +369,12 @@ def setIssueData(issue):
 
   showIssue()
 
+# TODO: combine these two
 def getLabels():
   global repo_labels
 
   rpUrl = getRepoURI()
-  
+
   if repo_labels.get(rpUrl,''):
     return repo_labels[rpUrl]
 
@@ -374,7 +386,7 @@ def getCollaborators():
   global repo_collaborators
 
   rpUrl = getRepoURI()
-  
+
   if repo_collaborators.get(rpUrl,''):
     return repo_collaborators[rpUrl]
 
@@ -382,6 +394,7 @@ def getCollaborators():
 
   return repo_collaborators[rpUrl]
 
+# adds labels to the match system
 def highlightColoredLabels(labels):
   if not labels:
     labels = []
@@ -393,6 +406,7 @@ def highlightColoredLabels(labels):
     vim.command("hi issueColor" + label["color"] + " guifg=#ffffff guibg=#" + label["color"])
     vim.command("let m = matchadd(\"issueColor" + label["color"] + "\", \"" + label["name"] + "\")")
 
+# queries the ghApi for <endpoint>
 def ghApi(endpoint, repourl = False):
   try:
     req = urllib2.urlopen(ghUrl(endpoint, repourl), timeout = 5)
@@ -400,6 +414,7 @@ def ghApi(endpoint, repourl = False):
   except:
     return None
 
+# generates a github URL, including access token
 def ghUrl(endpoint, repourl = False):
   params = ""
   token = vim.eval("g:github_access_token")
@@ -414,8 +429,10 @@ def ghUrl(endpoint, repourl = False):
 
   return vim.eval("g:github_api_url") + "repos/" + urllib2.quote(repourl) + endpoint + params
 
+# returns an array of parens after gissues in filename
 def getFilenameParens():
-    return vim.current.buffer.name.replace("\\", "/").split("gissues/")[1].split("/")
+  return vim.current.buffer.name.replace("\\", "/").split("gissues/")[1].split("/")
+
 EOF
 
 function! ghissues#init()
