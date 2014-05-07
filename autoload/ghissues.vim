@@ -24,8 +24,8 @@ repo_collaborators = {}
 def getRepoURI():
   global github_repos
 
-  if "gissues/" in vim.current.buffer.name:
-    s = vim.current.buffer.name.split("/")
+  if "gissues" in vim.current.buffer.name:
+    s = vim.current.buffer.name.replace("\\", "/").split("/")
     return s[1] + "/" + s[2]
 
   # get the directory the current file is in
@@ -166,7 +166,7 @@ def showIssueBuffer(number):
 def showIssue():
   repourl = getRepoURI()
 
-  parens = vim.current.buffer.name.split("/")
+  parens = vim.current.buffer.name.replace("\\", "/").split("/")
   number = parens[3]
   b = vim.current.buffer
   vim.command("normal ggdG")
@@ -254,7 +254,7 @@ def showIssue():
   vim.command("setlocal nomodified")
 
 def saveGissue():
-  parens = vim.current.buffer.name.split("/")
+  parens = vim.current.buffer.name.replace("\\", "/").split("/")
   number = parens[3]
 
   issue = {
@@ -342,7 +342,7 @@ def saveGissue():
   vim.command("setlocal nomodified")
 
 def setIssueData(issue):
-  parens = vim.current.buffer.name.split("/")
+  parens = vim.current.buffer.name.replace("\\", "/").split("/")
   url = ghUrl("/issues/" + parens[3])
   request = urllib2.Request(url, json.dumps(issue))
   request.get_method = lambda: 'PATCH'
