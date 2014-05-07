@@ -59,13 +59,19 @@ def showIssueList(labels, ignore_cache = False):
     print "Failed to find a suitable Github repository URL, sorry!"
     return
 
+  upstream_issues = int(vim.eval("g:github_upstream_issues"))
+  if upstream_issues == 1:
+    # try to get from what repo forked
+    repoinfo = ghApi("", repourl)
+    if repoinfo and repoinfo["fork"]:
+      repourl = repoinfo["source"]["full_name"]
+
   if not vim.eval("g:github_same_window") == "1":
     vim.command("silent new")
   vim.command("edit " + "gissues/" + repourl + "/issues")
   vim.command("normal ggdG")
 
   b = vim.current.buffer
-
   issues = getIssueList(repourl, labels, ignore_cache)
 
   # its an array, so dump these into the current (issues) buffer
@@ -86,13 +92,6 @@ def getIssueList(repourl, query, ignore_cache = False):
   global cache_count, github_datacache
   
   if ignore_cache or github_datacache.get(repourl,'') == '' or len(github_datacache[repourl]) < 1 or cache_count > 3:
-    upstream_issues = int(vim.eval("g:github_upstream_issues"))
-    if upstream_issues == 1:
-      # try to get from what repo forked
-      repoinfo = ghApi("", repourl)
-      if repoinfo and repoinfo["fork"]:
-        return getIssueList(repoinfo["source"]["full_name"], query)
-
     # non-string args correspond to vanilla issues request 
     # strings default to label unless they correspond to a state
     query_type = False
@@ -107,8 +106,6 @@ def getIssueList(repourl, query, ignore_cache = False):
       more_to_load = True
 
       page = 1
-
-      print repourl
 
       while more_to_load and page <= int(vim.eval("g:github_issues_max_pages")):
         if query_type == "state":
