@@ -86,14 +86,12 @@ def getIssueList(repourl, query, ignore_cache = False):
   global cache_count, github_datacache
   
   if ignore_cache or github_datacache.get(repourl,'') == '' or len(github_datacache[repourl]) < 1 or cache_count > 3:
-    upstream_issues = vim.eval("g:github_upstream_issues")
+    upstream_issues = int(vim.eval("g:github_upstream_issues"))
     if upstream_issues == 1:
       # try to get from what repo forked
-      repoinfo = ghApi("/")
+      repoinfo = ghApi("", repourl)
       if repoinfo and repoinfo["fork"]:
-        pullGithubIssueList(repoinfo["source"]["full_name"])
-
-    pages_loaded = 0
+        return getIssueList(repoinfo["source"]["full_name"], query)
 
     # non-string args correspond to vanilla issues request 
     # strings default to label unless they correspond to a state
@@ -104,26 +102,32 @@ def getIssueList(repourl, query, ignore_cache = False):
       query_type = "state"
 
     # load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
-    if query_type == "state":
-      url = ghUrl("/issues?state="+query)
-    elif query_type == "label":
-      url = ghUrl("/issues?labels="+query)
-    else:
-      url = ghUrl("/issues")
     try:
       github_datacache[repourl] = []
-      while pages_loaded < int(vim.eval("g:github_issues_max_pages")):
+      more_to_load = True
+
+      page = 1
+
+      print repourl
+
+      while more_to_load and page <= int(vim.eval("g:github_issues_max_pages")):
+        if query_type == "state":
+          url = ghUrl("/issues?state="+query+"&page=" + str(page), repourl)
+        elif query_type == "label":
+          url = ghUrl("/issues?labels="+query+"&page=" + str(page), repourl)
+        else:
+          url = ghUrl("/issues?page=" + str(page), repourl)
+
         response = urllib2.urlopen(url)
+        issuearray = json.loads(response.read())
+
         # JSON parse the API response, add page to previous pages if any
-        github_datacache[repourl] += json.loads(response.read())
-        pages_loaded += 1
-        headers = response.info() # try to find the next page
-        if 'Link' not in headers:
-          break
-        next_url_match = re.match(r"<(?P<next_url>[^>]+)>; rel=\"next\"", headers['Link'])
-        if not next_url_match:
-          break
-        url = next_url_match.group('next_url')
+        github_datacache[repourl] += issuearray
+
+        more_to_load = len(issuearray) == 30
+
+        page += 1
+
     except urllib2.URLError as e:
       github_datacache[repourl] = []
     except urllib2.HTTPError as e:
@@ -313,8 +317,13 @@ def saveGissue():
   
   if number == "new":
     url = ghUrl("/issues")
-    request = urllib2.Request(url, json.dumps(issue))
-    data = json.loads(urllib2.urlopen(request).read())
+    try:
+      request = urllib2.Request(url, json.dumps(issue))
+      data = json.loads(urllib2.urlopen(request).read())
+    except urllib2.HTTPError as e:
+      if e.code == 410:
+        print "Error: Github returned code 410. Do you have a github_access_token defined?"
+		
     parens[3] = str(data['number'])
     vim.current.buffer.name = parens[0] + "/" + parens[1] + "/" + parens[2] + "/" + parens[3]
   else:
@@ -379,14 +388,14 @@ def highlightColoredLabels(labels):
     vim.command("hi issueColor" + label["color"] + " guifg=#fff guibg=#" + label["color"])
     vim.command("let m = matchadd(\"issueColor" + label["color"] + "\", \"" + label["name"] + "\")")
 
-def ghApi(endpoint):
+def ghApi(endpoint, repourl = False):
   try:
-    req = urllib2.urlopen(ghUrl(req), timeout = 5)
+    req = urllib2.urlopen(ghUrl(endpoint, repourl), timeout = 5)
     return json.loads(req.read())
   except:
     return None
 
-def ghUrl(endpoint):
+def ghUrl(endpoint, repourl = False):
   params = ""
   token = vim.eval("g:github_access_token")
   if token:
@@ -395,7 +404,10 @@ def ghUrl(endpoint):
     else:
       params = "?"
     params += "access_token=" + token
-  return vim.eval("g:github_api_url") + "repos/" + urllib2.quote(getRepoURI()) + endpoint + params
+  if not repourl:
+    repourl = getRepoURI()
+
+  return vim.eval("g:github_api_url") + "repos/" + urllib2.quote(repourl) + endpoint + params
 EOF
 
 function! ghissues#init()
