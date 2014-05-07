@@ -52,12 +52,10 @@ def getRepoURI():
       return s[0]
   return ""
 
-def showIssueList(labels, ignore_cache = False):
+def getUpstreamRepoURI():
   repourl = getRepoURI()
-
   if repourl == "":
-    print "Failed to find a suitable Github repository URL, sorry!"
-    return
+    return ""
 
   upstream_issues = int(vim.eval("g:github_upstream_issues"))
   if upstream_issues == 1:
@@ -65,6 +63,16 @@ def showIssueList(labels, ignore_cache = False):
     repoinfo = ghApi("", repourl)
     if repoinfo and repoinfo["fork"]:
       repourl = repoinfo["source"]["full_name"]
+
+  return repourl
+
+# displays the issues in a vim buffer
+def showIssueList(labels, ignore_cache = False):
+  repourl = getUpstreamRepoURI()
+
+  if repourl == "":
+    print "Failed to find a suitable Github repository URL, sorry!"
+    return
 
   if not vim.eval("g:github_same_window") == "1":
     vim.command("silent new")
@@ -137,7 +145,7 @@ def getIssueList(repourl, query, ignore_cache = False):
   return github_datacache[repourl]
 
 def populateOmniComplete():
-  url = getRepoURI()
+  url = getUpstreamRepoURI()
 
   if url == "":
     return
