@@ -1,5 +1,5 @@
 " File:        github-issues.vim
-" Version:     3.0.0b
+" Version:     3.0.0
 " Description: Pulls github issues into Vim
 " Maintainer:  Jonathan Warner <jaxbot@gmail.com> <http://github.com/jaxbot>
 " Homepage:    http://jaxbot.me/
