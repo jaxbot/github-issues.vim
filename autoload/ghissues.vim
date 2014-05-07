@@ -414,3 +414,4 @@ function! ghissues#init()
   let g:github_issues_pyloaded = 1
 endfunction
 
+" vim: softtabstop=2 expandtab shiftwidth=2 tabstop=2
