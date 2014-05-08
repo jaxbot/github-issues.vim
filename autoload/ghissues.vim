@@ -76,6 +76,7 @@ def showIssueList(labels, ignore_cache = False):
 
   if repourl == "":
     print "Failed to find a suitable Github repository URL, sorry!"
+    vim.command("let github_failed = " + str("1"))
     return
 
   if not vim.eval("g:github_same_window") == "1":
