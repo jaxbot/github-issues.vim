@@ -51,9 +51,25 @@ g:github_upstream_issues
 
 	When this is set to 1, github-issues will use upstream issues (if repo is fork). This will require extra requests for the Github API, however.
 
+g:github_issues_urls
+
+	A dictionary of possible URLs that can be set as remotes. Defaults to ["github.com:", "https://github.com/"]
+
+g:github_issues_max_pages
+
+	How deep we search for issues; this will only request more issues if the issue count on a single page is equal to 30, which indicates that more may exist on a successive page. This is the maximum amount of pages to span; by design, these pages will not be queried if we don't hit a full page in a single request.
+
+g:github_same_window
+
+	Use the same window instead of splitting into a new one on :Gissues
+
 g:github_api_url = "https://api.github.com/"
 
 	If you use Github Enterprise, where the Github server is hosted somewhere other than Github.com, set this parameter to your API path. This is specifically for Github Enterprise and will not work for Bitbucket, Gitlab, etc.
+
+THANKS
+
+Special thanks goes to everyone who contributed their time and efforts to making this little plugin the awesomeness that it is today. Thank you!
 
 SHAMELESS PLUG
 
