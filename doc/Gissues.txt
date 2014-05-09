@@ -24,7 +24,11 @@ To show Github issues for the current repository:
 :Gissues
 ```
 
-Press enter to view more details.
+Press enter to view more details, or `i` to make a new issue.
+
+On the details page, you can press `cc` to close the issue, or `co` to open it.
+
+Pressing enter on a command will navigate to that commit.
 
 INSTALLATION
 
