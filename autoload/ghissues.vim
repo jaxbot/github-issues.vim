@@ -15,10 +15,8 @@ import urllib2
 github_repos = {}
 # issues by repourl
 github_datacache = {}
-# issue labels by repourl
-repo_labels = {}
-# repo collaborators by repourl
-repo_collaborators = {}
+# api data by repourl + / + endpoint
+api_cache = {}
 
 # reset web cache after this value grows too large
 cache_count = 0
@@ -175,14 +173,14 @@ def addToOmni(keyword):
 
 # simply opens a buffer based on repourl and issue <number>
 def showIssueBuffer(number):
-  repourl = getRepoURI()
+  repourl = getUpstreamRepoURI()
   if not vim.eval("g:github_same_window") == "1":
     vim.command("silent new")
   vim.command("edit gissues/" + repourl + "/" + number)
 
 # show an issue buffer in detail
 def showIssue():
-  repourl = getRepoURI()
+  repourl = getUpstreamRepoURI()
 
   parens = getFilenameParens()
   number = parens[2]
@@ -370,30 +368,11 @@ def setIssueData(issue):
 
   showIssue()
 
-# TODO: combine these two
 def getLabels():
-  global repo_labels
-
-  rpUrl = getRepoURI()
-
-  if repo_labels.get(rpUrl,''):
-    return repo_labels[rpUrl]
-
-  repo_labels[rpUrl] = ghApi("/labels")
-
-  return repo_labels[rpUrl]
+  return ghApi("/labels")
 
 def getCollaborators():
-  global repo_collaborators
-
-  rpUrl = getRepoURI()
-
-  if repo_collaborators.get(rpUrl,''):
-    return repo_collaborators[rpUrl]
-
-  repo_collaborators[rpUrl] = ghApi("/collaborators")
-
-  return repo_collaborators[rpUrl]
+  return ghApi("/collaborators")
 
 # adds labels to the match system
 def highlightColoredLabels(labels):
@@ -408,10 +387,20 @@ def highlightColoredLabels(labels):
     vim.command("let m = matchadd(\"issueColor" + label["color"] + "\", \"" + label["name"] + "\")")
 
 # queries the ghApi for <endpoint>
-def ghApi(endpoint, repourl = False):
+def ghApi(endpoint, repourl = False, cache = True):
+  if not repourl:
+    repourl = getUpstreamRepoURI()
+
+  if cache and api_cache.get(repourl + "/" + endpoint):
+    return api_cache[repourl + "/" + endpoint]
+
   try:
     req = urllib2.urlopen(ghUrl(endpoint, repourl), timeout = 5)
-    return json.loads(req.read())
+    data = json.loads(req.read())
+
+    api_cache[repourl + "/" + endpoint] = data
+
+    return data
   except:
     return None
 
@@ -426,7 +415,7 @@ def ghUrl(endpoint, repourl = False):
       params = "?"
     params += "access_token=" + token
   if not repourl:
-    repourl = getRepoURI()
+    repourl = getUpstreamRepoURI()
 
   return vim.eval("g:github_api_url") + "repos/" + urllib2.quote(repourl) + endpoint + params
 
