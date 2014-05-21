@@ -305,21 +305,21 @@ def saveGissue():
     if len(line.split("## Reported By:")) > 1:
       continue
 
-    state = line.split("## State: ")
+    state = line.split("## State:")
     if len(state) > 1:
-      if state[1].lower() == "closed":
+      if state[1].strip().lower() == "closed":
         issue['state'] = "closed"
       else: issue['state'] = "open"
       continue
 
-    labels = line.split("## Labels: ")
+    labels = line.split("## Labels:")
     if len(labels) > 1:
-      issue['labels'] = labels[1].split(', ')
+      issue['labels'] = labels[1].lstrip().split(', ')
       continue
 
-    assignee = line.split("## Assignee: ")
-    if len(assignee) > 1 and assignee[1]:
-      issue['assignee'] = assignee[1]
+    assignee = line.split("## Assignee:")
+    if len(assignee) > 1:
+      issue['assignee'] = assignee[1].strip()
       continue
 
     if issue['body'] != '':
