@@ -329,17 +329,26 @@ def saveGissue():
   # remove blank entries
   issue['labels'] = filter(bool, issue['labels'])
 
+  if issue['labels'] == '':
+    del issue['labels']
+  if issue['body'] == '':
+    del issue['body']
+  if issue['assignee'] == '':
+    del issue['assignee']
+
   if number == "new":
-    url = ghUrl("/issues")
     try:
+      url = ghUrl("/issues")
       request = urllib2.Request(url, json.dumps(issue))
       data = json.loads(urllib2.urlopen(request).read())
+      parens[2] = str(data['number'])
+      vim.current.buffer.name = "gissues/" + parens[0] + "/" + parens[1] + "/" + parens[2]
     except urllib2.HTTPError as e:
       if e.code == 410:
         print "Error: Github returned code 410. Do you have a github_access_token defined?"
-
-    parens[2] = str(data['number'])
-    vim.current.buffer.name = "gissues/" + parens[0] + "/" + parens[1] + "/" + parens[2]
+      else:
+        print "Unknown HTTP error:"
+        print e
   else:
     url = ghUrl("/issues/" + number)
     request = urllib2.Request(url, json.dumps(issue))
