@@ -56,6 +56,8 @@ Vim with Python 2.7, Python 2.7 installed and working with Vim.
 
 I recommend using [Pathogen](https://github.com/tpope/vim-pathogen) and Git cloning into ~/.vim/bundle. You can also just download the plugin and paste it into your plugin directory.
 
+Then **read below about adding an access token**.
+
 ### Configuration
 
 The omnicomplete and lookup features will work out of the box for public repos.
