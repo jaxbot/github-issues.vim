@@ -217,7 +217,7 @@ def showIssue():
   if issue["labels"]:
     for label in issue["labels"]:
       labelstr += label["name"] + ", "
-  b.append("## Labels: " + labelstr)
+  b.append("## Labels: " + labelstr[:-2])
 
   if issue["body"]:
     b.append(issue["body"].encode(vim.eval("&encoding")).split("\n"))
