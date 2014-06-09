@@ -393,7 +393,7 @@ def highlightColoredLabels(labels):
 
   for label in labels:
     vim.command("hi issueColor" + label["color"] + " guifg=#ffffff guibg=#" + label["color"])
-    vim.command("let m = matchadd(\"issueColor" + label["color"] + "\", \"" + label["name"] + "\")")
+    vim.command("let m = matchadd(\"issueColor" + label["color"] + "\", \"\\\\<" + label["name"] + "\\\\>\")")
 
 # queries the ghApi for <endpoint>
 def ghApi(endpoint, repourl = False, cache = True):
