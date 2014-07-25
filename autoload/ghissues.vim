@@ -79,7 +79,7 @@ def showIssueList(labels, ignore_cache = False):
 
   if not vim.eval("g:github_same_window") == "1":
     vim.command("silent new")
-  vim.command("edit " + "gissues/" + repourl + "/issues")
+  vim.command("noswapfile edit " + "gissues/" + repourl + "/issues")
   vim.command("normal ggdG")
 
   b = vim.current.buffer
