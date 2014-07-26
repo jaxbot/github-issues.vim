@@ -125,7 +125,7 @@ def showMilestoneList(labels, ignore_cache = False):
     b.append(mstonestr.encode(vim.eval("&encoding")))
 
   vim.command("1delete _")
-  
+
 # pulls the issue array from the server
 def getIssueList(repourl, query, ignore_cache = False):
   global github_datacache
@@ -261,6 +261,11 @@ def showIssue():
   elif number == "new":
     b.append("## Assignee: ")
 
+  if number == "new":
+    b.append("## Milestone: ")
+  elif issue['milestone']:
+    b.append("## Milestone: " + str(issue["milestone"]["number"]))
+
   labelstr = ""
   if issue["labels"]:
     for label in issue["labels"]:
@@ -360,6 +365,11 @@ def saveGissue():
       else: issue['state'] = "open"
       continue
 
+    milestone = line.split("## Milestone:")
+    if len(milestone) > 1:
+      issue['milestone'] = milestone[1].strip()
+      continue
+
     labels = line.split("## Labels:")
     if len(labels) > 1:
       issue['labels'] = labels[1].lstrip().split(', ')
@@ -377,11 +387,11 @@ def saveGissue():
   # remove blank entries
   issue['labels'] = filter(bool, issue['labels'])
 
-  if issue['labels'] == '':
+  if issue.get('labels', '') != '' and issue['labels'] == '':
     del issue['labels']
-  if issue['body'] == '':
+  if issue.get('body', '') != '' and issue['body'] == '':
     del issue['body']
-  if issue['assignee'] == '':
+  if issue.get('assignee', '') != '' and issue['assignee'] == '':
     del issue['assignee']
 
   if number == "new":
