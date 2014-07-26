@@ -6,7 +6,9 @@ endif
 
 python <<EOF
 import os
+import sys
 import vim
+import string
 import json
 import urllib2
 
@@ -104,54 +106,95 @@ def showIssueList(labels, ignore_cache = False):
   # append leaves an unwanted beginning line. delete it.
   vim.command("1delete _")
 
+def showMilestoneList(labels, ignore_cache = False):
+  repourl = getUpstreamRepoURI()
+
+  vim.command("silent new")
+  vim.command("noswapfile edit " + "gissues/" + repourl + "/milestones")
+  vim.command("normal ggdG")
+
+  b = vim.current.buffer
+  milestones = getMilestoneList(repourl, labels, ignore_cache)
+
+  for mstone in milestones:
+    mstonestr = str(mstone["number"]) + " " + mstone["title"]
+
+    if mstone["due_on"]:
+      mstonestr += " ("+mstone["due_on"]+")" # TODO: TZ formatting
+
+    b.append(mstonestr.encode(vim.eval("&encoding")))
+
+  vim.command("1delete _")
+  
 # pulls the issue array from the server
 def getIssueList(repourl, query, ignore_cache = False):
+  global github_datacache
+
+  # non-string args correspond to vanilla issues request
+  # strings default to label unless they correspond to a state
+  params = {}
+  if isinstance(query, basestring):
+    params = { "label": query }
+  if query in ["open", "closed", "all"]:
+    params = { "state": query }
+
+  cacheGHList(ignore_cache, repourl, "/issues", params)
+  return github_datacache[repourl]["/issues"]
+
+# pulls the milestone list from the server
+def getMilestoneList(repourl, query, ignore_cache = False):
+  global github_datacache
+
+  # TODO Add support for 'state', 'sort', 'direction'
+  params = {}
+
+  cacheGHList(ignore_cache, repourl, "/milestones", params)
+  return github_datacache[repourl]["/milestones"]
+
+def cacheGHList(ignore_cache, repourl, endpoint, params):
   global cache_count, github_datacache
 
-  if ignore_cache or github_datacache.get(repourl,'') == '' or len(github_datacache[repourl]) < 1 or cache_count > 3:
-    # non-string args correspond to vanilla issues request
-    # strings default to label unless they correspond to a state
-    query_type = False
-    if isinstance(query, basestring):
-      query_type = "label"
-    if query in ["open", "closed", "all"]:
-      query_type = "state"
+  # Maybe initialise
+  if github_datacache.get(repourl, '') == '' or len(github_datacache[repourl]) < 1:
+    github_datacache[repourl] = {}
+
+  if (ignore_cache or
+      cache_count > 3 or
+      github_datacache[repourl].get(endpoint,'') == '' or
+      len(github_datacache[repourl][endpoint]) < 1):
 
     # load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
     try:
-      github_datacache[repourl] = []
+      github_datacache[repourl][endpoint] = []
       more_to_load = True
 
       page = 1
+      params['page'] = str(page)
 
       while more_to_load and page <= int(vim.eval("g:github_issues_max_pages")):
-        if query_type == "state":
-          url = ghUrl("/issues?state="+query+"&page=" + str(page), repourl)
-        elif query_type == "label":
-          url = ghUrl("/issues?labels="+query+"&page=" + str(page), repourl)
-        else:
-          url = ghUrl("/issues?page=" + str(page), repourl)
+
+        # TODO This should be in ghUrl() I think
+        qs = string.join([ k+'='+v for ( k, v ) in params.items()], '&')
+        url = ghUrl(endpoint+'?'+qs, repourl)
 
         response = urllib2.urlopen(url)
         issuearray = json.loads(response.read())
 
         # JSON parse the API response, add page to previous pages if any
-        github_datacache[repourl] += issuearray
+        github_datacache[repourl][endpoint] += issuearray
 
         more_to_load = len(issuearray) == 30
 
         page += 1
 
     except urllib2.URLError as e:
-      github_datacache[repourl] = []
+      github_datacache[repourl][endpoint] = []
     except urllib2.HTTPError as e:
       if e.code == 410:
-        github_datacache[repourl] = []
+        github_datacache[repourl][endpoint] = []
     cache_count = 0
   else:
     cache_count += 1
-
-  return github_datacache[repourl]
 
 # adds issues, labels, and collaborators to omni dictionary
 def populateOmniComplete():

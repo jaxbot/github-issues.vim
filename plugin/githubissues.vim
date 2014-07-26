@@ -21,6 +21,19 @@ if !has("python")
   finish
 endif
 
+function! s:showGithubMilestones(...)
+  call ghissues#init()
+
+  if a:0 <1
+    python showMilestoneList(0, "True")
+  else
+    python showMilestoneList(vim.eval("a:1"), "True")
+  endif
+
+  set buftype=nofile
+  nnoremap <buffer> q :q<cr>
+endfunction
+
 function! s:showGithubIssues(...) 
   call ghissues#init()
 
@@ -122,6 +135,8 @@ command! -nargs=* Gissues call s:showGithubIssues(<f-args>)
 command! -nargs=0 Giadd call s:showIssue("new")
 command! -nargs=* Giedit call s:showIssue(<f-args>)
 command! -nargs=0 Giupdate call s:updateIssue()
+
+command! -nargs=* Gmiles call s:showGithubMilestones(<f-args>)
 
 autocmd BufReadCmd gissues/*/\([0-9]*\|new\) call s:updateIssue()
 autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <buffer> cc :call <SID>setIssueState(0)<cr>
