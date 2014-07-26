@@ -214,6 +214,10 @@ def populateOmniComplete():
   if collaborators:
     for collaborator in collaborators:
       addToOmni(str(collaborator["login"]))
+  milestones = ghApi("/milestones")
+  if milestones:
+    for milestone in milestones:
+      addToOmni(str(milestone["title"]))
 
 # adds <keyword> to omni dictionary. used by populateOmniComplete
 def addToOmni(keyword):
@@ -264,7 +268,7 @@ def showIssue():
   if number == "new":
     b.append("## Milestone: ")
   elif issue['milestone']:
-    b.append("## Milestone: " + str(issue["milestone"]["number"]))
+    b.append("## Milestone: " + str(issue["milestone"]["title"]))
 
   labelstr = ""
   if issue["labels"]:
@@ -367,7 +371,14 @@ def saveGissue():
 
     milestone = line.split("## Milestone:")
     if len(milestone) > 1:
-      issue['milestone'] = milestone[1].strip()
+      milestones = getMilestoneList(parens[0] + "/" + parens[1], "")
+
+      milestone = milestone[1].strip()
+
+      for mstone in milestones:
+        if mstone["title"] == milestone:
+          issue['milestone'] = str(mstone["number"])
+          break
       continue
 
     labels = line.split("## Labels:")
