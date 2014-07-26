@@ -53,7 +53,7 @@ g:github_access_token
 
 g:github_upstream_issues
 
-	When this is set to 1, github-issues will use upstream issues (if repo is fork). This will require extra requests for the Github API, however.
+	When this is set to 1, github-issues will use upstream issues (if repo is fork). This will require extra requests for the Github API, however. If your repository has many works, this option tells the `:Gissue` command to look only for issues on origin remote.
 
 g:github_issues_urls
 
