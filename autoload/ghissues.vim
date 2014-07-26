@@ -85,8 +85,13 @@ def showIssueList(labels, ignore_cache = False):
   b = vim.current.buffer
   issues = getIssueList(repourl, labels, ignore_cache)
 
+  cur_milestone = str(vim.eval("g:github_current_milestone"))
+
   # its an array, so dump these into the current (issues) buffer
   for issue in issues:
+    if cur_milestone != "" and (not issue["milestone"] or issue["milestone"]["title"] != cur_milestone):
+      continue
+
     issuestr = str(issue["number"]) + " " + issue["title"] + " "
 
     for label in issue["labels"]:

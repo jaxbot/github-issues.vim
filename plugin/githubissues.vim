@@ -166,3 +166,8 @@ if !exists("g:github_same_window")
   let g:github_same_window = 0
 endif
 
+" allow milestone filtering
+if !exists("g:github_current_milestone")
+  let g:github_current_milestone = ""
+endif
+
