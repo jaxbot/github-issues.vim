@@ -335,7 +335,7 @@ def saveGissue():
     'title': '',
     'body': '',
     'assignee': '',
-    'labels': ''
+    'labels': '',
     'milestone': ''
   }
 
