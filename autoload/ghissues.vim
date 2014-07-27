@@ -187,9 +187,9 @@ def getGHList(ignore_cache, repourl, endpoint, params):
 
     except urllib2.URLError as e:
       github_datacache[repourl][endpoint] = []
-    except urllib2.HTTPError as e:
-      if e.code == 410:
-        github_datacache[repourl][endpoint] = []
+      if e.code == 410 or e.code == 404:
+        print "Error: Do you have a github_access_token defined?"
+
     cache_count = 0
   else:
     cache_count += 1
