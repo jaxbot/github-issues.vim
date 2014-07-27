@@ -138,20 +138,18 @@ def getIssueList(repourl, query, ignore_cache = False):
   if query in ["open", "closed", "all"]:
     params = { "state": query }
 
-  cacheGHList(ignore_cache, repourl, "/issues", params)
-  return github_datacache[repourl]["/issues"]
+  return getGHList(ignore_cache, repourl, "/issues", params)
 
 # pulls the milestone list from the server
-def getMilestoneList(repourl, query, ignore_cache = False):
+def getMilestoneList(repourl, query = "", ignore_cache = False):
   global github_datacache
 
   # TODO Add support for 'state', 'sort', 'direction'
   params = {}
 
-  cacheGHList(ignore_cache, repourl, "/milestones", params)
-  return github_datacache[repourl]["/milestones"]
+  return getGHList(ignore_cache, repourl, "/milestones", params)
 
-def cacheGHList(ignore_cache, repourl, endpoint, params):
+def getGHList(ignore_cache, repourl, endpoint, params):
   global cache_count, github_datacache
 
   # Maybe initialise
@@ -196,6 +194,8 @@ def cacheGHList(ignore_cache, repourl, endpoint, params):
   else:
     cache_count += 1
 
+  return github_datacache[repourl][endpoint]
+
 # adds issues, labels, and collaborators to omni dictionary
 def populateOmniComplete():
   url = getUpstreamRepoURI()
@@ -214,7 +214,7 @@ def populateOmniComplete():
   if collaborators:
     for collaborator in collaborators:
       addToOmni(str(collaborator["login"]))
-  milestones = ghApi("/milestones")
+  milestones = getMilestoneList(url)
   if milestones:
     for milestone in milestones:
       addToOmni(str(milestone["title"]))
