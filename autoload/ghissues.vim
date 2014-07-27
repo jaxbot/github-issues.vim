@@ -367,10 +367,14 @@ def saveGissue():
         print "Could not update the issue as it does not belong to you"
 
   if commentmode == 3:
-    url = ghUrl("/issues/" + parens[2] + "/comments")
-    data = json.dumps({ 'body': comment })
-    request = urllib2.Request(url, data)
-    urllib2.urlopen(request)
+    try:
+      url = ghUrl("/issues/" + parens[2] + "/comments")
+      data = json.dumps({ 'body': comment })
+      request = urllib2.Request(url, data)
+      urllib2.urlopen(request)
+    except urllib2.HTTPError as e:
+      if e.code == 410 or e.code == 404:
+        print "Could not post comment. Do you have a github_access_token defined?"
 
   if commentmode == 3 or number == "new":
     showIssue()
@@ -422,6 +426,7 @@ def ghApi(endpoint, repourl = False, cache = True):
 
     return data
   except:
+    print "An error occurred. If this is a private repo, make sure you have a github_access_token defined"
     return None
 
 # generates a github URL, including access token
