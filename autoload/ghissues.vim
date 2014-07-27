@@ -334,6 +334,7 @@ def saveGissue():
   issue = {
     'title': '',
     'body': '',
+    'milestone': ''
   }
 
   issue['title'] = vim.current.buffer[0].split("# ")[1].split(" (" + number + ")")[0]
