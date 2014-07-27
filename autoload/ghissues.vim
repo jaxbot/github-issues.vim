@@ -351,8 +351,8 @@ def saveGissue():
       parens[2] = str(data['number'])
       vim.current.buffer.name = "gissues/" + parens[0] + "/" + parens[1] + "/" + parens[2]
     except urllib2.HTTPError as e:
-      if e.code == 410:
-        print "Error: Github returned code 410. Do you have a github_access_token defined?"
+      if e.code == 410 or e.code == 404:
+        print "Error creating issue. Do you have a github_access_token defined?"
       else:
         print "Unknown HTTP error:"
         print e
@@ -360,7 +360,11 @@ def saveGissue():
     url = ghUrl("/issues/" + number)
     request = urllib2.Request(url, json.dumps(issue))
     request.get_method = lambda: 'PATCH'
-    urllib2.urlopen(request)
+    try:
+      urllib2.urlopen(request)
+    except urllib2.HTTPError as e:
+      if e.code == 410 or e.code == 404:
+        print "Could not update the issue as it does not belong to you"
 
   if commentmode == 3:
     url = ghUrl("/issues/" + parens[2] + "/comments")
