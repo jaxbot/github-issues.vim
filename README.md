@@ -69,9 +69,11 @@ g:github_access_token
 ```
 
 Grab an access token [from here](
-https://github.com/settings/tokens/new), then set this variable, preferably in your Vimrc, like so:
+https://github.com/settings/tokens/new), then set this variable, preferably in a local vim file not included in any public repositories:
 
 `let g:github_access_token = "9jb19c1189f083d7013i24367lol"`
+
+**Remember**, you should treat your access token like a password!
 
 
 Other options include:
