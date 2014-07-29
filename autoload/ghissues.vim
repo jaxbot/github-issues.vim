@@ -206,16 +206,19 @@ def populateOmniComplete():
   issues = getIssueList(url, 0)
   for issue in issues:
     addToOmni(str(issue["number"]) + " " + issue["title"])
+
   labels = getLabels()
-  if labels:
+  if labels is not None:
     for label in labels:
       addToOmni(str(label["name"]))
+
   collaborators = getCollaborators()
-  if collaborators:
+  if collaborators is not None:
     for collaborator in collaborators:
       addToOmni(str(collaborator["login"]))
+
   milestones = getMilestoneList(url)
-  if milestones:
+  if milestones is not None:
     for milestone in milestones:
       addToOmni(str(milestone["title"]))
 
