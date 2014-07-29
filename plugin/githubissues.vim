@@ -103,7 +103,7 @@ function! githubissues#CompleteIssues(findstart, base)
   else
     let res = []
     for m in b:omni_options
-      if m =~ '^' . b:compl_context
+      if m['word'] =~ '^' . b:compl_context
         call add(res, m)
       endif
     endfor

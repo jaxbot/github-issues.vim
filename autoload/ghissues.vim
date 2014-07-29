@@ -205,26 +205,26 @@ def populateOmniComplete():
 
   issues = getIssueList(url, 0)
   for issue in issues:
-    addToOmni(str(issue["number"]) + " " + issue["title"])
+    addToOmni(str(issue["number"]) + " " + issue["title"], 'Issue')
 
   labels = getLabels()
   if labels is not None:
     for label in labels:
-      addToOmni(str(label["name"]))
+      addToOmni(str(label["name"]), 'Label')
 
   collaborators = getCollaborators()
   if collaborators is not None:
     for collaborator in collaborators:
-      addToOmni(str(collaborator["login"]))
+      addToOmni(str(collaborator["login"]), 'User')
 
   milestones = getMilestoneList(url)
   if milestones is not None:
     for milestone in milestones:
-      addToOmni(str(milestone["title"]))
+      addToOmni(str(milestone["title"]), 'Milestone')
 
 # adds <keyword> to omni dictionary. used by populateOmniComplete
-def addToOmni(keyword):
-  vim.command("call add(b:omni_options, "+json.dumps(keyword)+")")
+def addToOmni(keyword, typ):
+  vim.command("call add(b:omni_options, "+json.dumps({ 'word': keyword, 'menu': '[' + typ + ']' })+")")
 
 # simply opens a buffer based on repourl and issue <number>
 def showIssueBuffer(number):
