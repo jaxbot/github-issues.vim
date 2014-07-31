@@ -405,6 +405,14 @@ def saveGissue():
   issue['labels'] = filter(bool, issue['labels'])
 
   if number == "new":
+    
+    if issue['assignee'] == '':
+      del issue['assignee']
+    if issue['milestone'] == '':
+      del issue['milestone']
+    if issue['body'] == '':
+      del issue['body']
+
     data = ""
     try:
       url = ghUrl("/issues")
