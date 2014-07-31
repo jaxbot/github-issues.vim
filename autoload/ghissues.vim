@@ -404,14 +404,8 @@ def saveGissue():
   # remove blank entries
   issue['labels'] = filter(bool, issue['labels'])
 
-  if issue.get('labels', '') != '' and issue['labels'] == '':
-    del issue['labels']
-  if issue.get('body', '') != '' and issue['body'] == '':
-    del issue['body']
-  if issue.get('assignee', '') != '' and issue['assignee'] == '':
-    del issue['assignee']
-
   if number == "new":
+    data = ""
     try:
       url = ghUrl("/issues")
       request = urllib2.Request(url, json.dumps(issue))
@@ -424,6 +418,9 @@ def saveGissue():
       else:
         print "Unknown HTTP error:"
         print e
+        print data
+        print url
+        print issue
   else:
     url = ghUrl("/issues/" + number)
     request = urllib2.Request(url, json.dumps(issue))
