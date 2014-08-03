@@ -103,7 +103,10 @@ function! githubissues#CompleteIssues(findstart, base)
     return start
   else
     let res = []
-    echom b:compl_context
+    if b:compl_context == '.'
+      return res
+    endif
+
     for m in b:omni_options
       if m['menu'] == '[Issue]'
         if '#' . m['word'] =~ '^' . b:compl_context
