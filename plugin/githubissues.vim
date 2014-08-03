@@ -117,7 +117,7 @@ function! githubissues#CompleteIssues(findstart, base)
           call add(res, m)
         endif
       else
-        if m['word'] =~ '^' . b:compl_context
+        if m['word'] =~ '^' . b:compl_context || ' ' . m['word'] =~ '^' . b:compl_context
           call add(res, m)
         endif
       endif
