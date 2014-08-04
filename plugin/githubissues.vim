@@ -95,16 +95,31 @@ function! githubissues#CompleteIssues(findstart, base)
     " locate the start of the word
     let line = getline('.')
     let start = col('.') - 1
+    
     while start > 0 && line[start - 1] =~ '\w'
       let start -= 1
     endwhile
-    let b:compl_context = getline('.')[start : col('.')]
+    let b:compl_context = getline('.')[start - 1: col('.')]
     return start
   else
     let res = []
+    if b:compl_context == '.'
+      return res
+    endif
+
     for m in b:omni_options
-      if m['word'] =~ '^' . b:compl_context
-        call add(res, m)
+      if m['menu'] == '[Issue]'
+        if '#' . m['word'] =~ '^' . b:compl_context
+          call add(res, m)
+        endif
+      elseif m['menu'] == '[User]'
+        if '@' . m['word'] =~ '^' . b:compl_context
+          call add(res, m)
+        endif
+      else
+        if m['word'] =~ '^' . b:compl_context || ' ' . m['word'] =~ '^' . b:compl_context
+          call add(res, m)
+        endif
       endif
     endfor
     return res
