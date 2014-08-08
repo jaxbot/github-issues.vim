@@ -32,6 +32,8 @@ function! s:showGithubMilestones(...)
 
   set buftype=nofile
   nnoremap <buffer> q :q<cr>
+  nnoremap <buffer> <cr> :normal! 0<cr>:call <SID>setMilestone(getline("."))<cr>
+
 endfunction
 
 function! s:showGithubIssues(...) 
@@ -143,6 +145,19 @@ function! s:handleEnter()
     echo expand("<cword>")
     execute ":Gedit " . expand("<cword>")
   endif
+endfunction
+
+function! s:setMilestone(title)
+  let title = ""
+  if a:title != "[None]"
+    let title = a:title
+    echo "Switched current milestone to " . title
+  else
+    echo "No longer filtering by milestone"
+  endif
+
+  let g:github_current_milestone = title
+
 endfunction
 
 " define the :Gissues command
