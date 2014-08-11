@@ -75,7 +75,7 @@ def showIssueList(labels, ignore_cache = False):
   repourl = getUpstreamRepoURI()
 
   if repourl == "":
-    print "Failed to find a suitable Github repository URL, sorry!"
+    print "github-issues.vim: Failed to find a suitable Github repository URL, sorry!"
     vim.command("let github_failed = 1")
     return
 
@@ -188,7 +188,7 @@ def getGHList(ignore_cache, repourl, endpoint, params):
     except urllib2.URLError as e:
       github_datacache[repourl][endpoint] = []
       if e.code == 410 or e.code == 404:
-        print "Error: Do you have a github_access_token defined?"
+        print "github-issues.vim: Error: Do you have a github_access_token defined?"
 
     cache_count = 0
   else:
@@ -422,9 +422,9 @@ def saveGissue():
       vim.current.buffer.name = "gissues/" + parens[0] + "/" + parens[1] + "/" + parens[2]
     except urllib2.HTTPError as e:
       if e.code == 410 or e.code == 404:
-        print "Error creating issue. Do you have a github_access_token defined?"
+        print "github-issues.vim: Error creating issue. Do you have a github_access_token defined?"
       else:
-        print "Unknown HTTP error:"
+        print "github-issues.vim: Unknown HTTP error:"
         print e
         print data
         print url
@@ -499,7 +499,7 @@ def ghApi(endpoint, repourl = False, cache = True):
 
     return data
   except:
-    print "An error occurred. If this is a private repo, make sure you have a github_access_token defined"
+    print "github-issues.vim: An error occurred. If this is a private repo, make sure you have a github_access_token defined"
     return None
 
 # generates a github URL, including access token
