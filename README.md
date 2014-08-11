@@ -44,6 +44,10 @@ You can even use `:Giadd` to create a blank issue. Saving the buffer will genera
 
 How awesome is that!?
 
+### Milestones
+
+New feature: Use `:Gmiles` to open a menu of milestones. Press return on one to select it and filter `:Gissues` by that milestone from then on.
+
 ### Fugitive integration
 
 Github will show any commits that reference the issue. That's what the omnicomplete helps with. But to make things even more awesome, github-issues.vim integrates with Fugitive.vim to make commit hashes clickable with the return key.

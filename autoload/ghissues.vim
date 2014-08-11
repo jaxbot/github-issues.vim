@@ -101,6 +101,13 @@ def showIssueList(labels, ignore_cache = False):
 
     b.append(issuestr.encode(vim.eval("&encoding")))
 
+  if len(b) < 2:
+    b.append("No results found in " + repourl)
+    if cur_milestone:
+      b.append("Filtering by milestone: " + cur_milestone)
+    if labels:
+      b.append("Filtering by labels: " + labels)
+
   highlightColoredLabels(getLabels())
 
   # append leaves an unwanted beginning line. delete it.
@@ -114,13 +121,12 @@ def showMilestoneList(labels, ignore_cache = False):
   vim.command("normal ggdG")
 
   b = vim.current.buffer
+  b.append("[None]")
+
   milestones = getMilestoneList(repourl, labels, ignore_cache)
 
   for mstone in milestones:
-    mstonestr = str(mstone["number"]) + " " + mstone["title"]
-
-    if mstone["due_on"]:
-      mstonestr += " ("+mstone["due_on"]+")" # TODO: TZ formatting
+    mstonestr = mstone["title"]
 
     b.append(mstonestr.encode(vim.eval("&encoding")))
 
