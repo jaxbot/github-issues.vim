@@ -193,7 +193,7 @@ def getGHList(ignore_cache, repourl, endpoint, params):
 
     except urllib2.URLError as e:
       github_datacache[repourl][endpoint] = []
-      if e.code == 410 or e.code == 404:
+      if e.code == 404:
         print "github-issues.vim: Error: Do you have a github_access_token defined?"
 
     cache_count = 0
