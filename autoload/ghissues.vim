@@ -233,8 +233,12 @@ def addToOmni(keyword, typ):
   vim.command("call add(b:omni_options, "+json.dumps({ 'word': keyword, 'menu': '[' + typ + ']' })+")")
 
 # simply opens a buffer based on repourl and issue <number>
-def showIssueBuffer(number):
-  repourl = getUpstreamRepoURI()
+def showIssueBuffer(number, url = ""):
+  if url != "":
+    repourl = url
+  else:
+    repourl = getUpstreamRepoURI()
+
   if not vim.eval("g:github_same_window") == "1":
     vim.command("silent new")
   vim.command("edit gissues/" + repourl + "/" + number)

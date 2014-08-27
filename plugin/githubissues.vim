@@ -60,14 +60,19 @@ function! s:showGithubIssues(...)
 
 endfunction
 
-function! s:showIssue(id)
+function! s:showIssue(...)
   call ghissues#init()
 
-  python showIssueBuffer(vim.eval("a:id"))
+  if a:0 > 1
+    python showIssueBuffer(vim.eval("a:1"), vim.eval("a:2"))
+  else
+    python showIssueBuffer(vim.eval("a:1"))
+  endif
+
 
   call s:setupOmni()
 
-  if a:id == "new"
+  if a:1 == "new"
     normal 0ll
     startinsert
   endif
@@ -162,7 +167,7 @@ endfunction
 
 " define the :Gissues command
 command! -nargs=* Gissues call s:showGithubIssues(<f-args>)
-command! -nargs=0 Giadd call s:showIssue("new")
+command! -nargs=* Giadd call s:showIssue("new", <f-args>)
 command! -nargs=* Giedit call s:showIssue(<f-args>)
 command! -nargs=0 Giupdate call s:updateIssue()
 
