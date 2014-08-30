@@ -11,6 +11,7 @@ import vim
 import string
 import json
 import urllib2
+import subprocess
 
 # dictionaries for caching
 # repo urls on github by filepath
@@ -32,18 +33,20 @@ def getRepoURI():
     return s[0] + "/" + s[1]
 
   # get the directory the current file is in
-  filepath = vim.eval("shellescape(expand('%:p:h'))")
+  filepath = vim.eval("expand('%:p:h')")
 
-  if ".git" in filepath:
-    filepath = filepath.replace(".git", "")
+  # Remove trailing ".git" segment from path.
+  # While `git remote -v` appears to work from here in general, it fails when
+  # invoked for COMMIT_EDITMSG: `fatal: Not a git repository: '.git'`.
+  if filepath.endswith(os.path.sep+".git"):
+    filepath = filepath[:-(len(os.path.sep)+4)]
 
   # cache the github repo for performance
   if github_repos.get(filepath,'') != '':
     return github_repos[filepath]
 
-  cmd = '(cd ' + filepath + ' && git remote -v)'
-
-  filedata = os.popen(cmd).read()
+  filedata = subprocess.check_output(['git', 'remote', '-v'],
+                                     cwd=filepath)
 
   # possible URLs
   urls = vim.eval("g:github_issues_urls")
@@ -415,7 +418,7 @@ def saveGissue():
   issue['labels'] = filter(bool, issue['labels'])
 
   if number == "new":
-    
+
     if issue['assignee'] == '':
       del issue['assignee']
     if issue['milestone'] == '':
