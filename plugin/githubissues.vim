@@ -98,6 +98,11 @@ endfunction
 
 " omnicomplete function, also used by neocomplete
 function! githubissues#CompleteIssues(findstart, base)
+  if !s:did_init_omnicomplete
+    python populateOmniComplete()
+    let s:did_init_omnicomplete = 1
+  endif
+
   if a:findstart
     " locate the start of the word
     let line = getline('.')
@@ -142,7 +147,7 @@ function! s:setupOmni()
   " empty array will store the menu items
   let b:omni_options = []
 
-  python populateOmniComplete()
+  let s:did_init_omnicomplete = 0
 endfunction
 
 function! s:handleEnter()
