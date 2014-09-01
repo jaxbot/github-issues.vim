@@ -221,3 +221,6 @@ if !exists("g:github_current_milestone")
   let g:github_current_milestone = ""
 endif
 
+if !exists("g:github_issues_default_remote")
+  let g:github_issues_default_remote = "origin"
+endif
