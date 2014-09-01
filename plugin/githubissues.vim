@@ -36,7 +36,7 @@ function! s:showGithubMilestones(...)
 
 endfunction
 
-function! s:showGithubIssues(...) 
+function! s:showGithubIssues(...)
   call ghissues#init()
 
   let github_failed = 0
@@ -102,7 +102,7 @@ function! githubissues#CompleteIssues(findstart, base)
     " locate the start of the word
     let line = getline('.')
     let start = col('.') - 1
-    
+
     while start > 0 && line[start - 1] =~ '\w'
       let start -= 1
     endwhile
