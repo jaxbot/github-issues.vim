@@ -98,9 +98,11 @@ endfunction
 
 " omnicomplete function, also used by neocomplete
 function! githubissues#CompleteIssues(findstart, base)
-  if !b:did_init_omnicomplete
-    python populateOmniComplete()
-    let b:did_init_omnicomplete = 1
+  if g:gissues_lazy_load
+    if !b:did_init_omnicomplete
+      python populateOmniComplete()
+      let b:did_init_omnicomplete = 1
+    endif
   endif
 
   if a:findstart
@@ -147,7 +149,11 @@ function! s:setupOmni()
   " empty array will store the menu items
   let b:omni_options = []
 
-  let b:did_init_omnicomplete = 0
+  if !g:gissues_lazy_load
+    python populateOmniComplete()
+  else
+    let b:did_init_omnicomplete = 0
+  endif
 endfunction
 
 function! s:handleEnter()
@@ -224,5 +230,10 @@ endif
 " allow milestone filtering
 if !exists("g:github_current_milestone")
   let g:github_current_milestone = ""
+endif
+
+" lazy load issues
+if !exists("g:gissues_lazy_load")
+  let g:gissues_lazy_load = 0
 endif
 

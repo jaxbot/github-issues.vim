@@ -101,11 +101,18 @@ g:github_api_url = "https://api.github.com/"
 
 If you use Github Enterprise, where the Github server is hosted somewhere other than Github.com, set this parameter to your API path. This is specifically for Github Enterprise and will not work for Bitbucket, Gitlab, etc.
 
-When this is set to 1, github-issues will use the current window instead of splitting the screen via the `:new` command.
-
 ```
 g:github_same_window = 1
 ```
+
+When this is set to 1, github-issues will use the current window instead of splitting the screen via the `:new` command.
+
+```
+g:gissues_lazy_load = 0
+```
+
+When this is set to 1, omnicomplete will not be populated until it is triggered. This eliminates potential lag when opening `gitcommit` files.
+
 
 ### Contributing
 
