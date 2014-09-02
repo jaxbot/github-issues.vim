@@ -41,7 +41,7 @@ def getRepoURI():
   filepath = filepath.split(os.path.sep+".git")[0]
 
   # cache the github repo for performance
-  if github_repos.get(filepath,'') != '':
+  if github_repos.get(filepath, None) is not None:
     return github_repos[filepath]
 
   # Try to get the remote for the current branch/HEAD.
