@@ -38,8 +38,7 @@ def getRepoURI():
   # Remove trailing ".git" segment from path.
   # While `git remote -v` appears to work from here in general, it fails when
   # invoked for COMMIT_EDITMSG: `fatal: Not a git repository: '.git'`.
-  if filepath.endswith(os.path.sep+".git"):
-    filepath = filepath[:-(len(os.path.sep)+4)]
+  filepath = filepath.split(os.path.sep+".git")[0]
 
   # cache the github repo for performance
   if github_repos.get(filepath,'') != '':
