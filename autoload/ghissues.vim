@@ -52,8 +52,8 @@ def getRepoURI():
     )
   except subprocess.CalledProcessError:
     # Use default remote, e.g. "origin".
-    remote = vim.eval("g:github_issues_default_remote")
-    print("github-issues: using default remote: %s" % remote)
+    remote = vim.eval("g:gissues_default_remote")
+    #print("github-issues: using default remote: %s" % remote)
   else:
     try:
       branch = subprocess.check_output(["git", "symbolic-ref", "--short", "HEAD"])
@@ -89,7 +89,7 @@ def getRepoURI():
       s = url.split(possible_url)
       if len(s) > 1:
         github_repos[filepath] = s[1]
-        print("github-issues: using repo: %s" % s[1])
+        #print("github-issues: using repo: %s" % s[1])
         break
     else:
       continue
