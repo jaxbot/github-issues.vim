@@ -119,7 +119,7 @@ def showIssueList(labels, ignore_cache = False):
   repourl = getUpstreamRepoURI()
 
   if repourl == "":
-    print "github-issues.vim: Failed to find a suitable Github repository URL, sorry!"
+    print("github-issues.vim: Failed to find a suitable Github repository URL, sorry!")
     vim.command("let github_failed = 1")
     return
 
@@ -238,7 +238,7 @@ def getGHList(ignore_cache, repourl, endpoint, params):
     except urllib2.URLError as e:
       github_datacache[repourl][endpoint] = []
       if e.code == 404:
-        print "github-issues.vim: Error: Do you have a github_access_token defined?"
+        print("github-issues.vim: Error: Do you have a github_access_token defined?")
 
     cache_count = 0
   else:
@@ -476,13 +476,13 @@ def saveGissue():
       vim.current.buffer.name = "gissues/" + parens[0] + "/" + parens[1] + "/" + parens[2]
     except urllib2.HTTPError as e:
       if e.code == 410 or e.code == 404:
-        print "github-issues.vim: Error creating issue. Do you have a github_access_token defined?"
+        print("github-issues.vim: Error creating issue. Do you have a github_access_token defined?")
       else:
-        print "github-issues.vim: Unknown HTTP error:"
-        print e
-        print data
-        print url
-        print issue
+        print("github-issues.vim: Unknown HTTP error:")
+        print(e)
+        print(data)
+        print(url)
+        print(issue)
   else:
     url = ghUrl("/issues/" + number)
     request = urllib2.Request(url, json.dumps(issue))
@@ -491,7 +491,7 @@ def saveGissue():
       urllib2.urlopen(request)
     except urllib2.HTTPError as e:
       if e.code == 410 or e.code == 404:
-        print "Could not update the issue as it does not belong to you"
+        print("Could not update the issue as it does not belong to you!")
 
   if commentmode == 3:
     try:
@@ -501,7 +501,7 @@ def saveGissue():
       urllib2.urlopen(request)
     except urllib2.HTTPError as e:
       if e.code == 410 or e.code == 404:
-        print "Could not post comment. Do you have a github_access_token defined?"
+        print("Could not post comment. Do you have a github_access_token defined?")
 
   if commentmode == 3 or number == "new":
     showIssue()
@@ -553,7 +553,7 @@ def ghApi(endpoint, repourl = False, cache = True):
 
     return data
   except:
-    print "github-issues.vim: An error occurred. If this is a private repo, make sure you have a github_access_token defined"
+    print("github-issues.vim: An error occurred. If this is a private repo, make sure you have a github_access_token defined.")
     return None
 
 # generates a github URL, including access token
