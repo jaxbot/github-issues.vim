@@ -38,25 +38,66 @@ def getRepoURI():
   # Remove trailing ".git" segment from path.
   # While `git remote -v` appears to work from here in general, it fails when
   # invoked for COMMIT_EDITMSG: `fatal: Not a git repository: '.git'`.
-  if filepath.endswith(os.path.sep+".git"):
-    filepath = filepath[:-(len(os.path.sep)+4)]
+  filepath = filepath.split(os.path.sep+".git")[0]
 
   # cache the github repo for performance
-  if github_repos.get(filepath,'') != '':
+  if github_repos.get(filepath, None) is not None:
     return github_repos[filepath]
 
-  filedata = subprocess.check_output(['git', 'remote', '-v'],
-                                     cwd=filepath)
+  # Try to get the remote for the current branch/HEAD.
+  try:
+    remote_ref = subprocess.check_output(
+      'git rev-parse --verify --symbolic-full-name @{upstream}'.split(" "),
+      stderr=subprocess.STDOUT
+    )
+  except subprocess.CalledProcessError:
+    # Use default remote, e.g. "origin".
+    remote = vim.eval("g:github_issues_default_remote")
+    print("github-issues: using default remote: %s" % remote)
+  else:
+    try:
+      branch = subprocess.check_output(["git", "symbolic-ref", "--short", "HEAD"])
+    except subprocess.CalledProcessError:
+      # Branch could not be determined, do not filter by remote.
+      remote = None
+    else:
+      # Remove "/branch" from the end of remote_ref to get the remote.
+      remote = remote_ref[:-(len(branch)+1)]
+
+  # Get info for all remotes.
+  all_remotes = subprocess.check_output(
+    ['git', 'remote', '-v'], cwd=filepath)
 
   # possible URLs
-  urls = vim.eval("g:github_issues_urls")
-  for url in urls:
-    s = filedata.split(url)
-    if len(s) > 1:
-      s = s[1].split()[0].split(".git")
-      github_repos[filepath] = s[0]
-      return s[0]
-  return ""
+  possible_urls = vim.eval("g:github_issues_urls")
+
+  for line in all_remotes.split("\n"):
+    try:
+      cur_remote, url = line.split("\t")
+    except ValueError:
+      continue
+
+    # Filter out non-matching remotes.
+    if remote and remote != cur_remote:
+      continue
+
+    # Remove " (fetch)"/" (pull)" and ".git" suffixes.
+    url = url.split(" ", 1)[0].split(".git", 1)[0]
+
+    # Skip any unwanted urls.
+    for possible_url in possible_urls:
+      s = url.split(possible_url)
+      if len(s) > 1:
+        github_repos[filepath] = s[1]
+        print("github-issues: using repo: %s" % s[1])
+        break
+    else:
+      continue
+    break
+  else:
+    github_repos[filepath] = ""
+
+  return github_repos[filepath]
 
 # returns the repo uri, taking into account forks
 def getUpstreamRepoURI():

@@ -237,3 +237,7 @@ if !exists("g:gissues_lazy_load")
   let g:gissues_lazy_load = 0
 endif
 
+if !exists("g:gissues_default_remote")
+  let g:gissues_default_remote = "origin"
+endif
+
