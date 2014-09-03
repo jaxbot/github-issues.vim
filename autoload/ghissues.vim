@@ -56,7 +56,7 @@ def getRepoURI():
   # Try to get the remote for the current branch/HEAD.
   try:
     remote_ref = subprocess.check_output(
-      'git rev-parse --verify --symbolic-full-name @{upstream}'.split(" "),
+      'git rev-parse --abbrev-ref --verify --symbolic-full-name @{upstream}'.split(" "),
       stderr=subprocess.STDOUT
     )
   except subprocess.CalledProcessError:
