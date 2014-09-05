@@ -44,10 +44,19 @@ def getRepoURI():
   if github_repos.get(filepath, None) is not None:
     return github_repos[filepath]
 
+  # Get info for all remotes.
+  # Do this first: if it fails, we're not in a Git repo.
+  try:
+    all_remotes = subprocess.check_output(
+      ['git', 'remote', '-v'], cwd=filepath)
+  except subprocess.CalledProcessError:
+    github_repos[filepath] = ""
+    return github_repos[filepath]
+
   # Try to get the remote for the current branch/HEAD.
   try:
     remote_ref = subprocess.check_output(
-      'git rev-parse --verify --symbolic-full-name @{upstream}'.split(" "),
+      'git rev-parse --abbrev-ref --verify --symbolic-full-name @{upstream}'.split(" "),
       stderr=subprocess.STDOUT
     )
   except subprocess.CalledProcessError:
@@ -63,10 +72,6 @@ def getRepoURI():
     else:
       # Remove "/branch" from the end of remote_ref to get the remote.
       remote = remote_ref[:-(len(branch)+1)]
-
-  # Get info for all remotes.
-  all_remotes = subprocess.check_output(
-    ['git', 'remote', '-v'], cwd=filepath)
 
   # possible URLs
   possible_urls = vim.eval("g:github_issues_urls")
