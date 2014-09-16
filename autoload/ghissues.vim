@@ -130,7 +130,13 @@ def showIssueList(labels, ignore_cache = False):
 
   if not vim.eval("g:github_same_window") == "1":
     vim.command("silent new")
-  vim.command("noswapfile edit " + "gissues/" + repourl + "/issues")
+
+  # Some Vim versions don't allow noswapfile as a verb
+  try:
+    vim.command("noswapfile edit " + "gissues/" + repourl + "/issues")
+  except:
+    vim.command("edit " + "gissues/" + repourl + "/issues")
+
   vim.command("normal ggdG")
 
   b = vim.current.buffer
@@ -166,7 +172,12 @@ def showMilestoneList(labels, ignore_cache = False):
   repourl = getUpstreamRepoURI()
 
   vim.command("silent new")
-  vim.command("noswapfile edit " + "gissues/" + repourl + "/milestones")
+
+  # Some Vim versions don't allow noswapfile as a verb
+  try:
+    vim.command("noswapfile edit " + "gissues/" + repourl + "/milestones")
+  except:
+    vim.command("edit " + "gissues/" + repourl + "/milestones")
   vim.command("normal ggdG")
 
   b = vim.current.buffer
