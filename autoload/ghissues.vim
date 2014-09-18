@@ -286,7 +286,7 @@ def populateOmniComplete():
   milestones = getMilestoneList(url)
   if milestones is not None:
     for milestone in milestones:
-      addToOmni(str(milestone["title"]).encode('utf-8'), 'Milestone')
+      addToOmni(str(milestone["title"].encode('utf-8')), 'Milestone')
 
 # adds <keyword> to omni dictionary. used by populateOmniComplete
 def addToOmni(keyword, typ):
