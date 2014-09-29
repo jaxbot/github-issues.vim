@@ -60,8 +60,8 @@ def getRepoURI():
       stderr=subprocess.STDOUT
     )
   except subprocess.CalledProcessError:
-    # Use default remote, e.g. "origin".
-    remote = vim.eval("g:gissues_default_remote")
+    # Use the first one we find instead
+    remote = None
     #print("github-issues: using default remote: %s" % remote)
   else:
     try:
