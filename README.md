@@ -9,7 +9,7 @@ If you use Fugitive or edit gitcommit files in Vim, github-issues will automatic
 
 Here's how it works with Neocomplete:
 
-<img src='http://jaxbot.me/pics/vim/vim_gissues2.gif'>
+<img src='https://jaxbot.me/pics/vim/vim_gissues2.gif'>
 
 If you use pure omnicomplete, use `C-x C-o` to pull up the menu.
 
@@ -24,23 +24,23 @@ To show Github issues for the current repository:
 
 Press enter to view more details.
 
-<img src='http://jaxbot.me/pics/vim/vim-github-issues-1.gif'>
+<img src='https://jaxbot.me/pics/vim/vim-github-issues-1.gif'>
 
 ### Handling issues
 
 You can open and close issues using `co` and `cc` in the issue view.
 
-<img src='http://jaxbot.me/pics/vim/vim-github-issues-2.gif'>
+<img src='https://jaxbot.me/pics/vim/vim-github-issues-2.gif'>
 
 They're also totally editable buffers, and saving the file will sync with Github's servers. You can use this to write comments, too:
 
-<img src='http://jaxbot.me/pics/vim/vim-github-issues-4.gif'>
+<img src='https://jaxbot.me/pics/vim/vim-github-issues-4.gif'>
 
 ### Creating issues
 
 You can even use `:Giadd` to create a blank issue. Saving the buffer will generate a new issue and update the buffer with an issue number and the ability to add comments.
 
-<img src='http://jaxbot.me/pics/vim/vim-github-issues-6.gif'>
+<img src='https://jaxbot.me/pics/vim/vim-github-issues-6.gif'>
 
 How awesome is that!?
 
@@ -52,7 +52,7 @@ New feature: Use `:Gmiles` to open a menu of milestones. Press return on one to 
 
 Github will show any commits that reference the issue. That's what the omnicomplete helps with. But to make things even more awesome, github-issues.vim integrates with Fugitive.vim to make commit hashes clickable with the return key.
 
-<img src='http://jaxbot.me/pics/vim/vim-github-issues-3.gif'>
+<img src='https://jaxbot.me/pics/vim/vim-github-issues-3.gif'>
 
 ### Requirements and Installation
 
