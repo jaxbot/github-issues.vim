@@ -262,7 +262,7 @@ def getGHList(ignore_cache, repourl, endpoint, params):
 
   return github_datacache[repourl][endpoint]
 
-# adds issues, labels, and collaborators to omni dictionary
+# adds issues, labels, and contributors to omni dictionary
 def populateOmniComplete():
   url = getUpstreamRepoURI()
 
@@ -278,10 +278,10 @@ def populateOmniComplete():
     for label in labels:
       addToOmni(str(label["name"]), 'Label')
 
-  collaborators = getCollaborators()
-  if collaborators is not None:
-    for collaborator in collaborators:
-      addToOmni(str(collaborator["login"]), 'User')
+  contributors = getContributors()
+  if contributors is not None:
+    for contributor in contributors:
+      addToOmni(str(contributor["author"]["login"]), 'user')
 
   milestones = getMilestoneList(url)
   if milestones is not None:
@@ -538,8 +538,8 @@ def setIssueData(issue):
 def getLabels():
   return ghApi("/labels")
 
-def getCollaborators():
-  return ghApi("/collaborators")
+def getContributors():
+  return ghApi("/stats/contributors")
 
 # adds labels to the match system
 def highlightColoredLabels(labels):
@@ -568,8 +568,9 @@ def ghApi(endpoint, repourl = False, cache = True):
     api_cache[repourl + "/" + endpoint] = data
 
     return data
-  except:
-    print("github-issues.vim: An error occurred. If this is a private repo, make sure you have a github_access_token defined.")
+  except Exception as e:
+    print("github-issues.vim: An error occurred. If this is a private repo, make sure you have a github_access_token defined. Call: " + endpoint + " on " + repourl)
+    print(e)
     return None
 
 # generates a github URL, including access token
