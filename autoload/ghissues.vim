@@ -24,6 +24,9 @@ api_cache = {}
 # reset web cache after this value grows too large
 cache_count = 0
 
+# whether or not SSL is known to be enabled
+ssl_enabled = False
+
 # returns the Github url (i.e. jaxbot/vimfiles) for the current file
 def getRepoURI():
   global github_repos
@@ -253,7 +256,7 @@ def getGHList(ignore_cache, repourl, endpoint, params):
 
     except urllib2.URLError as e:
       github_datacache[repourl][endpoint] = []
-      if e.code == 404:
+      if "code" in e and e.code == 404:
         print("github-issues.vim: Error: Do you have a github_access_token defined?")
 
     cache_count = 0
@@ -498,7 +501,7 @@ def saveGissue():
       parens[2] = str(data['number'])
       vim.current.buffer.name = "gissues/" + parens[0] + "/" + parens[1] + "/" + parens[2]
     except urllib2.HTTPError as e:
-      if e.code == 410 or e.code == 404:
+      if "code" in e and e.code == 410 or e.code == 404:
         print("github-issues.vim: Error creating issue. Do you have a github_access_token defined?")
       else:
         print("github-issues.vim: Unknown HTTP error:")
@@ -513,7 +516,7 @@ def saveGissue():
     try:
       urllib2.urlopen(request)
     except urllib2.HTTPError as e:
-      if e.code == 410 or e.code == 404:
+      if "code" in e and e.code == 410 or e.code == 404:
         print("Could not update the issue as it does not belong to you!")
 
   if commentmode == 3:
@@ -523,7 +526,7 @@ def saveGissue():
       request = urllib2.Request(url, data)
       urllib2.urlopen(request)
     except urllib2.HTTPError as e:
-      if e.code == 410 or e.code == 404:
+      if "code" in e and e.code == 410 or e.code == 404:
         print("Could not post comment. Do you have a github_access_token defined?")
 
   if commentmode == 3 or number == "new":
@@ -562,11 +565,20 @@ def highlightColoredLabels(labels):
 
 # queries the ghApi for <endpoint>
 def ghApi(endpoint, repourl = False, cache = True):
+  global ssl_enabled
+
   if not repourl:
     repourl = getUpstreamRepoURI()
 
   if cache and api_cache.get(repourl + "/" + endpoint):
     return api_cache[repourl + "/" + endpoint]
+
+  if not ssl_enabled:
+    try:
+      import ssl
+      ssl_enabled = True
+    except:
+      print("SSL appears to be disabled or not installed on this machine. Please reinstall Python and/or Vim.")
 
   try:
     req = urllib2.urlopen(ghUrl(endpoint, repourl), timeout = 5)
