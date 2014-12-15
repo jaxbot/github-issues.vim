@@ -328,7 +328,7 @@ def showIssue():
     url = ghUrl("/issues/" + number)
     issue = json.loads(urllib2.urlopen(url).read())
 
-  b.append("# " + issue["title"].encode(vim.eval("&encoding")) + " (" + str(issue["number"]) + ")")
+  b.append("## Title: " + issue["title"].encode(vim.eval("&encoding")) + " (" + str(issue["number"]) + ")")
   if issue["user"]["login"]:
     b.append("## Reported By: " + issue["user"]["login"].encode(vim.eval("&encoding")))
 
@@ -412,13 +412,11 @@ def saveGissue():
     'milestone': ''
   }
 
-  issue['title'] = vim.current.buffer[0].split("# ")[1].split(" (" + number + ")")[0]
-
   commentmode = 0
 
   comment = ""
 
-  for line in vim.current.buffer[1:]:
+  for line in vim.current.buffer:
     if commentmode == 1:
       if line == "## Add a comment":
         commentmode = 2
@@ -436,6 +434,11 @@ def saveGissue():
       commentmode = 1
       continue
     if len(line.split("## Reported By:")) > 1:
+      continue
+
+    title = line.split("## Title:")
+    if len(title) > 1:
+      issue['title'] = title[1].strip().split(" (" + number + ")")[0]
       continue
 
     state = line.split("## State:")
@@ -465,6 +468,10 @@ def saveGissue():
     assignee = line.split("## Assignee:")
     if len(assignee) > 1:
       issue['assignee'] = assignee[1].strip()
+      continue
+
+    if line[:1] == "#":
+      # ignore any unknown comments
       continue
 
     if issue['body'] != '':

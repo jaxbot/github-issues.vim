@@ -73,7 +73,7 @@ function! s:showIssue(...)
   call s:setupOmni()
 
   if a:1 == "new"
-    normal 0ll
+    normal 0llllllllll
     startinsert
   endif
 
