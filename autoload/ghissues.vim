@@ -266,12 +266,15 @@ def getGHList(ignore_cache, repourl, endpoint, params):
 
   return github_datacache[repourl][endpoint]
 
-# adds issues, labels, and contributors to omni dictionary
+# populate the omnicomplete synchronously or asynchronously, depending on mode
 def populateOmniComplete():
-  thread = AsyncOmni("")
-  thread.start()
+  if vim.eval("g:gissues_async_omni"):
+    populateOmniCompleteAsync()
+  else:
+    doPopulateOmniComplete()
 
-  return
+# adds issues, labels, and contributors to omni dictionary
+def doPopulateOmniComplete():
   url = getUpstreamRepoURI()
 
   if url == "":
@@ -295,6 +298,15 @@ def populateOmniComplete():
   if milestones is not None:
     for milestone in milestones:
       addToOmni(str(milestone["title"].encode('utf-8')), 'Milestone')
+
+# calls populateOmniComplete asynchronously
+def populateOmniCompleteAsync():
+  thread = AsyncOmni()
+  thread.start()
+
+class AsyncOmni(threading.Thread):
+  def run(self):
+    doPopulateOmniComplete()
 
 # adds <keyword> to omni dictionary. used by populateOmniComplete
 def addToOmni(keyword, typ):
@@ -615,15 +627,6 @@ def ghUrl(endpoint, repourl = False):
 # returns an array of parens after gissues in filename
 def getFilenameParens():
   return vim.current.buffer.name.replace("\\", "/").split("gissues/")[1].split("/")
-
-class AsyncOmni(threading.Thread):
-  def __init__ (self, repourl):
-    threading.Thread.__init__(self)
-    self.repourl = repourl
-
-  def run(self):
-    #populateOmniComplete()
-    addToOmni("foo", 'Milestone')
 
 EOF
 
