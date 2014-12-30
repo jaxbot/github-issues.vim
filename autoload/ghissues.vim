@@ -12,6 +12,7 @@ import string
 import json
 import urllib2
 import subprocess
+import threading
 
 # dictionaries for caching
 # repo urls on github by filepath
@@ -267,6 +268,10 @@ def getGHList(ignore_cache, repourl, endpoint, params):
 
 # adds issues, labels, and contributors to omni dictionary
 def populateOmniComplete():
+  thread = AsyncOmni("")
+  thread.start()
+
+  return
   url = getUpstreamRepoURI()
 
   if url == "":
@@ -610,6 +615,15 @@ def ghUrl(endpoint, repourl = False):
 # returns an array of parens after gissues in filename
 def getFilenameParens():
   return vim.current.buffer.name.replace("\\", "/").split("gissues/")[1].split("/")
+
+class AsyncOmni(threading.Thread):
+  def __init__ (self, repourl):
+    threading.Thread.__init__(self)
+    self.repourl = repourl
+
+  def run(self):
+    #populateOmniComplete()
+    addToOmni("foo", 'Milestone')
 
 EOF
 
