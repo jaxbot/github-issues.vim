@@ -226,7 +226,6 @@ def getGHList(ignore_cache, repourl, endpoint, params):
   if github_datacache.get(repourl, '') == '' or len(github_datacache[repourl]) < 1:
     github_datacache[repourl] = {}
 
-  ignore_cache = False
   if (ignore_cache or
       cache_count > 3 or
       github_datacache[repourl].get(endpoint,'') == '' or
