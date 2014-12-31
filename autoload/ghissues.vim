@@ -12,6 +12,7 @@ import string
 import json
 import urllib2
 import subprocess
+import threading
 
 # dictionaries for caching
 # repo urls on github by filepath
@@ -228,7 +229,7 @@ def getGHList(ignore_cache, repourl, endpoint, params):
   if (ignore_cache or
       cache_count > 3 or
       github_datacache[repourl].get(endpoint,'') == '' or
-      len(github_datacache[repourl][endpoint]) < 1):
+      len(github_datacache[repourl].get(endpoint,'')) < 1):
 
     # load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
     try:
@@ -265,8 +266,15 @@ def getGHList(ignore_cache, repourl, endpoint, params):
 
   return github_datacache[repourl][endpoint]
 
-# adds issues, labels, and contributors to omni dictionary
+# populate the omnicomplete synchronously or asynchronously, depending on mode
 def populateOmniComplete():
+  if vim.eval("g:gissues_async_omni"):
+    populateOmniCompleteAsync()
+  else:
+    doPopulateOmniComplete()
+
+# adds issues, labels, and contributors to omni dictionary
+def doPopulateOmniComplete():
   url = getUpstreamRepoURI()
 
   if url == "":
@@ -290,6 +298,24 @@ def populateOmniComplete():
   if milestones is not None:
     for milestone in milestones:
       addToOmni(str(milestone["title"].encode('utf-8')), 'Milestone')
+
+# calls populateOmniComplete asynchronously
+def populateOmniCompleteAsync():
+  thread = AsyncOmni()
+  thread.start()
+
+class AsyncOmni(threading.Thread):
+  def run(self):
+    # Download and cache the omnicomplete data
+    url = getUpstreamRepoURI()
+
+    if url == "":
+      return
+
+    issues = getIssueList(url, 0)
+    labels = getLabels()
+    contributors = getContributors()
+    milestones = getMilestoneList(url)
 
 # adds <keyword> to omni dictionary. used by populateOmniComplete
 def addToOmni(keyword, typ):

@@ -113,6 +113,11 @@ g:gissues_lazy_load = 0
 
 When this is set to 1, omnicomplete will not be populated until it is triggered. This eliminates potential lag when opening `gitcommit` files.
 
+```
+g:gissues_async_omni = 0
+```
+
+**Experimental**: When set to 1, omnicomplete will be populated asynchronously, on another thread. This removes almost all lag from the UI when using Gissues, and can be combined with g:gissues_lazy_load to reduce network traffic while still receiving the same speed boost. However, this uses threads and needs a lot more testing to ensure it is stable.
 
 ### Contributing
 
