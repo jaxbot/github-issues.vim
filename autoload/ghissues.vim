@@ -13,6 +13,9 @@ import json
 import urllib2
 import subprocess
 
+SHOW_ALL = "[Show all issues]"
+SHOW_ASSIGNED_ME = "[Only show assigned to me]"
+
 # dictionaries for caching
 # repo urls on github by filepath
 github_repos = {}
@@ -123,7 +126,7 @@ def getUpstreamRepoURI():
   return repourl
 
 # displays the issues in a vim buffer
-def showIssueList(labels, ignore_cache = False):
+def showIssueList(labels, ignore_cache = False, only_me = False):
   repourl = getUpstreamRepoURI()
 
   if repourl == "":
@@ -143,8 +146,7 @@ def showIssueList(labels, ignore_cache = False):
   vim.command("normal ggdG")
 
   b = vim.current.buffer
-  print labels
-  issues = getIssueList(repourl, labels, ignore_cache)
+  issues = getIssueList(repourl, labels, ignore_cache, only_me)
 
   cur_milestone = str(vim.eval("g:github_current_milestone"))
 
@@ -162,10 +164,14 @@ def showIssueList(labels, ignore_cache = False):
 
   if len(b) < 2:
     b.append("No results found in " + repourl)
-    if cur_milestone:
-      b.append("Filtering by milestone: " + cur_milestone)
-    if labels:
-      b.append("Filtering by labels: " + labels)
+  if cur_milestone:
+    b.append("Filtering by milestone: " + cur_milestone)
+  if labels:
+    b.append("Filtering by labels: " + labels)
+  if cur_milestone or labels or only_me:
+    b.append(SHOW_ALL)
+  if not only_me:
+    b.append(SHOW_ASSIGNED_ME)
 
   highlightColoredLabels(getLabels(), True)
 
@@ -197,7 +203,7 @@ def showMilestoneList(labels, ignore_cache = False):
   vim.command("1delete _")
 
 # pulls the issue array from the server
-def getIssueList(repourl, query, ignore_cache = False):
+def getIssueList(repourl, query, ignore_cache = False, only_me = False):
   global github_datacache
 
   # non-string args correspond to vanilla issues request
@@ -205,11 +211,15 @@ def getIssueList(repourl, query, ignore_cache = False):
   params = {}
   if isinstance(query, basestring):
     params = { "labels": query }
-    print "label: " + query
   if query in ["open", "closed", "all"]:
     params = { "state": query }
+  if only_me:
+    params["assignee"] = getCurrentUser()
 
   return getGHList(ignore_cache, repourl, "/issues", params)
+
+def getCurrentUser():
+  return ghApi("", "user", True, False)["login"]
 
 # pulls the milestone list from the server
 def getMilestoneList(repourl, query = "", ignore_cache = False):
@@ -227,7 +237,6 @@ def getGHList(ignore_cache, repourl, endpoint, params):
   if github_datacache.get(repourl, '') == '' or len(github_datacache[repourl]) < 1:
     github_datacache[repourl] = {}
 
-  print ignore_cache
   if (ignore_cache or
       cache_count > 3 or
       github_datacache[repourl].get(endpoint,'') == '' or
@@ -245,7 +254,6 @@ def getGHList(ignore_cache, repourl, endpoint, params):
 
         # TODO This should be in ghUrl() I think
         qs = string.join([ k+'='+v for ( k, v ) in params.items()], '&')
-        print qs
         url = ghUrl(endpoint+'?'+qs, repourl)
 
         response = urllib2.urlopen(url)
@@ -307,8 +315,13 @@ def showIssueBuffer(number, url = ""):
   else:
     repourl = getUpstreamRepoURI()
 
-  print "hi"
-  print number
+  line = vim.eval("getline(\".\")")
+  if line == SHOW_ALL:
+    showIssueList(0, "True")
+    return
+  if line == SHOW_ASSIGNED_ME:
+    showIssueList(0, "True", "True")
+    return
 
   labels = getLabels()
   if labels is not None:
@@ -587,9 +600,11 @@ def highlightColoredLabels(labels, decorate = False):
     else:
       name = "\\\\<" + name + "\\\\>"
     vim.command("let m = matchadd(\"issueColor" + label["color"] + "\", \"" + name + "\")")
+  vim.command("hi issueButton guifg=#ffffff guibg=#333333 ctermbg=DarkGray")
+  vim.command("let m = matchadd(\"issueButton\", \"\\\\[.*how.*\\\\]\")")
 
 # queries the ghApi for <endpoint>
-def ghApi(endpoint, repourl = False, cache = True):
+def ghApi(endpoint, repourl = False, cache = True, repo = True):
   global ssl_enabled
 
   if not repourl:
@@ -606,7 +621,7 @@ def ghApi(endpoint, repourl = False, cache = True):
       print("SSL appears to be disabled or not installed on this machine. Please reinstall Python and/or Vim.")
 
   try:
-    req = urllib2.urlopen(ghUrl(endpoint, repourl), timeout = 5)
+    req = urllib2.urlopen(ghUrl(endpoint, repourl, repo), timeout = 5)
     data = json.loads(req.read())
 
     api_cache[repourl + "/" + endpoint] = data
@@ -618,7 +633,7 @@ def ghApi(endpoint, repourl = False, cache = True):
     return None
 
 # generates a github URL, including access token
-def ghUrl(endpoint, repourl = False):
+def ghUrl(endpoint, repourl = False, repo = True):
   params = ""
   token = vim.eval("g:github_access_token")
   if token:
@@ -630,7 +645,10 @@ def ghUrl(endpoint, repourl = False):
   if not repourl:
     repourl = getUpstreamRepoURI()
 
-  return vim.eval("g:github_api_url") + "repos/" + urllib2.quote(repourl) + endpoint + params
+  if repo:
+    repourl = "repos/" + repourl
+
+  return vim.eval("g:github_api_url") + urllib2.quote(repourl) + endpoint + params
 
 # returns an array of parens after gissues in filename
 def getFilenameParens():
