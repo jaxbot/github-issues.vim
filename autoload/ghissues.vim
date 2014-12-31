@@ -152,10 +152,10 @@ def showIssueList(labels, ignore_cache = False):
     if cur_milestone != "" and (not issue["milestone"] or issue["milestone"]["title"] != cur_milestone):
       continue
 
-    issuestr = str(issue["number"]) + " " + issue["title"] + " "
+    issuestr = str(issue["number"]) + " " + issue["title"]
 
     for label in issue["labels"]:
-      issuestr += label["name"] + " "
+      issuestr += " [" + label["name"] + "]"
 
     b.append(issuestr.encode(vim.eval("&encoding")))
 
@@ -166,7 +166,7 @@ def showIssueList(labels, ignore_cache = False):
     if labels:
       b.append("Filtering by labels: " + labels)
 
-  highlightColoredLabels(getLabels())
+  highlightColoredLabels(getLabels(), True)
 
   # append leaves an unwanted beginning line. delete it.
   vim.command("1delete _")
@@ -552,7 +552,7 @@ def getContributors():
   return ghApi("/stats/contributors")
 
 # adds labels to the match system
-def highlightColoredLabels(labels):
+def highlightColoredLabels(labels, decorate = False):
   if not labels:
     labels = []
 
@@ -561,7 +561,12 @@ def highlightColoredLabels(labels):
 
   for label in labels:
     vim.command("hi issueColor" + label["color"] + " guifg=#ffffff guibg=#" + label["color"])
-    vim.command("let m = matchadd(\"issueColor" + label["color"] + "\", \"\\\\<" + label["name"] + "\\\\>\")")
+    name = label["name"]
+    if decorate:
+      name = "\\\\[" + name + "\\\\]"
+    else:
+      name = "\\\\<" + name + "\\\\>"
+    vim.command("let m = matchadd(\"issueColor" + label["color"] + "\", \"" + name + "\")")
 
 # queries the ghApi for <endpoint>
 def ghApi(endpoint, repourl = False, cache = True):
