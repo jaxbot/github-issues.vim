@@ -105,9 +105,9 @@ function! githubissues#CompleteIssues(findstart, base)
     endif
   endif
 
-  if g:gissues_async_omni || 1
-    let b:omni_options = []
-    python fillOmniArray()
+  if g:gissues_async_omni && len(b:omni_options) < 1
+    python doPopulateOmniComplete()
+  endif
 
   if a:findstart
     " locate the start of the word
@@ -155,10 +155,8 @@ function! s:setupOmni()
 
   if !g:gissues_lazy_load
     python populateOmniComplete()
-    if 0 && !g:gissues_async_omni
-      python fillOmniArray()
-    else
-      let b:did_fill_omnicomplete = 0
+    if !g:gissues_async_omni
+      python doPopulateOmniComplete()
     endif
   else
     let b:did_init_omnicomplete = 0
