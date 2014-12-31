@@ -53,8 +53,8 @@ function! s:showGithubIssues(...)
   " its not a real file
   set buftype=nofile
 
-  " map the enter key to copy the line, close the window, and paste it
-  nnoremap <buffer> <cr> :normal! 0<cr>:call <SID>showIssue(expand("<cword>"))<cr>
+  " map the enter key to show issue or click link
+  nnoremap <buffer> <cr> :call <SID>showIssue(expand("<cword>"))<cr>
   nnoremap <buffer> i :Giadd<cr>
   nnoremap <buffer> q :q<cr>
 

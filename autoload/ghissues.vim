@@ -143,6 +143,7 @@ def showIssueList(labels, ignore_cache = False):
   vim.command("normal ggdG")
 
   b = vim.current.buffer
+  print labels
   issues = getIssueList(repourl, labels, ignore_cache)
 
   cur_milestone = str(vim.eval("g:github_current_milestone"))
@@ -203,7 +204,8 @@ def getIssueList(repourl, query, ignore_cache = False):
   # strings default to label unless they correspond to a state
   params = {}
   if isinstance(query, basestring):
-    params = { "label": query }
+    params = { "labels": query }
+    print "label: " + query
   if query in ["open", "closed", "all"]:
     params = { "state": query }
 
@@ -225,6 +227,7 @@ def getGHList(ignore_cache, repourl, endpoint, params):
   if github_datacache.get(repourl, '') == '' or len(github_datacache[repourl]) < 1:
     github_datacache[repourl] = {}
 
+  print ignore_cache
   if (ignore_cache or
       cache_count > 3 or
       github_datacache[repourl].get(endpoint,'') == '' or
@@ -242,6 +245,7 @@ def getGHList(ignore_cache, repourl, endpoint, params):
 
         # TODO This should be in ghUrl() I think
         qs = string.join([ k+'='+v for ( k, v ) in params.items()], '&')
+        print qs
         url = ghUrl(endpoint+'?'+qs, repourl)
 
         response = urllib2.urlopen(url)
@@ -295,12 +299,28 @@ def populateOmniComplete():
 def addToOmni(keyword, typ):
   vim.command("call add(b:omni_options, "+json.dumps({ 'word': keyword, 'menu': '[' + typ + ']' })+")")
 
-# simply opens a buffer based on repourl and issue <number>
+# handle user pressing enter on the gissue list
+# possible actions: view issue, filter by label, filter by assignee, remove filters
 def showIssueBuffer(number, url = ""):
   if url != "":
     repourl = url
   else:
     repourl = getUpstreamRepoURI()
+
+  print "hi"
+  print number
+
+  labels = getLabels()
+  if labels is not None:
+    for label in labels:
+      if str(label["name"]) == number:
+        showIssueList(number, "True")
+        return
+
+  if number != "new":
+    vim.command("normal! 0")
+    number = vim.eval("expand('<cword>')")
+
 
   if not vim.eval("g:github_same_window") == "1":
     vim.command("silent new")
