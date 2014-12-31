@@ -224,12 +224,17 @@ def getGHList(ignore_cache, repourl, endpoint, params):
 
   # Maybe initialise
   if github_datacache.get(repourl, '') == '' or len(github_datacache[repourl]) < 1:
+    print "init"
+    print "Init:" + endpoint
     github_datacache[repourl] = {}
 
+  ignore_cache = False
   if (ignore_cache or
-      cache_count > 3 or
+      cache_count > 9993 or
       github_datacache[repourl].get(endpoint,'') == '' or
-      len(github_datacache[repourl][endpoint]) < 1):
+      len(github_datacache[repourl].get(endpoint,'')) < 1):
+    print "resetting for " + repourl + "/" + endpoint
+    print len(github_datacache[repourl].get(endpoint,'')) < 1
 
     # load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
     try:
@@ -264,6 +269,7 @@ def getGHList(ignore_cache, repourl, endpoint, params):
   else:
     cache_count += 1
 
+  print cache_count
   return github_datacache[repourl][endpoint]
 
 # populate the omnicomplete synchronously or asynchronously, depending on mode
@@ -280,9 +286,10 @@ def doPopulateOmniComplete():
   if url == "":
     return
 
-  issues = getIssueList(url, 0)
-  for issue in issues:
-    addToOmni(str(issue["number"]) + " " + issue["title"], 'Issue')
+
+  #issues = getIssueList(url, 0)
+  #for issue in issues:
+  #addToOmni(str(issue["number"]) + " " + issue["title"], 'Issue')
 
   labels = getLabels()
   if labels is not None:
@@ -294,10 +301,10 @@ def doPopulateOmniComplete():
     for contributor in contributors:
       addToOmni(str(contributor["author"]["login"]), 'user')
 
-  milestones = getMilestoneList(url)
-  if milestones is not None:
-    for milestone in milestones:
-      addToOmni(str(milestone["title"].encode('utf-8')), 'Milestone')
+  #milestones = getMilestoneList(url)
+  #if milestones is not None:
+  #for milestone in milestones:
+  #addToOmni(str(milestone["title"].encode('utf-8')), 'Milestone')
 
 # calls populateOmniComplete asynchronously
 def populateOmniCompleteAsync():
@@ -306,7 +313,23 @@ def populateOmniCompleteAsync():
 
 class AsyncOmni(threading.Thread):
   def run(self):
-    doPopulateOmniComplete()
+    #doPopulateOmniComplete()
+    #addToOmni("foo", "bar")
+    url = getUpstreamRepoURI()
+
+    if url == "":
+      return
+
+    issues = getIssueList(url, 0)
+    labels = getLabels()
+    contributors = getContributors()
+    milestones = getMilestoneList(url)
+
+# adds all omnicomplete terms to dictionary
+def fillOmniArray():
+  print "filling omni"
+  doPopulateOmniComplete()
+  print "filled."
 
 # adds <keyword> to omni dictionary. used by populateOmniComplete
 def addToOmni(keyword, typ):
@@ -588,6 +611,7 @@ def ghApi(endpoint, repourl = False, cache = True):
     repourl = getUpstreamRepoURI()
 
   if cache and api_cache.get(repourl + "/" + endpoint):
+    print "yay, " + endpoint + " was cached"
     return api_cache[repourl + "/" + endpoint]
 
   if not ssl_enabled:

@@ -105,6 +105,10 @@ function! githubissues#CompleteIssues(findstart, base)
     endif
   endif
 
+  if g:gissues_async_omni || 1
+    let b:omni_options = []
+    python fillOmniArray()
+
   if a:findstart
     " locate the start of the word
     let line = getline('.')
@@ -151,6 +155,11 @@ function! s:setupOmni()
 
   if !g:gissues_lazy_load
     python populateOmniComplete()
+    if 0 && !g:gissues_async_omni
+      python fillOmniArray()
+    else
+      let b:did_fill_omnicomplete = 0
+    endif
   else
     let b:did_init_omnicomplete = 0
   endif
