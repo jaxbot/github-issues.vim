@@ -287,7 +287,7 @@ def doPopulateOmniComplete():
   labels = getLabels()
   if labels is not None:
     for label in labels:
-      addToOmni(str(label["name"]), 'Label')
+      addToOmni(unicode(label["name"]), 'Label')
 
   contributors = getContributors()
   if contributors is not None:
