@@ -12,6 +12,7 @@ import string
 import json
 import urllib2
 import subprocess
+import time
 
 SHOW_ALL = "[Show all issues]"
 SHOW_ASSIGNED_ME = "[Only show assigned to me]"
@@ -238,9 +239,9 @@ def getGHList(ignore_cache, repourl, endpoint, params):
     github_datacache[repourl] = {}
 
   if (ignore_cache or
-      cache_count > 3 or
       github_datacache[repourl].get(endpoint,'') == '' or
-      len(github_datacache[repourl][endpoint]) < 1):
+      len(github_datacache[repourl][endpoint]) < 1 or
+      time.time() - github_datacache[repourl][endpoint][0]["cachetime"] > 60):
 
     # load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
     try:
@@ -271,9 +272,7 @@ def getGHList(ignore_cache, repourl, endpoint, params):
       if "code" in e and e.code == 404:
         print("github-issues.vim: Error: Do you have a github_access_token defined?")
 
-    cache_count = 0
-  else:
-    cache_count += 1
+    github_datacache[repourl][endpoint][0]["cachetime"] = time.time()
 
   return github_datacache[repourl][endpoint]
 
