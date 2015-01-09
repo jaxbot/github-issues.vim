@@ -95,7 +95,9 @@ def getRepoURI():
       continue
 
     # Remove " (fetch)"/" (pull)" and ".git" suffixes.
-    url = url.split(" ", 1)[0].split(".git", 1)[0]
+    url = url.split(" ", 1)[0]
+    if url.endswith(".git"):
+      url = url[:-4]
 
     # Skip any unwanted urls.
     for possible_url in possible_urls:
