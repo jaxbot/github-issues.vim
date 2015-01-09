@@ -1,5 +1,5 @@
 " File:        github-issues.vim
-" Version:     3.0.0
+" Version:     3.1.0
 " Description: Pulls github issues into Vim
 " Maintainer:  Jonathan Warner <jaxbot@gmail.com> <http://github.com/jaxbot>
 " Homepage:    http://jaxbot.me/
@@ -105,6 +105,10 @@ function! githubissues#CompleteIssues(findstart, base)
     endif
   endif
 
+  if g:gissues_async_omni && len(b:omni_options) < 1
+    python doPopulateOmniComplete()
+  endif
+
   if a:findstart
     " locate the start of the word
     let line = getline('.')
@@ -151,6 +155,9 @@ function! s:setupOmni()
 
   if !g:gissues_lazy_load
     python populateOmniComplete()
+    if !g:gissues_async_omni
+      python doPopulateOmniComplete()
+    endif
   else
     let b:did_init_omnicomplete = 0
   endif
@@ -235,6 +242,11 @@ endif
 " lazy load issues
 if !exists("g:gissues_lazy_load")
   let g:gissues_lazy_load = 0
+endif
+
+" asynchronously load autocomplete
+if !exists("g:gissues_async_omni")
+  let g:gissues_async_omni = 0
 endif
 
 if !exists("g:gissues_default_remote")

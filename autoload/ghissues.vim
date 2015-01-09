@@ -13,6 +13,7 @@ import json
 import urllib2
 import subprocess
 import time
+import threading
 
 SHOW_ALL = "[Show all issues]"
 SHOW_ASSIGNED_ME = "[Only show assigned to me]"
@@ -240,7 +241,7 @@ def getGHList(ignore_cache, repourl, endpoint, params):
 
   if (ignore_cache or
       github_datacache[repourl].get(endpoint,'') == '' or
-      len(github_datacache[repourl][endpoint]) < 1 or
+      len(github_datacache[repourl].get(endpoint,'')) < 1 or
       time.time() - github_datacache[repourl][endpoint][0]["cachetime"] > 60):
 
     # load the github API. github_repo looks like "jaxbot/github-issues.vim", for ex.
@@ -272,12 +273,20 @@ def getGHList(ignore_cache, repourl, endpoint, params):
       if "code" in e and e.code == 404:
         print("github-issues.vim: Error: Do you have a github_access_token defined?")
 
-    github_datacache[repourl][endpoint][0]["cachetime"] = time.time()
+    if len(github_datacache[repourl][endpoint]) > 0:
+      github_datacache[repourl][endpoint][0]["cachetime"] = time.time()
 
   return github_datacache[repourl][endpoint]
 
-# adds issues, labels, and contributors to omni dictionary
+# populate the omnicomplete synchronously or asynchronously, depending on mode
 def populateOmniComplete():
+  if vim.eval("g:gissues_async_omni"):
+    populateOmniCompleteAsync()
+  else:
+    doPopulateOmniComplete()
+
+# adds issues, labels, and contributors to omni dictionary
+def doPopulateOmniComplete():
   url = getUpstreamRepoURI()
 
   if url == "":
@@ -290,7 +299,7 @@ def populateOmniComplete():
   labels = getLabels()
   if labels is not None:
     for label in labels:
-      addToOmni(str(label["name"]), 'Label')
+      addToOmni(unicode(label["name"]), 'Label')
 
   contributors = getContributors()
   if contributors is not None:
@@ -301,6 +310,24 @@ def populateOmniComplete():
   if milestones is not None:
     for milestone in milestones:
       addToOmni(str(milestone["title"].encode('utf-8')), 'Milestone')
+
+# calls populateOmniComplete asynchronously
+def populateOmniCompleteAsync():
+  thread = AsyncOmni()
+  thread.start()
+
+class AsyncOmni(threading.Thread):
+  def run(self):
+    # Download and cache the omnicomplete data
+    url = getUpstreamRepoURI()
+
+    if url == "":
+      return
+
+    issues = getIssueList(url, 0)
+    labels = getLabels()
+    contributors = getContributors()
+    milestones = getMilestoneList(url)
 
 # adds <keyword> to omni dictionary. used by populateOmniComplete
 def addToOmni(keyword, typ):
