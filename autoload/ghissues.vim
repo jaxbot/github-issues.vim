@@ -656,8 +656,9 @@ def ghApi(endpoint, repourl = False, cache = True, repo = True):
 
     return data
   except Exception as e:
-    print("github-issues.vim: An error occurred. If this is a private repo, make sure you have a github_access_token defined. Call: " + endpoint + " on " + repourl)
-    print(e)
+    if vim.eval("g:gissues_show_errors") != "0":
+      print("github-issues.vim: An error occurred. If this is a private repo, make sure you have a github_access_token defined. Call: " + endpoint + " on " + repourl)
+      print(e)
     return None
 
 # generates a github URL, including access token

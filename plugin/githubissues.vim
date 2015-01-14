@@ -253,3 +253,7 @@ if !exists("g:gissues_default_remote")
   let g:gissues_default_remote = "origin"
 endif
 
+if !exists("g:gissues_show_errors")
+  let g:gissues_show_errors = 0
+endif
+
