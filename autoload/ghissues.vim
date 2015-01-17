@@ -625,7 +625,7 @@ def highlightColoredLabels(labels, decorate = False):
     xtermcolor = "242"
 
     # If we've loaded xterm colors, calculate one
-    if vim.eval("g:gissues_xterm_colors"):
+    if vim.eval("g:gissues_xterm_colors") != "0":
       xtermcolor = rgb_to_xterm(label["color"])[1:]
 
     vim.command("hi issueColor" + label["color"] + " ctermbg=" + xtermcolor + " guifg=#ffffff guibg=#" + label["color"])
