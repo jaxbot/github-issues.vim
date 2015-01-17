@@ -884,7 +884,7 @@ def highlightColoredLabels(labels, decorate = False):
   labels.append({ 'name': 'open', 'color': '00aa00'})
 
   for label in labels:
-    vim.command("hi issueColor" + label["color"] + " guifg=#ffffff guibg=#" + label["color"])
+    vim.command("hi issueColor" + label["color"] + " ctermbg=" + hexToTerm(label["color"])[1:] + " guifg=#ffffff guibg=#" + label["color"])
     name = label["name"]
     if decorate:
       name = "\\\\[" + name + "\\\\]"
