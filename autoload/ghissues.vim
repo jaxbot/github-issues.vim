@@ -539,10 +539,6 @@ def saveGissue():
       issue['assignee'] = assignee[1].strip()
       continue
 
-    if line[:1] == "#":
-      # ignore any unknown comments
-      continue
-
     if issue['body'] != '':
       issue['body'] += '\n'
     issue['body'] += line
