@@ -465,6 +465,11 @@ def showIssue():
 
 # saves an issue and pushes it to the server
 def saveGissue():
+  token = vim.eval("g:github_access_token")
+  if not token:
+    print("github-issues.vim: In order to save an issue or add a comment, you need to define a GitHub token. See: https://github.com/jaxbot/github-issues.vim#configuration")
+    return
+
   parens = getFilenameParens()
   number = parens[2]
 
