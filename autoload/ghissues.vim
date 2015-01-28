@@ -414,7 +414,8 @@ def showIssue():
   b.append("## Labels: " + labelstr[:-2])
 
   if issue["body"]:
-    b.append(issue["body"].encode(vim.eval("&encoding")).split("\n"))
+    lines = issue["body"].encode(vim.eval("&encoding")).split("\n")
+    b.append(map(lambda line: line.strip(), lines))
 
   if number != "new":
     b.append("## Comments")
@@ -440,7 +441,8 @@ def showIssue():
         b.append(user.encode(vim.eval("&encoding")) + "(" + event["created_at"] + ")")
 
         if "body" in event:
-          b.append(event["body"].encode(vim.eval("&encoding")).split("\n"))
+          lines = event["body"].encode(vim.eval("&encoding")).split("\n")
+          b.append(map(lambda line: line.strip(), lines))
         else:
           eventstr = event["event"].encode(vim.eval("&encoding"))
           if "commit_id" in event and event["commit_id"]:
