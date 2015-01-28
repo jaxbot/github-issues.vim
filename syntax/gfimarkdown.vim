@@ -73,6 +73,7 @@ syn region markdownBoldItalic start="\<___\|___\>" end="\<___\|___\>" keepend co
 syn region markdownCode matchgroup=markdownCodeDelimiter start="`" end="`" keepend contains=markdownLineStart
 syn region markdownCode matchgroup=markdownCodeDelimiter start="`` \=" end=" \=``" keepend contains=markdownLineStart
 syn region markdownGHCodeBlock matchgroup=markdownCodeDelimiter start="^\s*$\n\s*```\s\?\S*\s*$" end="\s*```$\n\s*\n" contained  keepend
+syn region markdownGHCodeBlock matchgroup=markdownCodeDelimiter start="^\s*```.*$" end="^\s*```\ze\s*$" keepend
 
 syn match markdownEscape "\\[][\\`*_{}()#+.!-]"
 
