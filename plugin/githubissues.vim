@@ -211,8 +211,8 @@ endif
 
 if !exists("g:github_access_token")
   let g:github_access_token = ""
-elseif filereadable(simplify("g:github_access_token"))
-  let lines = readfile(g:github_access_token)
+elseif filereadable(expand(g:github_access_token))
+  let lines = readfile(expand(g:github_access_token))
   if !empty(lines)
     let g:github_access_token=lines[0]
   endif
