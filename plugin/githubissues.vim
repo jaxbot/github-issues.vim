@@ -183,6 +183,11 @@ function! s:setMilestone(title)
 
 endfunction
 
+function! s:showThisIssue(...)
+  call ghissues#init()
+  python showIssue(vim.eval("a:1"),vim.eval("a:2"))
+endfunction
+
 " define the :Gissues command
 command! -nargs=* Gissues call s:showGithubIssues(<f-args>)
 command! -nargs=* Giadd call s:showIssue("new", <f-args>)
@@ -190,6 +195,8 @@ command! -nargs=* Giedit call s:showIssue(<f-args>)
 command! -nargs=0 Giupdate call s:updateIssue()
 
 command! -nargs=* Gmiles call s:showGithubMilestones(<f-args>)
+
+command! -nargs=* Gishow call s:showThisIssue(<f-args>)
 
 autocmd BufReadCmd gissues/*/\([0-9]*\|new\) call s:updateIssue()
 autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <buffer> cc :call <SID>setIssueState(0)<cr>

@@ -368,11 +368,14 @@ def showIssueBuffer(number, url = ""):
   vim.command("edit gissues/" + repourl + "/" + number)
 
 # show an issue buffer in detail
-def showIssue():
-  repourl = getUpstreamRepoURI()
+def showIssue(number=False, repourl=False):
+  if repourl is False:
+    repourl = getUpstreamRepoURI()
 
-  parens = getFilenameParens()
-  number = parens[2]
+  if number is False:
+    parens = getFilenameParens()
+    number = parens[2]
+
   b = vim.current.buffer
   vim.command("normal ggdG")
 
@@ -389,7 +392,7 @@ def showIssue():
       'labels': []
     }
   else:
-    url = ghUrl("/issues/" + number)
+    url = ghUrl("/issues/" + number, repourl)
     issue = json.loads(urllib2.urlopen(url).read())
 
   b.append("## Title: " + issue["title"].encode(vim.eval("&encoding")) + " (" + str(issue["number"]) + ")")
@@ -420,11 +423,11 @@ def showIssue():
   if number != "new":
     b.append("## Comments")
 
-    url = ghUrl("/issues/" + number + "/comments")
+    url = ghUrl("/issues/" + number + "/comments", repourl)
     data = urllib2.urlopen(url).read()
     comments = json.loads(data)
 
-    url = ghUrl("/issues/" + number + "/events")
+    url = ghUrl("/issues/" + number + "/events", repourl)
     data = urllib2.urlopen(url).read()
     events = json.loads(data)
 
