@@ -185,6 +185,11 @@ endfunction
 
 function! s:showThisIssue(...)
   call ghissues#init()
+
+  " map the enter key to show issue or click link
+  nnoremap <buffer> <cr> :call <SID>showIssue(expand("<cword>"))<cr>
+  nnoremap <buffer> <silent> q :q<CR>
+
   python showIssue(vim.eval("a:1"),vim.eval("a:2"))
 endfunction
 
