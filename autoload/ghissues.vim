@@ -17,6 +17,8 @@ import threading
 
 SHOW_ALL = "[Show all issues]"
 SHOW_ASSIGNED_ME = "[Only show assigned to me]"
+SHOW_COMMITS = "## [Commits]"
+SHOW_FILES_CHANGED = "## [Files Changed]"
 
 # dictionaries for caching
 # repo urls on github by filepath
@@ -128,6 +130,33 @@ def getUpstreamRepoURI():
       repourl = repoinfo["source"]["full_name"]
 
   return repourl
+
+def showCommits():
+  number = vim.eval("b:ghissue_number")
+  url = ghUrl("/pulls/" + number + "/commits")
+  response = urllib2.urlopen(url)
+  commits = json.loads(response.read())
+  newTab()
+  b = vim.current.buffer
+  for commit in commits:
+    b.append(commit['sha'] +" "+commit['commit']['message'])
+  vim.command("normal ggdd")
+
+def showFilesChanged():
+  number = vim.eval("b:ghissue_number")
+  url = ghUrl("/pulls/" + number)
+  headers = { "Accept" : "application/vnd.github.diff" }
+  req = urllib2.Request(url,None,headers)
+  diff = urllib2.urlopen(req)
+  newTab()
+  vim.command("set syn=diff")
+  b = vim.current.buffer
+  b.append("".join(diff).split("\n"))
+  vim.command("normal ggdd")
+
+def newTab():
+  vim.command("silent tabe")
+  vim.command("nnoremap <buffer> <silent> q :q<CR>")
 
 # displays the issues in a vim buffer
 def showIssueList(labels, ignore_cache = False, only_me = False):
@@ -350,6 +379,13 @@ def showIssueBuffer(number, url = ""):
   if line == SHOW_ASSIGNED_ME:
     showIssueList(0, "True", "True")
     return
+  if line == SHOW_COMMITS:
+    showCommits()
+    return
+  if line == SHOW_FILES_CHANGED:
+    showFilesChanged()
+    return
+
 
   labels = getLabels()
   if labels is not None:
@@ -422,6 +458,8 @@ def showIssue(number=False, repourl=False):
     b.append(map(lambda line: line.strip(), lines))
 
   if number != "new":
+    b.append(SHOW_COMMITS)
+    b.append(SHOW_FILES_CHANGED)
     b.append("## Comments")
 
     url = ghUrl("/issues/" + number + "/comments", repourl)
