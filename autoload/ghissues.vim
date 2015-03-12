@@ -392,6 +392,7 @@ def showIssue(number=False, repourl=False):
       'labels': []
     }
   else:
+    vim.command("let b:ghissue_number="+number)
     url = ghUrl("/issues/" + number, repourl)
     issue = json.loads(urllib2.urlopen(url).read())
 
