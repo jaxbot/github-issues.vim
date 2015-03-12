@@ -139,7 +139,7 @@ def showCommits():
   newTab()
   b = vim.current.buffer
   for commit in commits:
-    b.append(commit['sha'] +" "+commit['commit']['message'])
+    b.append((commit['sha'] + " " + commit['commit']['message']).split("\n"))
   vim.command("normal ggdd")
 
 def showFilesChanged():
