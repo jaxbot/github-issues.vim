@@ -133,7 +133,8 @@ def getUpstreamRepoURI():
 
 def showCommits():
   number = vim.eval("b:ghissue_number")
-  url = ghUrl("/pulls/" + number + "/commits")
+  repourl = vim.eval("b:ghissue_repourl")
+  url = ghUrl("/pulls/" + number + "/commits", repourl)
   response = urllib2.urlopen(url)
   commits = json.loads(response.read())
   newTab()
@@ -144,7 +145,8 @@ def showCommits():
 
 def showFilesChanged():
   number = vim.eval("b:ghissue_number")
-  url = ghUrl("/pulls/" + number)
+  repourl = vim.eval("b:ghissue_repourl")
+  url = ghUrl("/pulls/" + number, repourl)
   headers = { "Accept" : "application/vnd.github.diff" }
   req = urllib2.Request(url,None,headers)
   diff = urllib2.urlopen(req)
@@ -429,6 +431,7 @@ def showIssue(number=False, repourl=False):
     }
   else:
     vim.command("let b:ghissue_number="+number)
+    vim.command("let b:ghissue_repourl=\""+repourl+"\"")
     url = ghUrl("/issues/" + number, repourl)
     issue = json.loads(urllib2.urlopen(url).read())
 
