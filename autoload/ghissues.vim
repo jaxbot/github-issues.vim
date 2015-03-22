@@ -455,14 +455,14 @@ def showIssue(number=False, repourl=False):
     for label in issue["labels"]:
       labelstr += label["name"] + ", "
   b.append("## Labels: " + labelstr[:-2])
+  b.append(SHOW_COMMITS)
+  b.append(SHOW_FILES_CHANGED)
 
   if issue["body"]:
     lines = issue["body"].encode(vim.eval("&encoding")).split("\n")
     b.append(map(lambda line: line.strip(), lines))
 
   if number != "new":
-    b.append(SHOW_COMMITS)
-    b.append(SHOW_FILES_CHANGED)
     b.append("## Comments")
 
     url = ghUrl("/issues/" + number + "/comments", repourl)
