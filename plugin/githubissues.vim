@@ -166,7 +166,10 @@ endfunction
 function! s:handleEnter()
   if len(expand("<cword>")) == 40
     echo expand("<cword>")
-    execute ":Gedit " . expand("<cword>")
+    let a:sha = expand("<cword>")
+    tabe '_commit'
+    execute ":Gedit " . a:sha
+    nnoremap <buffer> <silent> q :q<CR>
   endif
 endfunction
 
