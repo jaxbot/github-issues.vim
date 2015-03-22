@@ -137,11 +137,12 @@ def showCommits():
   url = ghUrl("/pulls/" + number + "/commits", repourl)
   response = urllib2.urlopen(url)
   commits = json.loads(response.read())
-  newTab()
+  newTab("_Commits_")
   b = vim.current.buffer
   for commit in commits:
     b.append((commit['sha'] + " " + commit['commit']['message']).split("\n"))
   vim.command("normal ggdd")
+  vim.command("nnoremap <buffer> <CR> :call <SID>handleEnter()<cr>")
 
 def showFilesChanged():
   number = vim.eval("b:ghissue_number")
@@ -150,14 +151,14 @@ def showFilesChanged():
   headers = { "Accept" : "application/vnd.github.diff" }
   req = urllib2.Request(url,None,headers)
   diff = urllib2.urlopen(req)
-  newTab()
+  newTab("_Files_Changed_")
   vim.command("set syn=diff")
   b = vim.current.buffer
   b.append("".join(diff).split("\n"))
   vim.command("normal ggdd")
 
-def newTab():
-  vim.command("silent tabe")
+def newTab(name):
+  vim.command("silent tabe %s" % name)
   vim.command("nnoremap <buffer> <silent> q :q<CR>")
 
 # displays the issues in a vim buffer
