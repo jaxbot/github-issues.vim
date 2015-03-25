@@ -457,8 +457,10 @@ def showIssue(number=False, repourl=False):
     for label in issue["labels"]:
       labelstr += label["name"] + ", "
   b.append("## Labels: " + labelstr[:-2])
-  b.append(SHOW_COMMITS)
-  b.append(SHOW_FILES_CHANGED)
+
+  if number != "new":
+    b.append(SHOW_COMMITS)
+    b.append(SHOW_FILES_CHANGED)
 
   if issue["body"]:
     lines = issue["body"].encode(vim.eval("&encoding")).split("\n")
@@ -586,6 +588,9 @@ def saveGissue():
     assignee = line.split("## Assignee:")
     if len(assignee) > 1:
       issue['assignee'] = assignee[1].strip()
+      continue
+
+    if line == SHOW_COMMITS or line == SHOW_FILES_CHANGED:
       continue
 
     if issue['body'] != '':
