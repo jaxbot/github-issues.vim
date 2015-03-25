@@ -196,6 +196,11 @@ function! s:showThisIssue(...)
   python showIssue(vim.eval("a:1"),vim.eval("a:2"))
 endfunction
 
+function! s:commitHighlighting()
+  hi shaHighlight term=bold cterm=bold gui=bold ctermfg=red guifg=red
+  syn match shaHighlight "\v^[a-zA-Z0-9]{40}"
+endfunction
+
 " define the :Gissues command
 command! -nargs=* Gissues call s:showGithubIssues(<f-args>)
 command! -nargs=* Giadd call s:showIssue("new", <f-args>)

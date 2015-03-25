@@ -143,6 +143,7 @@ def showCommits():
     b.append((commit['sha'] + " " + commit['commit']['message']).split("\n"))
   vim.command("normal ggdd")
   vim.command("nnoremap <buffer> <CR> :call <SID>handleEnter()<cr>")
+  vim.command("call <SID>commitHighlighting()")
 
 def showFilesChanged():
   number = vim.eval("b:ghissue_number")
