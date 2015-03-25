@@ -131,13 +131,13 @@ def getUpstreamRepoURI():
 
   return repourl
 
-def showCommits():
+def showCommits(split = False):
   number = vim.eval("b:ghissue_number")
   repourl = vim.eval("b:ghissue_repourl")
   url = ghUrl("/pulls/" + number + "/commits", repourl)
   response = urllib2.urlopen(url)
   commits = json.loads(response.read())
-  newTab("_Commits_")
+  newSplit("_Commits_") if split else newTab("_Commits_")
   b = vim.current.buffer
   for commit in commits:
     b.append((commit['sha'] + " " + commit['commit']['message']).split("\n"))
@@ -145,21 +145,28 @@ def showCommits():
   vim.command("nnoremap <buffer> <CR> :call <SID>handleEnter()<cr>")
   vim.command("call <SID>commitHighlighting()")
 
-def showFilesChanged():
+def showFilesChanged(split = False):
   number = vim.eval("b:ghissue_number")
   repourl = vim.eval("b:ghissue_repourl")
   url = ghUrl("/pulls/" + number, repourl)
   headers = { "Accept" : "application/vnd.github.diff" }
   req = urllib2.Request(url,None,headers)
   diff = urllib2.urlopen(req)
-  newTab("_Files_Changed_")
+  newSplit("_Files_Changed_") if split else newTab("_Files_Changed_")
   vim.command("set syn=diff")
   b = vim.current.buffer
   b.append("".join(diff).split("\n"))
   vim.command("normal ggdd")
 
 def newTab(name):
-  vim.command("silent tabe %s" % name)
+  vim.command("silent tabe +set\ buftype=nofile %s" % name)
+  mapQuit()
+
+def newSplit(name):
+  vim.command("silent belowright vsplit +set\ buftype=nofile %s" % name)
+  mapQuit()
+
+def mapQuit():
   vim.command("nnoremap <buffer> <silent> q :q<CR>")
 
 # displays the issues in a vim buffer
@@ -370,11 +377,14 @@ def addToOmni(keyword, typ):
 
 # handle user pressing enter on the gissue list
 # possible actions: view issue, filter by label, filter by assignee, remove filters
-def showIssueBuffer(number, url = ""):
+def showIssueBuffer(number, url = "", split="False"):
   if url != "":
     repourl = url
   else:
     repourl = getUpstreamRepoURI()
+
+  # convert string to boolean
+  split = split == "True"
 
   line = vim.eval("getline(\".\")")
   if line == SHOW_ALL:
@@ -384,10 +394,10 @@ def showIssueBuffer(number, url = ""):
     showIssueList(0, "True", "True")
     return
   if line == SHOW_COMMITS:
-    showCommits()
+    showCommits(split)
     return
   if line == SHOW_FILES_CHANGED:
-    showFilesChanged()
+    showFilesChanged(split)
     return
 
 
@@ -404,7 +414,7 @@ def showIssueBuffer(number, url = ""):
 
 
   if not vim.eval("g:github_same_window") == "1":
-    vim.command("silent new")
+    vim.command("silent new +set\ buftype=nofile")
   vim.command("edit gissues/" + repourl + "/" + number)
 
 # show an issue buffer in detail
