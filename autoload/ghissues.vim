@@ -520,6 +520,7 @@ def showIssue(number=False, repourl=False):
     b.append("## Add a comment")
     b.append("")
 
+  mapQuit()
   vim.command("set ft=gfimarkdown")
   vim.command("normal ggdd")
 
