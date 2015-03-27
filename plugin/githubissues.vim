@@ -165,12 +165,16 @@ function! s:setupOmni()
   endif
 endfunction
 
-function! s:handleEnter()
+function! s:handleEnter(...)
   if len(expand("<cword>")) == 40
     echo expand("<cword>")
+    if a:0 > 0
+      let split = a:1
+    else
+      let split = "False"
+    endif
     let a:sha = expand("<cword>")
-    tabe '_commit'
-    execute ":Gedit " . a:sha
+    python showCommit(vim.eval("a:sha"), vim.eval("split"))
     nnoremap <buffer> <silent> q :q<CR>
   endif
 endfunction

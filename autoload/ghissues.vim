@@ -143,8 +143,24 @@ def showCommits(split = False):
   for commit in commits:
     b.append((commit['sha'] + " " + commit['commit']['message']).split("\n"))
   vim.command("normal ggdd")
-  vim.command("nnoremap <buffer> <CR> :call <SID>handleEnter()<cr>")
+  vim.command("nnoremap <buffer> <CR> :call <SID>handleEnter('False')<cr>")
+  vim.command("nnoremap <buffer> s :call <SID>handleEnter('True')<cr>")
   vim.command("call <SID>commitHighlighting()")
+  vim.command("let b:ghissue_repourl=\""+repourl+"\"")
+  vim.command("setlocal nomodifiable")
+
+def showCommit(sha, split = False):
+  repourl = vim.eval("b:ghissue_repourl")
+  url = ghUrl("/commits/" + sha, repourl)
+  headers = { "Accept" : "application/vnd.github.patch" }
+  req = urllib2.Request(url,None,headers)
+  diff = urllib2.urlopen(req)
+  newSplit("_Commit_") if split == 'True' else newTab("_Commit_")
+  vim.command("set syn=diff")
+  vim.command("setlocal modifiable")
+  b = vim.current.buffer
+  b.append("".join(diff).split("\n"))
+  vim.command("normal ggdd")
   vim.command("setlocal nomodifiable")
 
 def showFilesChanged(split = False):
