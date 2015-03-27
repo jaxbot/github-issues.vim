@@ -468,7 +468,7 @@ def showIssue(number=False, repourl=False):
       labelstr += label["name"] + ", "
   b.append("## Labels: " + labelstr[:-2])
 
-  if number != "new":
+  if number != "new" and "pull_request" in issue:
     b.append(SHOW_COMMITS)
     b.append(SHOW_FILES_CHANGED)
 
