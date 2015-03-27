@@ -138,12 +138,14 @@ def showCommits(split = False):
   response = urllib2.urlopen(url)
   commits = json.loads(response.read())
   newSplit("_Commits_") if split else newTab("_Commits_")
+  vim.command("setlocal modifiable")
   b = vim.current.buffer
   for commit in commits:
     b.append((commit['sha'] + " " + commit['commit']['message']).split("\n"))
   vim.command("normal ggdd")
   vim.command("nnoremap <buffer> <CR> :call <SID>handleEnter()<cr>")
   vim.command("call <SID>commitHighlighting()")
+  vim.command("setlocal nomodifiable")
 
 def showFilesChanged(split = False):
   number = vim.eval("b:ghissue_number")
@@ -154,9 +156,11 @@ def showFilesChanged(split = False):
   diff = urllib2.urlopen(req)
   newSplit("_Files_Changed_") if split else newTab("_Files_Changed_")
   vim.command("set syn=diff")
+  vim.command("setlocal modifiable")
   b = vim.current.buffer
   b.append("".join(diff).split("\n"))
   vim.command("normal ggdd")
+  vim.command("setlocal nomodifiable")
 
 def newTab(name):
   vim.command("silent tabe +set\ buftype=nofile %s" % name)
