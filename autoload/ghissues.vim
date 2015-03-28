@@ -190,7 +190,7 @@ def newSplit(name):
   mapQuit()
 
 def mapQuit():
-  vim.command("nnoremap <buffer> <silent> q :q<CR>")
+  vim.command("nnoremap <buffer> <silent> q :bdelete<CR>")
 
 # displays the issues in a vim buffer
 def showIssueList(labels, ignore_cache = False, only_me = False):
@@ -548,7 +548,7 @@ def showIssue(number=False, repourl=False):
     b.append("## Add a comment")
     b.append("")
 
-  mapQuit()
+  vim.command("nnoremap <buffer> <silent> q :q<CR>")
   vim.command("set ft=gfimarkdown")
   vim.command("normal ggdd")
 
