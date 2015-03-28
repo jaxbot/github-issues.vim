@@ -52,12 +52,22 @@ function! s:showGithubIssues(...)
 
   " its not a real file
   set buftype=nofile
-" map the enter key to show issue or click link
-  nnoremap <buffer> <cr> :call <SID>showIssue(expand("<cword>"),"","False")<cr>
-  nnoremap <buffer> s :call <SID>showIssue(expand("<cword>"),"","True")<cr>
+" map the enter key to show issue
+  nnoremap <buffer> <cr> :call <SID>showIssue(expand("<cword>"),"")<cr>
   nnoremap <buffer> i :Giadd<cr>
   nnoremap <buffer> q :q<cr>
 
+endfunction
+
+function! s:showIssueLink(...)
+  call ghissues#init()
+  if a:0 > 2
+    python showIssueLink(vim.eval("a:1"), vim.eval("a:2"), vim.eval("a:3"))
+  elseif a:0 > 1
+    python showIssueLink(vim.eval("a:1"), vim.eval("a:2"))
+  else
+    python showIssueLink(vim.eval("a:1"))
+  endif
 endfunction
 
 function! s:showIssue(...)
@@ -196,8 +206,8 @@ function! s:showThisIssue(...)
   call ghissues#init()
 
   " map the enter key to show issue or click link
-  nnoremap <buffer> <cr> :call <SID>showIssue("","","False")<cr>
-  nnoremap <buffer> s :call <SID>showIssue("","","True")<cr>
+  nnoremap <buffer> <cr> :call <SID>showIssueLink("","","False")<cr>
+  nnoremap <buffer> s :call <SID>showIssueLink("","","True")<cr>
   nnoremap <buffer> <silent> q :q<CR>
 
   python showIssue(vim.eval("a:1"),vim.eval("a:2"))

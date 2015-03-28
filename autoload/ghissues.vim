@@ -137,7 +137,8 @@ def showCommits(split = False):
   url = ghUrl("/pulls/" + number + "/commits", repourl)
   response = urllib2.urlopen(url)
   commits = json.loads(response.read())
-  newSplit("_Commits_") if split else newTab("_Commits_")
+  buffer_name = "commmits/"+ repourl+"/"+number
+  newSplit(buffer_name) if split else newTab(buffer_name)
   vim.command("setlocal modifiable")
   b = vim.current.buffer
   for commit in commits:
@@ -155,7 +156,8 @@ def showCommit(sha, split = False):
   headers = { "Accept" : "application/vnd.github.patch" }
   req = urllib2.Request(url,None,headers)
   diff = urllib2.urlopen(req)
-  newSplit("_Commit_") if split == 'True' else newTab("_Commit_")
+  buffer_name = "commmit/"+ repourl+"/"+number
+  newSplit(buffer_name) if split == 'True' else newTab(buffer_name)
   vim.command("set syn=diff")
   vim.command("setlocal modifiable")
   b = vim.current.buffer
@@ -170,7 +172,8 @@ def showFilesChanged(split = False):
   headers = { "Accept" : "application/vnd.github.diff" }
   req = urllib2.Request(url,None,headers)
   diff = urllib2.urlopen(req)
-  newSplit("_Files_Changed_") if split else newTab("_Files_Changed_")
+  buffer_name = "files_Changed/"+ repourl+"/"+number
+  newSplit(buffer_name) if split else newTab(buffer_name)
   vim.command("set syn=diff")
   vim.command("setlocal modifiable")
   b = vim.current.buffer
@@ -179,11 +182,11 @@ def showFilesChanged(split = False):
   vim.command("setlocal nomodifiable")
 
 def newTab(name):
-  vim.command("silent tabe +set\ buftype=nofile %s" % name)
+  vim.command("noswapfile silent tabe +set\ buftype=nofile %s" % name)
   mapQuit()
 
 def newSplit(name):
-  vim.command("silent belowright vsplit +set\ buftype=nofile %s" % name)
+  vim.command("noswapfile silent belowright vsplit +set\ buftype=nofile %s" % name)
   mapQuit()
 
 def mapQuit():
@@ -395,9 +398,8 @@ class AsyncOmni(threading.Thread):
 def addToOmni(keyword, typ):
   vim.command("call add(b:omni_options, "+json.dumps({ 'word': keyword, 'menu': '[' + typ + ']' })+")")
 
-# handle user pressing enter on the gissue list
-# possible actions: view issue, filter by label, filter by assignee, remove filters
-def showIssueBuffer(number, url = "", split="False"):
+
+def showIssueLink(number, url = "", split="False"):
   if url != "":
     repourl = url
   else:
@@ -407,19 +409,29 @@ def showIssueBuffer(number, url = "", split="False"):
   split = split == "True"
 
   line = vim.eval("getline(\".\")")
+  if line == SHOW_COMMITS:
+    showCommits(split)
+    return
+  if line == SHOW_FILES_CHANGED:
+    showFilesChanged(split)
+
+  return
+
+# handle user pressing enter on the gissue list
+# possible actions: view issue, filter by label, filter by assignee, remove filters
+def showIssueBuffer(number, url = ""):
+  if url != "":
+    repourl = url
+  else:
+    repourl = getUpstreamRepoURI()
+
+  line = vim.eval("getline(\".\")")
   if line == SHOW_ALL:
     showIssueList(0, "True")
     return
   if line == SHOW_ASSIGNED_ME:
     showIssueList(0, "True", "True")
     return
-  if line == SHOW_COMMITS:
-    showCommits(split)
-    return
-  if line == SHOW_FILES_CHANGED:
-    showFilesChanged(split)
-    return
-
 
   labels = getLabels()
   if labels is not None:
