@@ -205,6 +205,12 @@ endfunction
 function! s:showThisIssue(...)
   call ghissues#init()
 
+  silent tabe
+  set buftype=nofile
+  let name = "gissues/" . a:2 . "/" . a:1
+  execute 'edit' name
+  normal ggdG
+
   " map the enter key to show issue or click link
   nnoremap <buffer> <cr> :call <SID>showIssueLink("","","False")<cr>
   nnoremap <buffer> s :call <SID>showIssueLink("","","True")<cr>
