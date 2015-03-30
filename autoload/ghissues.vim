@@ -156,7 +156,7 @@ def showCommit(sha, split = False):
   headers = { "Accept" : "application/vnd.github.patch" }
   req = urllib2.Request(url,None,headers)
   diff = urllib2.urlopen(req)
-  buffer_name = "commmit/"+ repourl+"/"+number
+  buffer_name = "commmit/"+ repourl+"/"+sha
   newSplit(buffer_name) if split == 'True' else newTab(buffer_name)
   vim.command("set syn=diff")
   vim.command("setlocal modifiable")
