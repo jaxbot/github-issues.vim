@@ -17,6 +17,8 @@ import threading
 
 SHOW_ALL = "[Show all issues]"
 SHOW_ASSIGNED_ME = "[Only show assigned to me]"
+SHOW_COMMITS = "## [Commits]"
+SHOW_FILES_CHANGED = "## [Files Changed]"
 
 # dictionaries for caching
 # repo urls on github by filepath
@@ -128,6 +130,67 @@ def getUpstreamRepoURI():
       repourl = repoinfo["source"]["full_name"]
 
   return repourl
+
+def showCommits(split = False):
+  number = vim.eval("b:ghissue_number")
+  repourl = vim.eval("b:ghissue_repourl")
+  url = ghUrl("/pulls/" + number + "/commits", repourl)
+  response = urllib2.urlopen(url)
+  commits = json.loads(response.read())
+  buffer_name = "commmits/"+ repourl+"/"+number
+  newSplit(buffer_name) if split else newTab(buffer_name)
+  vim.command("setlocal modifiable")
+  b = vim.current.buffer
+  for commit in commits:
+    b.append((commit['sha'] + " " + commit['commit']['message']).split("\n"))
+  vim.command("normal ggdd")
+  vim.command("nnoremap <buffer> <CR> :call <SID>handleEnter('False')<cr>")
+  vim.command("nnoremap <buffer> s :call <SID>handleEnter('True')<cr>")
+  vim.command("call <SID>commitHighlighting()")
+  vim.command("let b:ghissue_repourl=\""+repourl+"\"")
+  vim.command("setlocal nomodifiable")
+
+def showCommit(sha, split = False):
+  repourl = vim.eval("b:ghissue_repourl")
+  url = ghUrl("/commits/" + sha, repourl)
+  headers = { "Accept" : "application/vnd.github.patch" }
+  req = urllib2.Request(url,None,headers)
+  diff = urllib2.urlopen(req)
+  buffer_name = "commmit/"+ repourl+"/"+sha
+  newSplit(buffer_name) if split == 'True' else newTab(buffer_name)
+  vim.command("set syn=diff")
+  vim.command("setlocal modifiable")
+  b = vim.current.buffer
+  b.append("".join(diff).split("\n"))
+  vim.command("normal ggdd")
+  vim.command("setlocal nomodifiable")
+
+def showFilesChanged(split = False):
+  number = vim.eval("b:ghissue_number")
+  repourl = vim.eval("b:ghissue_repourl")
+  url = ghUrl("/pulls/" + number, repourl)
+  headers = { "Accept" : "application/vnd.github.diff" }
+  req = urllib2.Request(url,None,headers)
+  diff = urllib2.urlopen(req)
+  buffer_name = "files_Changed/"+ repourl+"/"+number
+  newSplit(buffer_name) if split else newTab(buffer_name)
+  vim.command("set syn=diff")
+  vim.command("setlocal modifiable")
+  b = vim.current.buffer
+  b.append("".join(diff).split("\n"))
+  vim.command("normal ggdd")
+  vim.command("setlocal nomodifiable")
+
+def newTab(name):
+  vim.command("noswapfile silent tabe +set\ buftype=nofile %s" % name)
+  mapQuit()
+
+def newSplit(name):
+  vim.command("noswapfile silent belowright vsplit +set\ buftype=nofile %s" % name)
+  mapQuit()
+
+def mapQuit():
+  vim.command("nnoremap <buffer> <silent> q :bdelete<CR>")
 
 # displays the issues in a vim buffer
 def showIssueList(labels, ignore_cache = False, only_me = False):
@@ -335,6 +398,25 @@ class AsyncOmni(threading.Thread):
 def addToOmni(keyword, typ):
   vim.command("call add(b:omni_options, "+json.dumps({ 'word': keyword, 'menu': '[' + typ + ']' })+")")
 
+
+def showIssueLink(number, url = "", split="False"):
+  if url != "":
+    repourl = url
+  else:
+    repourl = getUpstreamRepoURI()
+
+  # convert string to boolean
+  split = split == "True"
+
+  line = vim.eval("getline(\".\")")
+  if line == SHOW_COMMITS:
+    showCommits(split)
+    return
+  if line == SHOW_FILES_CHANGED:
+    showFilesChanged(split)
+
+  return
+
 # handle user pressing enter on the gissue list
 # possible actions: view issue, filter by label, filter by assignee, remove filters
 def showIssueBuffer(number, url = ""):
@@ -364,15 +446,18 @@ def showIssueBuffer(number, url = ""):
 
 
   if not vim.eval("g:github_same_window") == "1":
-    vim.command("silent new")
+    vim.command("silent new +set\ buftype=nofile")
   vim.command("edit gissues/" + repourl + "/" + number)
 
 # show an issue buffer in detail
-def showIssue():
-  repourl = getUpstreamRepoURI()
+def showIssue(number=False, repourl=False):
+  if repourl is False:
+    repourl = getUpstreamRepoURI()
 
-  parens = getFilenameParens()
-  number = parens[2]
+  if number is False:
+    parens = getFilenameParens()
+    number = parens[2]
+
   b = vim.current.buffer
   vim.command("normal ggdG")
 
@@ -389,7 +474,9 @@ def showIssue():
       'labels': []
     }
   else:
-    url = ghUrl("/issues/" + number)
+    vim.command("let b:ghissue_number="+number)
+    vim.command("let b:ghissue_repourl=\""+repourl+"\"")
+    url = ghUrl("/issues/" + number, repourl)
     issue = json.loads(urllib2.urlopen(url).read())
 
   b.append("## Title: " + issue["title"].encode(vim.eval("&encoding")) + " (" + str(issue["number"]) + ")")
@@ -413,6 +500,10 @@ def showIssue():
       labelstr += label["name"] + ", "
   b.append("## Labels: " + labelstr[:-2])
 
+  if number != "new" and "pull_request" in issue:
+    b.append(SHOW_COMMITS)
+    b.append(SHOW_FILES_CHANGED)
+
   if issue["body"]:
     lines = issue["body"].encode(vim.eval("&encoding")).split("\n")
     b.append(map(lambda line: line.strip(), lines))
@@ -420,11 +511,11 @@ def showIssue():
   if number != "new":
     b.append("## Comments")
 
-    url = ghUrl("/issues/" + number + "/comments")
+    url = ghUrl("/issues/" + number + "/comments", repourl)
     data = urllib2.urlopen(url).read()
     comments = json.loads(data)
 
-    url = ghUrl("/issues/" + number + "/events")
+    url = ghUrl("/issues/" + number + "/events", repourl)
     data = urllib2.urlopen(url).read()
     events = json.loads(data)
 
@@ -457,6 +548,7 @@ def showIssue():
     b.append("## Add a comment")
     b.append("")
 
+  vim.command("nnoremap <buffer> <silent> q :q<CR>")
   vim.command("set ft=gfimarkdown")
   vim.command("normal ggdd")
 
@@ -539,6 +631,9 @@ def saveGissue():
     assignee = line.split("## Assignee:")
     if len(assignee) > 1:
       issue['assignee'] = assignee[1].strip()
+      continue
+
+    if line == SHOW_COMMITS or line == SHOW_FILES_CHANGED:
       continue
 
     if issue['body'] != '':

@@ -52,18 +52,30 @@ function! s:showGithubIssues(...)
 
   " its not a real file
   set buftype=nofile
-
-  " map the enter key to show issue or click link
-  nnoremap <buffer> <cr> :call <SID>showIssue(expand("<cword>"))<cr>
+" map the enter key to show issue
+  nnoremap <buffer> <cr> :call <SID>showIssue(expand("<cword>"),"")<cr>
   nnoremap <buffer> i :Giadd<cr>
   nnoremap <buffer> q :q<cr>
 
 endfunction
 
+function! s:showIssueLink(...)
+  call ghissues#init()
+  if a:0 > 2
+    python showIssueLink(vim.eval("a:1"), vim.eval("a:2"), vim.eval("a:3"))
+  elseif a:0 > 1
+    python showIssueLink(vim.eval("a:1"), vim.eval("a:2"))
+  else
+    python showIssueLink(vim.eval("a:1"))
+  endif
+endfunction
+
 function! s:showIssue(...)
   call ghissues#init()
 
-  if a:0 > 1
+  if a:0 > 2
+    python showIssueBuffer(vim.eval("a:1"), vim.eval("a:2"), vim.eval("a:3"))
+  elseif a:0 > 1
     python showIssueBuffer(vim.eval("a:1"), vim.eval("a:2"))
   else
     python showIssueBuffer(vim.eval("a:1"))
@@ -163,10 +175,16 @@ function! s:setupOmni()
   endif
 endfunction
 
-function! s:handleEnter()
+function! s:handleEnter(...)
   if len(expand("<cword>")) == 40
     echo expand("<cword>")
-    execute ":Gedit " . expand("<cword>")
+    if a:0 > 0
+      let split = a:1
+    else
+      let split = "False"
+    endif
+    let a:sha = expand("<cword>")
+    python showCommit(vim.eval("a:sha"), vim.eval("split"))
   endif
 endfunction
 
@@ -183,6 +201,28 @@ function! s:setMilestone(title)
 
 endfunction
 
+function! s:showThisIssue(...)
+  call ghissues#init()
+
+  silent tabe
+  set buftype=nofile
+  let name = "gissues/" . a:2 . "/" . a:1
+  execute 'edit' name
+  normal ggdG
+
+  " map the enter key to show issue or click link
+  nnoremap <buffer> <cr> :call <SID>showIssueLink("","","False")<cr>
+  nnoremap <buffer> s :call <SID>showIssueLink("","","True")<cr>
+  nnoremap <buffer> <silent> q :q<CR>
+
+  python showIssue(vim.eval("a:1"),vim.eval("a:2"))
+endfunction
+
+function! s:commitHighlighting()
+  hi shaHighlight term=bold cterm=bold gui=bold ctermfg=red guifg=red
+  syn match shaHighlight "\v^[a-zA-Z0-9]{40}"
+endfunction
+
 " define the :Gissues command
 command! -nargs=* Gissues call s:showGithubIssues(<f-args>)
 command! -nargs=* Giadd call s:showIssue("new", <f-args>)
@@ -190,6 +230,8 @@ command! -nargs=* Giedit call s:showIssue(<f-args>)
 command! -nargs=0 Giupdate call s:updateIssue()
 
 command! -nargs=* Gmiles call s:showGithubMilestones(<f-args>)
+
+command! -nargs=* Gishow call s:showThisIssue(<f-args>)
 
 autocmd BufReadCmd gissues/*/\([0-9]*\|new\) call s:updateIssue()
 autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <buffer> cc :call <SID>setIssueState(0)<cr>
@@ -211,6 +253,11 @@ endif
 
 if !exists("g:github_access_token")
   let g:github_access_token = ""
+elseif filereadable(expand(g:github_access_token))
+  let lines = readfile(expand(g:github_access_token))
+  if !empty(lines)
+    let g:github_access_token=lines[0]
+  endif
 endif
 
 if !exists("g:github_upstream_issues")
