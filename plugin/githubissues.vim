@@ -185,7 +185,6 @@ function! s:handleEnter(...)
     endif
     let a:sha = expand("<cword>")
     python showCommit(vim.eval("a:sha"), vim.eval("split"))
-    nnoremap <buffer> <silent> q :q<CR>
   endif
 endfunction
 
