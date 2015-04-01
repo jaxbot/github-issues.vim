@@ -137,7 +137,7 @@ def showCommits(split = False):
   url = ghUrl("/pulls/" + number + "/commits", repourl)
   response = urllib2.urlopen(url)
   commits = json.loads(response.read())
-  buffer_name = "commmits/"+ repourl+"/"+number
+  buffer_name = "commits/"+ repourl+"/"+number
   newSplit(buffer_name) if split else newTab(buffer_name)
   vim.command("setlocal modifiable")
   b = vim.current.buffer
@@ -156,7 +156,7 @@ def showCommit(sha, split = False):
   headers = { "Accept" : "application/vnd.github.patch" }
   req = urllib2.Request(url,None,headers)
   diff = urllib2.urlopen(req)
-  buffer_name = "commmit/"+ repourl+"/"+sha
+  buffer_name = "commit/"+ repourl+"/"+sha
   newSplit(buffer_name) if split == 'True' else newTab(buffer_name)
   vim.command("set syn=diff")
   vim.command("setlocal modifiable")
