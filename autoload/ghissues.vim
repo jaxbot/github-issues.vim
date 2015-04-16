@@ -449,6 +449,9 @@ def showIssueBuffer(number, url = ""):
     vim.command("silent new +set\ buftype=nofile")
   vim.command("edit gissues/" + repourl + "/" + number)
 
+def browse():
+  vim.command("call netrw#NetrwBrowseX(b:ghissue_url,0)")
+
 # show an issue buffer in detail
 def showIssue(number=False, repourl=False):
   if repourl is False:
@@ -474,10 +477,11 @@ def showIssue(number=False, repourl=False):
       'labels': []
     }
   else:
-    vim.command("let b:ghissue_number="+number)
-    vim.command("let b:ghissue_repourl=\""+repourl+"\"")
     url = ghUrl("/issues/" + number, repourl)
     issue = json.loads(urllib2.urlopen(url).read())
+    vim.command("let b:ghissue_url=\""+issue["html_url"]+"\"")
+    vim.command("let b:ghissue_number="+number)
+    vim.command("let b:ghissue_repourl=\""+repourl+"\"")
 
   b.append("## Title: " + issue["title"].encode(vim.eval("&encoding")) + " (" + str(issue["number"]) + ")")
   if issue["user"]["login"]:
