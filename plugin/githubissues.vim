@@ -96,6 +96,10 @@ function! s:setIssueState(state)
   python setIssueData({ 'state': 'open' if vim.eval("a:state") == '1' else 'closed' })
 endfunction
 
+function! s:browse()
+  python browse()
+endfunction
+
 function! s:updateIssue()
   call ghissues#init()
   python showIssue()
@@ -236,6 +240,7 @@ command! -nargs=* Gishow call s:showThisIssue(<f-args>)
 autocmd BufReadCmd gissues/*/\([0-9]*\|new\) call s:updateIssue()
 autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <buffer> cc :call <SID>setIssueState(0)<cr>
 autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <buffer> co :call <SID>setIssueState(1)<cr>
+autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <buffer> cb :call <SID>browse()<cr>
 autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <buffer> <cr> :call <SID>handleEnter()<cr>
 autocmd BufWriteCmd gissues/*/[0-9a-z]* call s:saveIssue()
 

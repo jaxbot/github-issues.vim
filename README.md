@@ -36,6 +36,8 @@ They're also totally editable buffers, and saving the file will sync with Github
 
 <img src='https://jaxbot.me/pics/vim/vim-github-issues-4.gif'>
 
+You can also open the current issue in your browser using `cb`.
+
 ### Creating issues
 
 You can even use `:Giadd` to create a blank issue. Saving the buffer will generate a new issue and update the buffer with an issue number and the ability to add comments.
