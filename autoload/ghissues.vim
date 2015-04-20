@@ -135,7 +135,7 @@ def showCommits(split = False):
   number = vim.eval("b:ghissue_number")
   repourl = vim.eval("b:ghissue_repourl")
   url = ghUrl("/pulls/" + number + "/commits", repourl)
-  response = urllib2.urlopen(url)
+  response = urllib2.urlopen(url, timeout = 2)
   commits = json.loads(response.read())
   buffer_name = "commits/"+ repourl+"/"+number
   newSplit(buffer_name) if split else newTab(buffer_name)
@@ -155,7 +155,7 @@ def showCommit(sha, split = False):
   url = ghUrl("/commits/" + sha, repourl)
   headers = { "Accept" : "application/vnd.github.patch" }
   req = urllib2.Request(url,None,headers)
-  diff = urllib2.urlopen(req)
+  diff = urllib2.urlopen(req, timeout = 2)
   buffer_name = "commit/"+ repourl+"/"+sha
   newSplit(buffer_name) if split == 'True' else newTab(buffer_name)
   vim.command("set syn=diff")
@@ -171,7 +171,7 @@ def showFilesChanged(split = False):
   url = ghUrl("/pulls/" + number, repourl)
   headers = { "Accept" : "application/vnd.github.diff" }
   req = urllib2.Request(url,None,headers)
-  diff = urllib2.urlopen(req)
+  diff = urllib2.urlopen(req, timeout = 2)
   buffer_name = "files_Changed/"+ repourl+"/"+number
   newSplit(buffer_name) if split else newTab(buffer_name)
   vim.command("set syn=diff")
@@ -323,7 +323,7 @@ def getGHList(ignore_cache, repourl, endpoint, params):
         qs = string.join([ k+'='+v for ( k, v ) in params.items()], '&')
         url = ghUrl(endpoint+'?'+qs, repourl)
 
-        response = urllib2.urlopen(url)
+        response = urllib2.urlopen(url, timeout = 2)
         issuearray = json.loads(response.read())
 
         # JSON parse the API response, add page to previous pages if any
@@ -478,7 +478,7 @@ def showIssue(number=False, repourl=False):
     }
   else:
     url = ghUrl("/issues/" + number, repourl)
-    issue = json.loads(urllib2.urlopen(url).read())
+    issue = json.loads(urllib2.urlopen(url, timeout = 2).read())
     vim.command("let b:ghissue_url=\""+issue["html_url"]+"\"")
     vim.command("let b:ghissue_number="+number)
     vim.command("let b:ghissue_repourl=\""+repourl+"\"")
@@ -516,11 +516,11 @@ def showIssue(number=False, repourl=False):
     b.append("## Comments")
 
     url = ghUrl("/issues/" + number + "/comments", repourl)
-    data = urllib2.urlopen(url).read()
+    data = urllib2.urlopen(url, timeout = 2).read()
     comments = json.loads(data)
 
     url = ghUrl("/issues/" + number + "/events", repourl)
-    data = urllib2.urlopen(url).read()
+    data = urllib2.urlopen(url, timeout = 2).read()
     events = json.loads(data)
 
     events = comments + events
@@ -660,7 +660,7 @@ def saveGissue():
     try:
       url = ghUrl("/issues")
       request = urllib2.Request(url, json.dumps(issue))
-      data = json.loads(urllib2.urlopen(request).read())
+      data = json.loads(urllib2.urlopen(request, timeout = 2).read())
       parens[2] = str(data['number'])
       vim.current.buffer.name = "gissues/" + parens[0] + "/" + parens[1] + "/" + parens[2]
     except urllib2.HTTPError as e:
@@ -677,7 +677,7 @@ def saveGissue():
     request = urllib2.Request(url, json.dumps(issue))
     request.get_method = lambda: 'PATCH'
     try:
-      urllib2.urlopen(request)
+      urllib2.urlopen(request, timeout = 2)
     except urllib2.HTTPError as e:
       if "code" in e and e.code == 410 or e.code == 404:
         print("Could not update the issue as it does not belong to you!")
@@ -687,7 +687,7 @@ def saveGissue():
       url = ghUrl("/issues/" + parens[2] + "/comments")
       data = json.dumps({ 'body': comment })
       request = urllib2.Request(url, data)
-      urllib2.urlopen(request)
+      urllib2.urlopen(request, timeout = 2)
     except urllib2.HTTPError as e:
       if "code" in e and e.code == 410 or e.code == 404:
         print("Could not post comment. Do you have a github_access_token defined?")
@@ -704,7 +704,7 @@ def setIssueData(issue):
   url = ghUrl("/issues/" + parens[2])
   request = urllib2.Request(url, json.dumps(issue))
   request.get_method = lambda: 'PATCH'
-  urllib2.urlopen(request)
+  urllib2.urlopen(request, timeout = 2)
 
   showIssue()
 
