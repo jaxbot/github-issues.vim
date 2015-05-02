@@ -97,7 +97,11 @@ function! s:setIssueState(state)
 endfunction
 
 function! s:browse()
-  python browse()
+  if has("patch-7.4.567")
+    call netrw#BrowseX(b:ghissue_url,0)
+  else
+    call netrw#NetrwBrowseX(b:ghissue_url,0)
+  endif
 endfunction
 
 function! s:updateIssue()

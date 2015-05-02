@@ -449,9 +449,6 @@ def showIssueBuffer(number, url = ""):
     vim.command("silent new +set\ buftype=nofile")
   vim.command("edit gissues/" + repourl + "/" + number)
 
-def browse():
-  vim.command("call netrw#NetrwBrowseX(b:ghissue_url,0)")
-
 # show an issue buffer in detail
 def showIssue(number=False, repourl=False):
   if repourl is False:
