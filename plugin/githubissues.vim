@@ -92,6 +92,23 @@ function! s:showIssue(...)
   setlocal nomodified
 endfunction
 
+function! s:showThisIssue(...)
+  call ghissues#init()
+
+  silent tabe
+  set buftype=nofile
+  let name = "gissues/" . a:2 . "/" . a:1
+  execute 'edit' name
+  normal ggdG
+
+  " map the enter key to show issue or click link
+  nnoremap <buffer> <cr> :call <SID>showIssueLink("","","False")<cr>
+  nnoremap <buffer> s :call <SID>showIssueLink("","","True")<cr>
+  nnoremap <buffer> <silent> q :q<CR>
+
+  python showIssue(vim.eval("a:1"),vim.eval("a:2"))
+endfunction
+
 function! s:setIssueState(state)
   python setIssueData({ 'state': 'open' if vim.eval("a:state") == '1' else 'closed' })
 endfunction
@@ -207,23 +224,6 @@ function! s:setMilestone(title)
 
   let g:github_current_milestone = title
 
-endfunction
-
-function! s:showThisIssue(...)
-  call ghissues#init()
-
-  silent tabe
-  set buftype=nofile
-  let name = "gissues/" . a:2 . "/" . a:1
-  execute 'edit' name
-  normal ggdG
-
-  " map the enter key to show issue or click link
-  nnoremap <buffer> <cr> :call <SID>showIssueLink("","","False")<cr>
-  nnoremap <buffer> s :call <SID>showIssueLink("","","True")<cr>
-  nnoremap <buffer> <silent> q :q<CR>
-
-  python showIssue(vim.eval("a:1"),vim.eval("a:2"))
 endfunction
 
 function! s:commitHighlighting()
