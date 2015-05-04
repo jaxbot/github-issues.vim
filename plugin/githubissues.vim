@@ -95,6 +95,8 @@ endfunction
 function! s:showThisIssue(...)
   call ghissues#init()
 
+  python curUri = getRepoURI()
+
   silent tabe
   set buftype=nofile
   normal ggdG
@@ -105,13 +107,15 @@ function! s:showThisIssue(...)
   nnoremap <buffer> <silent> q :q<CR>
 
   if a:0 > 1
-    let name = "gissue/" . a:2 . "/" . a:1
+    let name = "gissues/" . a:2 . "/" . a:1
     execute 'edit' name
     python showIssue(vim.eval("a:1"),vim.eval("a:2"))
   else
-    let name = "gissue/" . a:1
-    execute 'edit' name
-    python showIssue(vim.eval("a:1"))
+    python <<EOF
+name = "gissues/" + curUri + "/" + vim.eval("a:1")
+vim.command("edit " + name)
+showIssue(vim.eval("a:1"), curUri)
+EOF
   endif
 endfunction
 
