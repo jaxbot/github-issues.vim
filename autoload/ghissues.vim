@@ -62,6 +62,8 @@ def getRepoURI():
   except subprocess.CalledProcessError:
     github_repos[filepath] = ""
     return github_repos[filepath]
+  except OSError:
+    all_remotes = subprocess.check_output( ['git', 'remote', '-v'])
 
   # Try to get the remote for the current branch/HEAD.
   try:

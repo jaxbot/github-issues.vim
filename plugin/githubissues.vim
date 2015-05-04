@@ -105,11 +105,11 @@ function! s:showThisIssue(...)
   nnoremap <buffer> <silent> q :q<CR>
 
   if a:0 > 1
-    let name = "gissues/" . a:2 . "/" . a:1
+    let name = "gissue/" . a:2 . "/" . a:1
     execute 'edit' name
     python showIssue(vim.eval("a:1"),vim.eval("a:2"))
   else
-    let name = "gissues/" . a:1
+    let name = "gissue/" . a:1
     execute 'edit' name
     python showIssue(vim.eval("a:1"))
   endif
