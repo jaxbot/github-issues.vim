@@ -101,11 +101,6 @@ function! s:showThisIssue(...)
   set buftype=nofile
   normal ggdG
 
-  " map the enter key to show issue or click link
-  nnoremap <buffer> <cr> :call <SID>showIssueLink("","","False")<cr>
-  nnoremap <buffer> s :call <SID>showIssueLink("","","True")<cr>
-  nnoremap <buffer> <silent> q :q<CR>
-
   if a:0 > 1
     let name = "gissues/" . a:2 . "/" . a:1
     execute 'edit' name
@@ -117,6 +112,12 @@ vim.command("edit " + name)
 showIssue(vim.eval("a:1"), curUri)
 EOF
   endif
+
+  " map the enter key to show issue or click link
+  nnoremap <buffer> <cr> :call <SID>showIssueLink("","","False")<cr>
+  nnoremap <buffer> s :call <SID>showIssueLink("","","True")<cr>
+  nnoremap <buffer> <silent> q :q<CR>
+
 endfunction
 
 function! s:setIssueState(state)
