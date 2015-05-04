@@ -97,8 +97,6 @@ function! s:showThisIssue(...)
 
   silent tabe
   set buftype=nofile
-  let name = "gissues/" . a:2 . "/" . a:1
-  execute 'edit' name
   normal ggdG
 
   " map the enter key to show issue or click link
@@ -106,7 +104,15 @@ function! s:showThisIssue(...)
   nnoremap <buffer> s :call <SID>showIssueLink("","","True")<cr>
   nnoremap <buffer> <silent> q :q<CR>
 
-  python showIssue(vim.eval("a:1"),vim.eval("a:2"))
+  if a:0 > 1
+    let name = "gissues/" . a:2 . "/" . a:1
+    execute 'edit' name
+    python showIssue(vim.eval("a:1"),vim.eval("a:2"))
+  else
+    let name = "gissues/" . a:1
+    execute 'edit' name
+    python showIssue(vim.eval("a:1"))
+  endif
 endfunction
 
 function! s:setIssueState(state)
