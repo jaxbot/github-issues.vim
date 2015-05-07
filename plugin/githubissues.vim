@@ -153,7 +153,10 @@ function! githubissues#CompleteIssues(findstart, base)
   endif
 
   if g:gissues_async_omni && len(b:omni_options) < 1
-    python doPopulateOmniComplete()
+    if !b:did_init_omnicomplete_async
+      let b:did_init_omnicomplete_async = 1
+      python doPopulateOmniComplete()
+    endif
   endif
 
   if a:findstart
@@ -208,6 +211,8 @@ function! s:setupOmni()
   else
     let b:did_init_omnicomplete = 0
   endif
+
+  let b:did_init_omnicomplete_async = 0
 endfunction
 
 function! s:handleEnter(...)
