@@ -317,9 +317,9 @@ def getGHList(ignore_cache, repourl, endpoint, params):
       more_to_load = True
 
       page = 1
-      params['page'] = str(page)
 
       while more_to_load and page <= int(vim.eval("g:github_issues_max_pages")):
+        params['page'] = str(page)
 
         # TODO This should be in ghUrl() I think
         qs = string.join([ k+'='+v for ( k, v ) in params.items()], '&')
