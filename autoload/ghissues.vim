@@ -478,6 +478,9 @@ def showIssue(number=False, repourl=False):
   else:
     url = ghUrl("/issues/" + number, repourl)
     issue = json.loads(urllib2.urlopen(url, timeout = 2).read())
+    if "pull_request" in issue:
+      pull_request_url = ghUrl("/pulls/" + number, repourl)
+      pull_request = json.loads(urllib2.urlopen(pull_request_url, timeout = 2).read())
     vim.command("let b:ghissue_url=\""+issue["html_url"]+"\"")
     vim.command("let b:ghissue_number="+number)
     vim.command("let b:ghissue_repourl=\""+repourl+"\"")
@@ -504,6 +507,7 @@ def showIssue(number=False, repourl=False):
   b.append("## Labels: " + labelstr[:-2])
 
   if number != "new" and "pull_request" in issue:
+    b.append("## Branch Name: " + str(pull_request["head"]["ref"]))
     b.append(SHOW_COMMITS)
     b.append(SHOW_FILES_CHANGED)
 
