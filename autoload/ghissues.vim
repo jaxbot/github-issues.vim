@@ -489,7 +489,7 @@ def showIssue(number=False, repourl=False):
   b.append("## State: " + issue["state"])
   if issue['assignee']:
     b.append("## Assignee: " + issue["assignee"]["login"].encode(vim.eval("&encoding")))
-  elif number == "new":
+  else:
     b.append("## Assignee: ")
 
   if number == "new":
