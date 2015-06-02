@@ -640,7 +640,7 @@ def saveGissue():
       issue['assignee'] = assignee[1].strip()
       continue
 
-    if line == SHOW_COMMITS or line == SHOW_FILES_CHANGED:
+    if line == SHOW_COMMITS or line == SHOW_FILES_CHANGED or "## Branch Name:" in line:
       continue
 
     if issue['body'] != '':
