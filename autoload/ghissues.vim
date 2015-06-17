@@ -13,6 +13,7 @@ import string
 import subprocess
 import threading
 import time
+import urllib
 import urllib2
 import vim
 
@@ -333,7 +334,7 @@ def getGHList(ignore_cache, repourl, endpoint, params):
         params['page'] = str(page)
 
         # TODO This should be in ghUrl() I think
-        qs = string.join([ k+'='+v for ( k, v ) in params.items()], '&')
+        qs = urllib.urlencode(params)
         url = ghUrl(endpoint+'?'+qs, repourl)
 
         response = urllib2.urlopen(url, timeout = 2)
