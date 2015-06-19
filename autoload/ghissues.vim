@@ -14,6 +14,9 @@ import urllib2
 import subprocess
 import time
 import threading
+from subprocess import Popen
+import hashlib
+import shlex
 
 SHOW_ALL = "[Show all issues]"
 SHOW_ASSIGNED_ME = "[Only show assigned to me]"
@@ -760,6 +763,10 @@ def ghApi(endpoint, repourl = False, cache = True, repo = True):
     except:
       print("SSL appears to be disabled or not installed on this machine. Please reinstall Python and/or Vim.")
 
+  if vim.eval("g:gissues_offline_cache"):
+    url = ghUrl(endpoint, repourl, repo)
+    p = Popen(shlex.split("curl " + url), stdout=open(os.path.expanduser("~/.vim/.gissue-cache/") + hashlib.sha224(url).hexdigest(), "w"))
+
   try:
     req = urllib2.urlopen(ghUrl(endpoint, repourl, repo), timeout = 5)
     data = json.loads(req.read())
@@ -806,6 +813,7 @@ def createDirectory(path):
 if vim.eval("g:gissues_offline_cache"):
   createDirectory(os.path.expanduser("~/.vim"))
   createDirectory(os.path.expanduser("~/.vim/.gissue-cache"))
+
 EOF
 
 " Default to not having loaded xterm
