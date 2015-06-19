@@ -795,6 +795,17 @@ def ghUrl(endpoint, repourl = False, repo = True):
 def getFilenameParens():
   return vim.current.buffer.name.replace("\\", "/").split("gissues/")[1].split("/")
 
+def createDirectory(path):
+  try:
+    print path
+    os.makedirs(path)
+  except OSError:
+    if not os.path.isdir(path):
+      raise
+
+if vim.eval("g:gissues_offline_cache"):
+  createDirectory(os.path.expanduser("~/.vim"))
+  createDirectory(os.path.expanduser("~/.vim/.gissue-cache"))
 EOF
 
 " Default to not having loaded xterm

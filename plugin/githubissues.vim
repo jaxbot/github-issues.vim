@@ -329,3 +329,7 @@ if !exists("g:gissues_show_errors")
   let g:gissues_show_errors = 0
 endif
 
+if !exists("g:gissues_offline_cache")
+  let g:gissues_offline_cache = 0
+endif
+
