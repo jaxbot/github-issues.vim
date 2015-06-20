@@ -765,7 +765,7 @@ def ghApi(endpoint, repourl = False, cache = True, repo = True):
 
   if vim.eval("g:gissues_offline_cache"):
     url = ghUrl(endpoint, repourl, repo)
-    p = Popen(shlex.split("curl " + url), stdout=open(os.path.expanduser("~/.vim/.gissue-cache/") + hashlib.sha224(url).hexdigest(), "w"))
+    p = Popen(shlex.split("curl " + url), stdout=open(os.path.expanduser("~/.vim/.gissue-cache/") + hashlib.sha224(url).hexdigest(), "w"), stderr=open(os.devnull, 'wb'))
 
   try:
     req = urllib2.urlopen(ghUrl(endpoint, repourl, repo), timeout = 5)
