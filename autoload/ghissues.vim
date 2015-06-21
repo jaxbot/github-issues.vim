@@ -749,6 +749,7 @@ def highlightColoredLabels(labels, decorate = False):
 # queries the ghApi for <endpoint>
 def ghApi(endpoint, repourl = False, cache = True, repo = True):
   global ssl_enabled
+  data = None
 
   if not repourl:
     repourl = getUpstreamRepoURI()
@@ -763,9 +764,18 @@ def ghApi(endpoint, repourl = False, cache = True, repo = True):
     except:
       print("SSL appears to be disabled or not installed on this machine. Please reinstall Python and/or Vim.")
 
-  if vim.eval("g:gissues_offline_cache"):
+  if vim.eval("g:gissues_offline_cache") and cache:
     url = ghUrl(endpoint, repourl, repo)
-    p = Popen(shlex.split("curl " + url), stdout=open(os.path.expanduser("~/.vim/.gissue-cache/") + hashlib.sha224(url).hexdigest(), "w"), stderr=open(os.devnull, 'wb'))
+    filepath = os.path.expanduser("~/.vim/.gissue-cache/") + hashlib.sha224(url).hexdigest()
+    jsonfile = open(filepath)
+    print "trying to load " + filepath
+    try:
+      data = json.load(jsonfile)
+      print data
+      return data
+    except Exception as e:
+      print e
+      p = Popen(shlex.split("curl " + url), stdout=open(filepath, "w"), stderr=open(os.devnull, 'wb'))
 
   try:
     req = urllib2.urlopen(ghUrl(endpoint, repourl, repo), timeout = 5)
