@@ -764,22 +764,25 @@ def ghApi(endpoint, repourl = False, cache = True, repo = True):
     except:
       print("SSL appears to be disabled or not installed on this machine. Please reinstall Python and/or Vim.")
 
+  url = ghUrl(endpoint, repourl, repo)
+  filepath = os.path.expanduser("~/.vim/.gissue-cache/") + hashlib.sha224(url).hexdigest()
   if vim.eval("g:gissues_offline_cache") and cache:
-    url = ghUrl(endpoint, repourl, repo)
-    filepath = os.path.expanduser("~/.vim/.gissue-cache/") + hashlib.sha224(url).hexdigest()
     jsonfile = open(filepath)
-    print "trying to load " + filepath
     try:
       data = json.load(jsonfile)
-      print data
       return data
     except Exception as e:
-      print e
-      p = Popen(shlex.split("curl " + url), stdout=open(filepath, "w"), stderr=open(os.devnull, 'wb'))
+      # fallback to downloading
+      pass
 
   try:
-    req = urllib2.urlopen(ghUrl(endpoint, repourl, repo), timeout = 5)
-    data = json.loads(req.read())
+    req = urllib2.urlopen(url, timeout = 5)
+    request_data = req.read()
+    data = json.loads(request_data)
+
+    cache_file = open(filepath, "w")
+    cache_file.write(request_data)
+    cache_file.close()
 
     api_cache[repourl + "/" + endpoint] = data
 
