@@ -817,7 +817,6 @@ def getFilenameParens():
 
 def createDirectory(path):
   try:
-    print path
     os.makedirs(path)
   except OSError:
     if not os.path.isdir(path):
