@@ -351,9 +351,39 @@ def getGHList(ignore_cache, repourl, endpoint, params):
 # populate the omnicomplete synchronously or asynchronously, depending on mode
 def populateOmniComplete():
   if vim.eval("g:gissues_async_omni"):
-    populateOmniCompleteAsync()
+    if vim.eval("g:gissues_offline_cache"):
+      omniDownload = Popen(shlex.split("curl " + url), stdout=open(filepath, "w"), stderr=open(os.devnull, 'wb'))
+      startedOmniDownload = 1
+      populateOmniCompleteFromDisk()
+    else:
+      populateOmniCompleteAsync()
   else:
     doPopulateOmniComplete()
+
+def populateOmniCompleteFromDisk():
+  url = getUpstreamRepoURI()
+
+  if url == "":
+    return
+
+  issues = getIssueList(url, 0)
+  for issue in issues:
+    addToOmni(str(issue["number"]) + " " + issue["title"], 'Issue')
+
+  labels = getLabels()
+  if labels is not None:
+    for label in labels:
+      addToOmni(unicode(label["name"]), 'Label')
+
+  contributors = getContributors()
+  if contributors is not None:
+    for contributor in contributors:
+      addToOmni(str(contributor["author"]["login"]), 'user')
+
+  milestones = getMilestoneList(url)
+  if milestones is not None:
+    for milestone in milestones:
+      addToOmni(str(milestone["title"].encode('utf-8')), 'Milestone')
 
 # adds issues, labels, and contributors to omni dictionary
 def doPopulateOmniComplete():
