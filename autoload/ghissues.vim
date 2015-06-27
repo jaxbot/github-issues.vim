@@ -366,6 +366,9 @@ def populateOmniCompleteFromDisk():
   if url == "":
     return
 
+  filepath = getFilePathForURL(url)
+  jsonfile = open(filepath)
+  data = json.load(jsonfile)
   issues = getIssueList(url, 0)
   for issue in issues:
     addToOmni(str(issue["number"]) + " " + issue["title"], 'Issue')
@@ -384,6 +387,13 @@ def populateOmniCompleteFromDisk():
   if milestones is not None:
     for milestone in milestones:
       addToOmni(str(milestone["title"].encode('utf-8')), 'Milestone')
+
+def apiToDiskAsync(url):
+  url = ghUrl(endpoint, repourl, repo)
+  Popen(shlex.split("curl " + url), stdout=open(filepath, "w"), stderr=open(os.devnull, 'wb'))
+
+def getContributors():
+  return ghApi("/stats/contributors")
 
 # adds issues, labels, and contributors to omni dictionary
 def doPopulateOmniComplete():
@@ -795,7 +805,7 @@ def ghApi(endpoint, repourl = False, cache = True, repo = True):
       print("SSL appears to be disabled or not installed on this machine. Please reinstall Python and/or Vim.")
 
   url = ghUrl(endpoint, repourl, repo)
-  filepath = os.path.expanduser("~/.vim/.gissue-cache/") + hashlib.sha224(url).hexdigest()
+  filepath = getFilePathForURL(url)
   if vim.eval("g:gissues_offline_cache") and cache:
     try:
       jsonfile = open(filepath)
@@ -830,6 +840,9 @@ def ghApi(endpoint, repourl = False, cache = True, repo = True):
       print("github-issues.vim: An error occurred. If this is a private repo, make sure you have a github_access_token defined. Call: " + endpoint + " on " + repourl)
       print(e)
     return None
+
+def getFilePathForURL(url):
+  return os.path.expanduser("~/.vim/.gissue-cache/") + hashlib.sha224(url).hexdigest()
 
 # generates a github URL, including access token
 def ghUrl(endpoint, repourl = False, repo = True):
