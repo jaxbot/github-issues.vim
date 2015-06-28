@@ -388,9 +388,31 @@ def populateOmniCompleteFromDisk():
     for milestone in milestones:
       addToOmni(str(milestone["title"].encode('utf-8')), 'Milestone')
 
-def apiToDiskAsync(url):
-  url = ghUrl(endpoint, repourl, repo)
+def apiToDiskAsync(endpoint):
+  repourl = getUpstreamRepoURI()
+  url = ghUrl(endpoint, repourl)
+  filepath = getFilePathForURL(url)
   Popen(shlex.split("curl " + url), stdout=open(filepath, "w"), stderr=open(os.devnull, 'wb'))
+
+def cacheFromDisk(endpoint):
+  repourl = getUpstreamRepoURI()
+  url = ghUrl(endpoint, repourl)
+  filepath = getFilePathForURL(url)
+  try:
+    jsonfile = open(filepath)
+    data = json.load(jsonfile)
+    api_cache[repourl + "/" + endpoint] = data
+    return data
+  except Exception as e:
+    return None
+
+def grabCacheData(endpoint):
+  repourl = getUpstreamRepoURI()
+  url = ghUrl(endpoint, repourl)
+  if api_cache.get(repourl + "/" + endpoint):
+    return api_cache[repourl + "/" + endpoint]
+  apiToDiskAsync(endpoint)
+  return cacheFromDisk(endpoint)
 
 def getContributors():
   return ghApi("/stats/contributors")
