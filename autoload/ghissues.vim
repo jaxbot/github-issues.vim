@@ -30,6 +30,10 @@ github_repos = {}
 github_datacache = {}
 # api data by repourl + / + endpoint
 api_cache = {}
+# process handles by file hash
+proc_handle = {}
+# whether or not a async request is pending by file hash
+proc_pending = {}
 
 # reset web cache after this value grows too large
 cache_count = 0
@@ -392,7 +396,12 @@ def apiToDiskAsync(endpoint):
   repourl = getUpstreamRepoURI()
   url = ghUrl(endpoint, repourl)
   filepath = getFilePathForURL(url)
-  Popen(shlex.split("curl " + url), stdout=open(filepath, "w"), stderr=open(os.devnull, 'wb'))
+  proc_handle[filehash] = Popen(
+    shlex.split("curl " + url),
+    stdout=open(filepath, "w"),
+    stderr=open(os.devnull, 'wb')
+  )
+  proc_pending[filehash] = True
 
 def cacheFromDisk(endpoint):
   repourl = getUpstreamRepoURI()
@@ -409,8 +418,18 @@ def cacheFromDisk(endpoint):
 def grabCacheData(endpoint):
   repourl = getUpstreamRepoURI()
   url = ghUrl(endpoint, repourl)
+  filepath = getFilePathForURL(url)
+
+  # If something was pending and we have fresh data,
+  # replace what is in memory with the disk data
+  if proc_pending.get(filepath):
+    if proc_handle[filepath].poll() is not None:
+      proc_pending[filepath] = False
+      return cacheFromDisk(filepath)
+
   if api_cache.get(repourl + "/" + endpoint):
     return api_cache[repourl + "/" + endpoint]
+
   apiToDiskAsync(endpoint)
   return cacheFromDisk(endpoint)
 
