@@ -356,8 +356,6 @@ def getGHList(ignore_cache, repourl, endpoint, params):
 def populateOmniComplete():
   if vim.eval("g:gissues_async_omni"):
     if vim.eval("g:gissues_offline_cache"):
-      omniDownload = Popen(shlex.split("curl " + url), stdout=open(filepath, "w"), stderr=open(os.devnull, 'wb'))
-      startedOmniDownload = 1
       populateOmniCompleteFromDisk()
     else:
       populateOmniCompleteAsync()
@@ -447,12 +445,12 @@ def doPopulateOmniComplete():
   for issue in issues:
     addToOmni(str(issue["number"]) + " " + issue["title"], 'Issue')
 
-  labels = getLabels()
+  labels = grabCacheData("/labels")
   if labels is not None:
     for label in labels:
       addToOmni(unicode(label["name"]), 'Label')
 
-  contributors = getContributors()
+  contributors = grabCacheData("/stats/contributors")
   if contributors is not None:
     for contributor in contributors:
       addToOmni(str(contributor["author"]["login"]), 'user')
