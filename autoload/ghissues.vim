@@ -375,12 +375,12 @@ def populateOmniCompleteFromDisk():
   for issue in issues:
     addToOmni(str(issue["number"]) + " " + issue["title"], 'Issue')
 
-  labels = getLabels()
+  labels = grabCacheData("/labels")
   if labels is not None:
     for label in labels:
       addToOmni(unicode(label["name"]), 'Label')
 
-  contributors = getContributors()
+  contributors = grabCacheData("/stats/contributors")
   if contributors is not None:
     for contributor in contributors:
       addToOmni(str(contributor["author"]["login"]), 'user')
@@ -445,12 +445,12 @@ def doPopulateOmniComplete():
   for issue in issues:
     addToOmni(str(issue["number"]) + " " + issue["title"], 'Issue')
 
-  labels = grabCacheData("/labels")
+  labels = getLabels()
   if labels is not None:
     for label in labels:
       addToOmni(unicode(label["name"]), 'Label')
 
-  contributors = grabCacheData("/stats/contributors")
+  contributors = getContributors()
   if contributors is not None:
     for contributor in contributors:
       addToOmni(str(contributor["author"]["login"]), 'user')
