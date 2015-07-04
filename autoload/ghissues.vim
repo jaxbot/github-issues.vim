@@ -368,10 +368,7 @@ def populateOmniCompleteFromDisk():
   if url == "":
     return
 
-  filepath = getFilePathForURL(url)
-  jsonfile = open(filepath)
-  data = json.load(jsonfile)
-  issues = getIssueList(url, 0)
+  issues = grabCacheData("/issues")
   for issue in issues:
     addToOmni(str(issue["number"]) + " " + issue["title"], 'Issue')
 
