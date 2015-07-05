@@ -754,7 +754,8 @@ def saveGissue():
 
     data = ""
     try:
-      url = ghUrl("/issues")
+      repourl = getUpstreamRepoURI()
+      url = ghUrl("/issues",repourl)
       request = urllib2.Request(url, json.dumps(issue))
       data = json.loads(urllib2.urlopen(request, timeout=2).read())
       parens[2] = str(data['number'])
@@ -769,7 +770,7 @@ def saveGissue():
         print(url)
         print(issue)
   else:
-    url = ghUrl("/issues/" + number)
+    url = ghUrl("/issues/" + number, repourl)
     request = urllib2.Request(url, json.dumps(issue))
     request.get_method = lambda: 'PATCH'
     try:
@@ -780,7 +781,7 @@ def saveGissue():
 
   if commentmode == 3:
     try:
-      url = ghUrl("/issues/" + parens[2] + "/comments")
+      url = ghUrl("/issues/" + parens[2] + "/comments", repourl)
       data = json.dumps({'body': comment})
       request = urllib2.Request(url, data)
       urllib2.urlopen(request, timeout=2)
@@ -797,7 +798,8 @@ def saveGissue():
 # updates an issues data, such as opening/closing
 def setIssueData(issue):
   parens = getFilenameParens()
-  url = ghUrl("/issues/" + parens[2])
+  repourl = getUpstreamRepoURI()
+  url = ghUrl("/issues/" + parens[2], repourl)
   request = urllib2.Request(url, json.dumps(issue))
   request.get_method = lambda: 'PATCH'
   urllib2.urlopen(request, timeout = 2)
