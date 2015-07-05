@@ -215,6 +215,14 @@ def showIssueList(labels, ignore_cache=False, only_me=False):
     vim.command("let github_failed = 1")
     return
 
+  issues = getIssueList(repourl, '/issues', labels, ignore_cache, only_me)
+
+  printIssueList(issues, repourl, labels, only_me)
+
+def printIssueList(issues, repourl='search', labels=False, only_me=False):
+  global globissues
+  globissues = issues
+
   if not vim.eval("g:github_same_window") == "1":
     vim.command("silent new")
 
@@ -227,7 +235,6 @@ def showIssueList(labels, ignore_cache=False, only_me=False):
   vim.command("normal ggdG")
 
   current_buffer = vim.current.buffer
-  issues = getIssueList(repourl, labels, ignore_cache, only_me)
 
   cur_milestone = str(vim.eval("g:github_current_milestone"))
 
@@ -284,7 +291,7 @@ def showMilestoneList(labels, ignore_cache=False):
   vim.command("1delete _")
 
 # pulls the issue array from the server
-def getIssueList(repourl, query, ignore_cache=False, only_me=False):
+def getIssueList(repourl, endpoint, query, ignore_cache = False, only_me = False):
   global github_datacache
 
   # non-string args correspond to vanilla issues request
@@ -297,7 +304,7 @@ def getIssueList(repourl, query, ignore_cache=False, only_me=False):
   if only_me:
     params["assignee"] = getCurrentUser()
 
-  return getGHList(ignore_cache, repourl, "/issues", params)
+  return getGHList(ignore_cache, repourl, endpoint, params)
 
 def getCurrentUser():
   return ghApi("", "user", True, False)["login"]
@@ -443,7 +450,7 @@ def doPopulateOmniComplete():
   if url == "":
     return
 
-  issues = getIssueList(url, 0)
+  issues = getIssueList(url, "/issues", 0)
   for issue in issues:
     addToOmni(str(issue["number"]) + " " + issue["title"], 'Issue')
 
@@ -475,7 +482,7 @@ class AsyncOmni(threading.Thread):
     if url == "":
       return
 
-    issues = getIssueList(url, 0)
+    issues = getIssueList(url, '/issues', 0)
     labels = getLabels()
     contributors = getContributors()
     milestones = getMilestoneList(url)
