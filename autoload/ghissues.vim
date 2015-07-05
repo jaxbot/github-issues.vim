@@ -226,6 +226,9 @@ def printIssueList(issues, repourl='search', labels=False, only_me=False):
   if not vim.eval("g:github_same_window") == "1":
     vim.command("silent new")
 
+  if 'labels' not in locals():
+    labels = ""
+
   # Some Vim versions don't allow noswapfile as a verb
   try:
     vim.command("noswapfile edit " + "gissues/" + repourl + "/issues")
@@ -237,16 +240,15 @@ def printIssueList(issues, repourl='search', labels=False, only_me=False):
   current_buffer = vim.current.buffer
 
   cur_milestone = str(vim.eval("g:github_current_milestone"))
-
   # its an array, so dump these into the current (issues) buffer
   for issue in issues:
     if cur_milestone != "" and (not issue["milestone"] or issue["milestone"]["title"] != cur_milestone):
       continue
 
     issuestr = str(issue["number"]) + " " + issue["title"]
-
-    for label in issue["labels"]:
-      issuestr += " [" + label["name"] + "]"
+    if 'labels' in issue:
+      for label in issue["labels"]:
+        issuestr += " [" + label["name"] + "]"
 
     current_buffer.append(issuestr.encode(vim.eval("&encoding")))
 
