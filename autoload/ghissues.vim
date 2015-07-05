@@ -40,6 +40,9 @@ cache_count = 0
 # whether or not SSL is known to be enabled
 ssl_enabled = False
 
+# keep a list of issues
+globissues = {}
+
 # returns the Github url (i.e. jaxbot/vimfiles) for the current file
 def getRepoURI():
   global github_repos
@@ -268,6 +271,22 @@ def printIssueList(issues, repourl='search', labels=False, only_me=False):
   # append leaves an unwanted beginning line. delete it.
   vim.command("1delete _")
 
+def showSearchList():
+  if not vim.eval("g:github_same_window") == "1":
+    vim.command("silent new")
+
+  # Some Vim versions don't allow noswapfile as a verb
+  try:
+    vim.command("noswapfile edit " + "gissues")
+  except:
+    vim.command("edit " + "gissues")
+
+  vim.command("normal ggdG")
+  params = {"q":vim.eval("g:gh_issues_query")}
+
+  issues =  getGHList(1, "custom", 'search/issues', params)
+  printIssueList(issues)
+
 def showMilestoneList(labels, ignore_cache=False):
   repourl = getUpstreamRepoURI()
 
@@ -344,10 +363,16 @@ def getGHList(ignore_cache, repourl, endpoint, params):
 
         # TODO This should be in ghUrl() I think
         qs = urllib.urlencode(params)
-        url = ghUrl(endpoint+'?'+qs, repourl)
+        if repourl != "custom":
+          url = ghUrl(endpoint+'?'+qs, repourl)
+        else:
+          url = ghUrl(endpoint+'?'+qs, repourl, False)
 
         response = urllib2.urlopen(url, timeout = 2)
         issuearray = json.loads(response.read())
+
+        if 'items' in issuearray:
+          issuearray = issuearray["items"]
 
         # JSON parse the API response, add page to previous pages if any
         github_datacache[repourl][endpoint] += issuearray
@@ -517,6 +542,11 @@ def showIssueLink(number, url="", split="False"):
 def showIssueBuffer(number, url = False):
   if url:
     repourl = url
+  elif 'search/issues' in vim.current.buffer.name:
+    line_number = vim.eval("line('.')-1")
+    html_url = globissues[int(line_number)]['html_url']
+    html_url_split = html_url.split("/")
+    repourl = html_url_split[3] + "/" + html_url_split[4]
   else:
     repourl = getUpstreamRepoURI()
 
@@ -542,6 +572,7 @@ def showIssueBuffer(number, url = False):
 
   if not vim.eval("g:github_same_window") == "1":
     vim.command("silent new +set\ buftype=nofile")
+
   vim.command("edit gissues/" + repourl + "/" + number)
 
 # show an issue buffer in detail
@@ -906,13 +937,14 @@ def ghUrl(endpoint, repourl=False, repo=True):
     else:
       params = "?"
     params += "access_token=" + token
-  if not repourl:
-    repourl = getUpstreamRepoURI()
 
   if repo:
     repourl = "repos/" + repourl
 
-  return vim.eval("g:github_api_url") + urllib2.quote(repourl) + endpoint + params
+  if repourl == "custom":
+    return vim.eval("g:github_api_url") + endpoint + params
+  else:
+    return vim.eval("g:github_api_url") + urllib2.quote(repourl) + endpoint + params
 
 # returns an array of parens after gissues in filename
 def getFilenameParens():
