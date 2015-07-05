@@ -514,8 +514,8 @@ def showIssueLink(number, url="", split="False"):
 
 # handle user pressing enter on the gissue list
 # possible actions: view issue, filter by label, filter by assignee, remove filters
-def showIssueBuffer(number, url=""):
-  if url != "":
+def showIssueBuffer(number, url = False):
+  if url:
     repourl = url
   else:
     repourl = getUpstreamRepoURI()
