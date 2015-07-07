@@ -354,8 +354,8 @@ def getGHList(ignore_cache, repourl, endpoint, params):
 
 # populate the omnicomplete synchronously or asynchronously, depending on mode
 def populateOmniComplete():
-  if vim.eval("g:gissues_async_omni"):
-    if vim.eval("g:gissues_offline_cache"):
+  if vim.eval("g:gissues_async_omni") == "1":
+    if vim.eval("g:gissues_offline_cache") == "1":
       populateOmniCompleteFromDisk()
     else:
       populateOmniCompleteAsync()
@@ -864,7 +864,7 @@ def ghApi(endpoint, repourl = False, cache = True, repo = True):
 
     return data
   except Exception as e:
-    if vim.eval("g:gissues_offline_cache"):
+    if vim.eval("g:gissues_offline_cache") == "1":
       try:
         jsonfile = open(filepath)
         data = json.load(jsonfile)
@@ -909,7 +909,7 @@ def createDirectory(path):
     if not os.path.isdir(path):
       raise
 
-if vim.eval("g:gissues_offline_cache"):
+if vim.eval("g:gissues_offline_cache") == "1":
   createDirectory(os.path.expanduser("~/.vim"))
   createDirectory(os.path.expanduser("~/.vim/.gissue-cache"))
 
