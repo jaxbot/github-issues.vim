@@ -5,17 +5,16 @@ if !has("python") || exists("g:github_issues_pyloaded")
 endif
 
 python <<EOF
-import os
-import vim
-import string
-import json
-import urllib2
-import subprocess
-import time
-import threading
-from subprocess import Popen
 import hashlib
+import json
+import os
 import shlex
+import string
+import subprocess
+import threading
+import time
+import urllib2
+import vim
 
 SHOW_ALL = "[Show all issues]"
 SHOW_ASSIGNED_ME = "[Only show assigned to me]"
@@ -396,7 +395,7 @@ def apiToDiskAsync(endpoint):
   repourl = getUpstreamRepoURI()
   url = ghUrl(endpoint, repourl)
   filepath = getFilePathForURL(url)
-  proc_handle[filehash] = Popen(
+  proc_handle[filehash] = subprocess.Popen(
     shlex.split("curl " + url),
     stdout=open(filepath, "w"),
     stderr=open(os.devnull, 'wb')
