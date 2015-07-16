@@ -44,8 +44,8 @@ def getRepoURI():
   global github_repos
 
   if "gissues" in vim.current.buffer.name:
-    s = getFilenameParens()
-    return s[0] + "/" + s[1]
+    parens = getFilenameParens()
+    return parens[0] + "/" + parens[1]
 
   # get the directory the current file is in
   filepath = vim.eval("expand('%:p:h')")
@@ -53,7 +53,7 @@ def getRepoURI():
   # Remove trailing ".git" segment from path.
   # While `git remote -v` appears to work from here in general, it fails when
   # invoked for COMMIT_EDITMSG: `fatal: Not a git repository: '.git'`.
-  filepath = filepath.split(os.path.sep+".git")[0]
+  filepath = filepath.split(os.path.sep + ".git")[0]
 
   # cache the github repo for performance
   if github_repos.get(filepath, None) is not None:
@@ -68,7 +68,7 @@ def getRepoURI():
     github_repos[filepath] = ""
     return github_repos[filepath]
   except OSError:
-    all_remotes = subprocess.check_output( ['git', 'remote', '-v'])
+    all_remotes = subprocess.check_output(['git', 'remote', '-v'])
 
   # Try to get the remote for the current branch/HEAD.
   try:
@@ -110,9 +110,9 @@ def getRepoURI():
 
     # Skip any unwanted urls.
     for possible_url in possible_urls:
-      s = url.split(possible_url)
-      if len(s) > 1:
-        github_repos[filepath] = s[1]
+      split_url = url.split(possible_url)
+      if len(split_url) > 1:
+        github_repos[filepath] = split_url[1]
         #print("github-issues: using repo: %s" % s[1])
         break
     else:
@@ -167,7 +167,10 @@ def showCommit(sha, split=False):
   req = urllib2.Request(url, None, headers)
   diff = urllib2.urlopen(req, timeout=2)
   buffer_name = "commit/" + repourl + "/" + sha
-  newSplit(buffer_name) if split == 'True' else newTab(buffer_name)
+  if split == 'True':
+    newSplit(buffer_name)
+  else:
+    newTab(buffer_name)
   vim.command("set syn=diff")
   vim.command("setlocal modifiable")
   current_buffer = vim.current.buffer
