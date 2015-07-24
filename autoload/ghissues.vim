@@ -801,6 +801,7 @@ def saveGissue():
         print(url)
         print(issue)
   else:
+    repourl = vim.eval("b:ghissue_repourl")
     url = ghUrl("/issues/" + number, repourl)
     request = urllib2.Request(url, json.dumps(issue))
     request.get_method = lambda: 'PATCH'
