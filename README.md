@@ -50,6 +50,18 @@ How awesome is that!?
 
 New feature: Use `:Gmiles` to open a menu of milestones. Press return on one to select it and filter `:Gissues` by that milestone from then on.
 
+### Custom Issue Search
+
+You have the ability to define your own issue search using [Githubs search API](https://developer.github.com/v3/search/). This allows you to view issues and pull requests across repos.
+
+To use this feature, you can add a line like the following, with the search parameters that you wish to use.
+
+```vim
+let g:gh_issues_query = "state:open user:github label:\"feature\" sort:created-asc"
+```
+
+You can than get this list of issues using the command `:Gisearch`
+
 ### Fugitive integration
 
 Github will show any commits that reference the issue. That's what the omnicomplete helps with. But to make things even more awesome, github-issues.vim integrates with Fugitive.vim to make commit hashes clickable with the return key.
