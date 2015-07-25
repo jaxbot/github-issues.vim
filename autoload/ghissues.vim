@@ -158,8 +158,8 @@ def showCommits(split=False):
   for commit in commits:
     current_buffer.append((commit['sha'] + " " + commit['commit']['message']).split("\n"))
   vim.command("normal ggdd")
-  vim.command("nnoremap <buffer> <CR> :call <SID>handleEnter('False')<cr>")
-  vim.command("nnoremap <buffer> s :call <SID>handleEnter('True')<cr>")
+  vim.command("nnoremap <buffer> <CR> :call <SID>showIssueLink('','','False')<cr>")
+  vim.command("nnoremap <buffer> s :call <SID>showIssueLink('','','True')<cr>")
   vim.command("call <SID>commitHighlighting()")
   vim.command("let b:ghissue_repourl=\""+repourl+"\"")
   vim.command("setlocal nomodifiable")
@@ -171,7 +171,7 @@ def showCommit(sha, split=False):
   req = urllib2.Request(url, None, headers)
   diff = urllib2.urlopen(req, timeout=2)
   buffer_name = "commit/" + repourl + "/" + sha
-  newSplit(buffer_name) if split == 'True' else newTab(buffer_name)
+  newSplit(buffer_name) if split else newTab(buffer_name)
   vim.command("set syn=diff")
   vim.command("setlocal modifiable")
   current_buffer = vim.current.buffer
@@ -527,13 +527,15 @@ def showIssueLink(number, url="", split="False"):
 
   # convert string to boolean
   split = split == "True"
+  word = vim.eval("expand('<cword>')")
 
   line = vim.eval("getline(\".\")")
   if line == SHOW_COMMITS:
     showCommits(split)
-    return
-  if line == SHOW_FILES_CHANGED:
+  elif line == SHOW_FILES_CHANGED:
     showFilesChanged(split)
+  elif len(word) == 40:
+    showCommit(word, split)
 
   return
 
