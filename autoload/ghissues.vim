@@ -13,6 +13,7 @@ import string
 import subprocess
 import threading
 import time
+import urllib
 import urllib2
 import vim
 
@@ -38,6 +39,9 @@ cache_count = 0
 
 # whether or not SSL is known to be enabled
 ssl_enabled = False
+
+# keep a list of issues
+globissues = {}
 
 # returns the Github url (i.e. jaxbot/vimfiles) for the current file
 def getRepoURI():
@@ -154,8 +158,8 @@ def showCommits(split=False):
   for commit in commits:
     current_buffer.append((commit['sha'] + " " + commit['commit']['message']).split("\n"))
   vim.command("normal ggdd")
-  vim.command("nnoremap <buffer> <CR> :call <SID>handleEnter('False')<cr>")
-  vim.command("nnoremap <buffer> s :call <SID>handleEnter('True')<cr>")
+  vim.command("nnoremap <buffer> <CR> :call <SID>showIssueLink('','','False')<cr>")
+  vim.command("nnoremap <buffer> s :call <SID>showIssueLink('','','True')<cr>")
   vim.command("call <SID>commitHighlighting()")
   vim.command("let b:ghissue_repourl=\""+repourl+"\"")
   vim.command("setlocal nomodifiable")
@@ -167,7 +171,7 @@ def showCommit(sha, split=False):
   req = urllib2.Request(url, None, headers)
   diff = urllib2.urlopen(req, timeout=2)
   buffer_name = "commit/" + repourl + "/" + sha
-  if split == 'True':
+  if split:
     newSplit(buffer_name)
   else:
     newTab(buffer_name)
@@ -217,8 +221,19 @@ def showIssueList(labels, ignore_cache=False, only_me=False):
     vim.command("let github_failed = 1")
     return
 
+  issues = getIssueList(repourl, '/issues', labels, ignore_cache, only_me)
+
+  printIssueList(issues, repourl, labels, only_me)
+
+def printIssueList(issues, repourl='search', labels=False, only_me=False):
+  global globissues
+  globissues = issues
+
   if not vim.eval("g:github_same_window") == "1":
     vim.command("silent new")
+
+  if 'labels' not in locals():
+    labels = ""
 
   # Some Vim versions don't allow noswapfile as a verb
   try:
@@ -229,19 +244,17 @@ def showIssueList(labels, ignore_cache=False, only_me=False):
   vim.command("normal ggdG")
 
   current_buffer = vim.current.buffer
-  issues = getIssueList(repourl, labels, ignore_cache, only_me)
 
   cur_milestone = str(vim.eval("g:github_current_milestone"))
-
   # its an array, so dump these into the current (issues) buffer
   for issue in issues:
     if cur_milestone != "" and (not issue["milestone"] or issue["milestone"]["title"] != cur_milestone):
       continue
 
     issuestr = str(issue["number"]) + " " + issue["title"]
-
-    for label in issue["labels"]:
-      issuestr += " [" + label["name"] + "]"
+    if 'labels' in issue:
+      for label in issue["labels"]:
+        issuestr += " [" + label["name"] + "]"
 
     current_buffer.append(issuestr.encode(vim.eval("&encoding")))
 
@@ -260,6 +273,22 @@ def showIssueList(labels, ignore_cache=False, only_me=False):
 
   # append leaves an unwanted beginning line. delete it.
   vim.command("1delete _")
+
+def showSearchList():
+  if not vim.eval("g:github_same_window") == "1":
+    vim.command("silent new")
+
+  # Some Vim versions don't allow noswapfile as a verb
+  try:
+    vim.command("noswapfile edit " + "gissues")
+  except:
+    vim.command("edit " + "gissues")
+
+  vim.command("normal ggdG")
+  params = {"q":vim.eval("g:gh_issues_query")}
+
+  issues =  getGHList(1, "custom", 'search/issues', params)
+  printIssueList(issues)
 
 def showMilestoneList(labels, ignore_cache=False):
   repourl = getUpstreamRepoURI()
@@ -286,7 +315,7 @@ def showMilestoneList(labels, ignore_cache=False):
   vim.command("1delete _")
 
 # pulls the issue array from the server
-def getIssueList(repourl, query, ignore_cache=False, only_me=False):
+def getIssueList(repourl, endpoint, query, ignore_cache = False, only_me = False):
   global github_datacache
 
   # non-string args correspond to vanilla issues request
@@ -299,7 +328,7 @@ def getIssueList(repourl, query, ignore_cache=False, only_me=False):
   if only_me:
     params["assignee"] = getCurrentUser()
 
-  return getGHList(ignore_cache, repourl, "/issues", params)
+  return getGHList(ignore_cache, repourl, endpoint, params)
 
 def getCurrentUser():
   return ghApi("", "user", True, False)["login"]
@@ -336,11 +365,17 @@ def getGHList(ignore_cache, repourl, endpoint, params):
         params['page'] = str(page)
 
         # TODO This should be in ghUrl() I think
-        qs = string.join([ k+'='+v for ( k, v ) in params.items()], '&')
-        url = ghUrl(endpoint+'?'+qs, repourl)
+        qs = urllib.urlencode(params)
+        if repourl != "custom":
+          url = ghUrl(endpoint+'?'+qs, repourl)
+        else:
+          url = ghUrl(endpoint+'?'+qs, repourl, False)
 
         response = urllib2.urlopen(url, timeout = 2)
         issuearray = json.loads(response.read())
+
+        if 'items' in issuearray:
+          issuearray = issuearray["items"]
 
         # JSON parse the API response, add page to previous pages if any
         github_datacache[repourl][endpoint] += issuearray
@@ -445,7 +480,7 @@ def doPopulateOmniComplete():
   if url == "":
     return
 
-  issues = getIssueList(url, 0)
+  issues = getIssueList(url, "/issues", 0)
   for issue in issues:
     addToOmni(str(issue["number"]) + " " + issue["title"], 'Issue')
 
@@ -477,7 +512,7 @@ class AsyncOmni(threading.Thread):
     if url == "":
       return
 
-    issues = getIssueList(url, 0)
+    issues = getIssueList(url, '/issues', 0)
     labels = getLabels()
     contributors = getContributors()
     milestones = getMilestoneList(url)
@@ -495,21 +530,28 @@ def showIssueLink(number, url="", split="False"):
 
   # convert string to boolean
   split = split == "True"
+  word = vim.eval("expand('<cword>')")
 
   line = vim.eval("getline(\".\")")
   if line == SHOW_COMMITS:
     showCommits(split)
-    return
-  if line == SHOW_FILES_CHANGED:
+  elif line == SHOW_FILES_CHANGED:
     showFilesChanged(split)
+  elif len(word) == 40:
+    showCommit(word, split)
 
   return
 
 # handle user pressing enter on the gissue list
 # possible actions: view issue, filter by label, filter by assignee, remove filters
-def showIssueBuffer(number, url=""):
-  if url != "":
+def showIssueBuffer(number, url = False):
+  if url:
     repourl = url
+  elif 'search/issues' in vim.current.buffer.name:
+    line_number = vim.eval("line('.')-1")
+    html_url = globissues[int(line_number)]['html_url']
+    html_url_split = html_url.split("/")
+    repourl = html_url_split[3] + "/" + html_url_split[4]
   else:
     repourl = getUpstreamRepoURI()
 
@@ -535,6 +577,7 @@ def showIssueBuffer(number, url=""):
 
   if not vim.eval("g:github_same_window") == "1":
     vim.command("silent new +set\ buftype=nofile")
+
   vim.command("edit gissues/" + repourl + "/" + number)
 
 # show an issue buffer in detail
@@ -747,7 +790,8 @@ def saveGissue():
 
     data = ""
     try:
-      url = ghUrl("/issues")
+      repourl = getUpstreamRepoURI()
+      url = ghUrl("/issues",repourl)
       request = urllib2.Request(url, json.dumps(issue))
       data = json.loads(urllib2.urlopen(request, timeout=2).read())
       parens[2] = str(data['number'])
@@ -762,7 +806,8 @@ def saveGissue():
         print(url)
         print(issue)
   else:
-    url = ghUrl("/issues/" + number)
+    repourl = vim.eval("b:ghissue_repourl")
+    url = ghUrl("/issues/" + number, repourl)
     request = urllib2.Request(url, json.dumps(issue))
     request.get_method = lambda: 'PATCH'
     try:
@@ -773,7 +818,7 @@ def saveGissue():
 
   if commentmode == 3:
     try:
-      url = ghUrl("/issues/" + parens[2] + "/comments")
+      url = ghUrl("/issues/" + parens[2] + "/comments", repourl)
       data = json.dumps({'body': comment})
       request = urllib2.Request(url, data)
       urllib2.urlopen(request, timeout=2)
@@ -790,7 +835,8 @@ def saveGissue():
 # updates an issues data, such as opening/closing
 def setIssueData(issue):
   parens = getFilenameParens()
-  url = ghUrl("/issues/" + parens[2])
+  repourl = getUpstreamRepoURI()
+  url = ghUrl("/issues/" + parens[2], repourl)
   request = urllib2.Request(url, json.dumps(issue))
   request.get_method = lambda: 'PATCH'
   urllib2.urlopen(request, timeout = 2)
@@ -897,13 +943,14 @@ def ghUrl(endpoint, repourl=False, repo=True):
     else:
       params = "?"
     params += "access_token=" + token
-  if not repourl:
-    repourl = getUpstreamRepoURI()
 
   if repo:
     repourl = "repos/" + repourl
 
-  return vim.eval("g:github_api_url") + urllib2.quote(repourl) + endpoint + params
+  if repourl == "custom":
+    return vim.eval("g:github_api_url") + endpoint + params
+  else:
+    return vim.eval("g:github_api_url") + urllib2.quote(repourl) + endpoint + params
 
 # returns an array of parens after gissues in filename
 def getFilenameParens():

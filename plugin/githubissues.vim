@@ -59,6 +59,18 @@ function! s:showGithubIssues(...)
 
 endfunction
 
+function! s:showSearchList()
+  call ghissues#init()
+  python showSearchList()
+
+  " its not a real file
+  set buftype=nofile
+  " map the enter key to show issue
+  nnoremap <buffer> <cr> :call <SID>showIssue(expand("<cword>"),"")<cr>
+  nnoremap <buffer> i :Giadd<cr>
+  nnoremap <buffer> q :q<cr>
+endfunction
+
 function! s:showIssueLink(...)
   call ghissues#init()
   if a:0 > 2
@@ -216,19 +228,6 @@ function! s:setupOmni()
   let b:did_init_omnicomplete_async = 0
 endfunction
 
-function! s:handleEnter(...)
-  if len(expand("<cword>")) == 40
-    echo expand("<cword>")
-    if a:0 > 0
-      let split = a:1
-    else
-      let split = "False"
-    endif
-    let a:sha = expand("<cword>")
-    python showCommit(vim.eval("a:sha"), vim.eval("split"))
-  endif
-endfunction
-
 function! s:setMilestone(title)
   let title = ""
   if a:title != "[None]"
@@ -249,6 +248,7 @@ endfunction
 
 " define the :Gissues command
 command! -nargs=* Gissues call s:showGithubIssues(<f-args>)
+command! -nargs=* Gisearch call s:showSearchList(<f-args>)
 command! -nargs=* Giadd call s:showIssue("new", <f-args>)
 command! -nargs=* Giedit call s:showIssue(<f-args>)
 command! -nargs=0 Giupdate call s:updateIssue()
@@ -261,7 +261,12 @@ autocmd BufReadCmd gissues/*/\([0-9]*\|new\) call s:updateIssue()
 autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <buffer> cc :call <SID>setIssueState(0)<cr>
 autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <buffer> co :call <SID>setIssueState(1)<cr>
 autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <buffer> cb :call <SID>browse()<cr>
-autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <buffer> <cr> :call <SID>handleEnter()<cr>
+
+" map the enter key to show issue or click link
+autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <buffer> <cr> :call <SID>showIssueLink("","","False")<cr>
+autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <buffer> s :call <SID>showIssueLink("","","True")<cr>
+autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <buffer> <silent> q :q<CR>
+
 autocmd BufWriteCmd gissues/*/[0-9a-z]* call s:saveIssue()
 
 if !exists("g:github_issues_no_omni")
