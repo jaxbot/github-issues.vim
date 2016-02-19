@@ -17,7 +17,7 @@ let g:github_issues_loaded = 1
 
 " do not continue if Vim is not compiled with Python2.7 support
 if !has("python")
-  echo "github-issues.vim requires Python support, sorry :c"
+  echohl WarningMsg | echom "github-issues.vim requires Python support, sorry :c" | echohl None
   finish
 endif
 
@@ -31,8 +31,8 @@ function! s:showGithubMilestones(...)
   endif
 
   set buftype=nofile
-  nnoremap <buffer> q :q<cr>
-  nnoremap <buffer> <cr> :normal! 0<cr>:call <SID>setMilestone(getline("."))<cr>
+  nnoremap <silent><buffer> q :q<cr>
+  nnoremap <silent><buffer> <cr> :normal! 0<cr>:call <SID>setMilestone(getline("."))<cr>
 
 endfunction
 
@@ -53,9 +53,9 @@ function! s:showGithubIssues(...)
   " its not a real file
   set buftype=nofile
 " map the enter key to show issue
-  nnoremap <buffer> <cr> :call <SID>showIssue(expand("<cword>"),"")<cr>
-  nnoremap <buffer> i :Giadd<cr>
-  nnoremap <buffer> q :q<cr>
+  nnoremap <silent><buffer> <cr> :call <SID>showIssue(expand("<cword>"),"")<cr>
+  nnoremap <silent><buffer> i :Giadd<cr>
+  nnoremap <silent><buffer> q :q<cr>
 
 endfunction
 
@@ -66,9 +66,9 @@ function! s:showSearchList()
   " its not a real file
   set buftype=nofile
   " map the enter key to show issue
-  nnoremap <buffer> <cr> :call <SID>showIssue(expand("<cword>"),"")<cr>
-  nnoremap <buffer> i :Giadd<cr>
-  nnoremap <buffer> q :q<cr>
+  nnoremap <silent><buffer> <cr> :call <SID>showIssue(expand("<cword>"),"")<cr>
+  nnoremap <silent><buffer> i :Giadd<cr>
+  nnoremap <silent><buffer> q :q<cr>
 endfunction
 
 function! s:showIssueLink(...)
@@ -126,9 +126,9 @@ EOF
   endif
 
   " map the enter key to show issue or click link
-  nnoremap <buffer> <cr> :call <SID>showIssueLink("","","False")<cr>
-  nnoremap <buffer> s :call <SID>showIssueLink("","","True")<cr>
-  nnoremap <buffer> <silent> q :q<CR>
+  nnoremap <silent><buffer> <cr> :call <SID>showIssueLink("","","False")<cr>
+  nnoremap <silent><buffer> s :call <SID>showIssueLink("","","True")<cr>
+  nnoremap <silent><buffer> <silent> q :q<CR>
 
 endfunction
 
@@ -234,7 +234,7 @@ function! s:setMilestone(title)
     let title = a:title
     echo "Switched current milestone to " . title
   else
-    echo "No longer filtering by milestone"
+    echohl WarningMsg | echom "No longer filtering by milestone" | echohl None
   endif
 
   let g:github_current_milestone = title
@@ -258,14 +258,14 @@ command! -nargs=* Gmiles call s:showGithubMilestones(<f-args>)
 command! -nargs=* Gishow call s:showThisIssue(<f-args>)
 
 autocmd BufReadCmd gissues/*/\([0-9]*\|new\) call s:updateIssue()
-autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <buffer> cc :call <SID>setIssueState(0)<cr>
-autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <buffer> co :call <SID>setIssueState(1)<cr>
-autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <buffer> cb :call <SID>browse()<cr>
+autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <silent><buffer> cc :call <SID>setIssueState(0)<cr>
+autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <silent><buffer> co :call <SID>setIssueState(1)<cr>
+autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <silent><buffer> cb :call <SID>browse()<cr>
 
 " map the enter key to show issue or click link
-autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <buffer> <cr> :call <SID>showIssueLink("","","False")<cr>
-autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <buffer> s :call <SID>showIssueLink("","","True")<cr>
-autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <buffer> <silent> q :q<CR>
+autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <silent><buffer> <cr> :call <SID>showIssueLink("","","False")<cr>
+autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <silent><buffer> s :call <SID>showIssueLink("","","True")<cr>
+autocmd BufReadCmd gissues/*/\([0-9]*\|new\) nnoremap <silent><buffer> <silent> q :q<CR>
 
 autocmd BufWriteCmd gissues/*/[0-9a-z]* call s:saveIssue()
 
