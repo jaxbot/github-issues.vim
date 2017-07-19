@@ -94,6 +94,9 @@ def getRepoURI():
       # Remove "/branch" from the end of remote_ref to get the remote.
       remote = remote_ref[:-(len(branch)+1)]
 
+  if remote is None:
+    remote = vim.eval("g:gissues_default_remote")
+
   # possible URLs
   possible_urls = vim.eval("g:github_issues_urls")
 
