@@ -1,10 +1,16 @@
 " core is written in Python for easy JSON/HTTP support
-" do not continue if Vim is not compiled with Python2.7 support
-if !has("python") || exists("g:github_issues_pyloaded")
+" do not continue if Vim is not compiled with Python support
+if exists("g:github_issues_pyloaded") || !has("python") && !has("python3")
   finish
 endif
 
-python <<EOF
+if has("python")
+	command! -nargs=1 Python python <args>
+else
+	command! -nargs=1 Python python3 <args>
+endif
+
+Python <<EOF
 import hashlib
 import json
 import os
@@ -14,7 +20,12 @@ import subprocess
 import threading
 import time
 import urllib
-import urllib2
+
+try:
+    import urllib2  # Python 2
+except ImportError:
+    import urllib.request as urllib2
+
 import vim
 
 SHOW_ALL = "[Show all issues]"
