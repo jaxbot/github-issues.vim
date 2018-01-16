@@ -642,7 +642,7 @@ def showIssue(number=False, repourl=False):
 
   if issue["body"]:
     lines = issue["body"].encode(vim.eval("&encoding")).split("\n")
-    b.append(map(lambda line: line.strip(), lines))
+    b.append(map(lambda line: line.rstrip(), lines))
 
   if number != "new":
     b.append("## Comments")
