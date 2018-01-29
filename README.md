@@ -3,6 +3,10 @@ github-issues.vim
 
 Github issue integration in Vim. It's kind of awesome.
 
+# Looking for a new owner
+
+If you're interested in taking over this project and giving it the love it deserves, send me an email or file a bug.
+
 ### Omnicomplete
 
 If you use Fugitive or edit gitcommit files in Vim, github-issues will automatically populate the omnicomplete menu with issues on Github. This is useful when you want to reference commits, close issues, etc., through Github's commit message parsing.
