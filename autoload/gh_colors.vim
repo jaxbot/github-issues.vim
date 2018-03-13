@@ -1,4 +1,4 @@
-python <<EOF
+Python <<EOF
 xterm_colors = {
   "000000": "x016_Grey0",
   "00005f": "x017_NavyBlue",
