@@ -1,10 +1,16 @@
 " core is written in Python for easy JSON/HTTP support
-" do not continue if Vim is not compiled with Python2.7 support
-if !has("python") || exists("g:github_issues_pyloaded")
+" do not continue if Vim is not compiled with Python support
+if exists("g:github_issues_pyloaded") || !has("python") && !has("python3")
   finish
 endif
 
-python <<EOF
+if has("python")
+	command! -nargs=1 Python python <args>
+else
+	command! -nargs=1 Python python3 <args>
+endif
+
+Python <<EOF
 import hashlib
 import json
 import os
@@ -14,7 +20,12 @@ import subprocess
 import threading
 import time
 import urllib
-import urllib2
+
+try:
+    import urllib2  # Python 2
+except ImportError:
+    import urllib.request as urllib2
+
 import vim
 
 SHOW_ALL = "[Show all issues]"
@@ -326,7 +337,7 @@ def getIssueList(repourl, endpoint, query, ignore_cache = False, only_me = False
   if query in ["open", "closed", "all"]:
     params = { "state": query }
   if only_me:
-    params["assignee"] = getCurrentUser()
+    params["assignees"] = getCurrentUser()
 
   return getGHList(ignore_cache, repourl, endpoint, params)
 
@@ -543,7 +554,7 @@ def showIssueLink(number, url="", split="False"):
   return
 
 # handle user pressing enter on the gissue list
-# possible actions: view issue, filter by label, filter by assignee, remove filters
+# possible actions: view issue, filter by label, filter by assignees, remove filters
 def showIssueBuffer(number, url = False):
   if url:
     repourl = url
@@ -600,7 +611,7 @@ def showIssue(number=False, repourl=False):
       'user': {
         'login': ''
       },
-      'assignee': '',
+      'assignees': '',
       'state': 'open',
       'labels': []
     }
@@ -619,10 +630,10 @@ def showIssue(number=False, repourl=False):
     b.append("## Reported By: " + issue["user"]["login"].encode(vim.eval("&encoding")))
 
   b.append("## State: " + issue["state"])
-  if issue['assignee']:
-    b.append("## Assignee: " + issue["assignee"]["login"].encode(vim.eval("&encoding")))
+  if issue['assignees']:
+    b.append("## Assignees: " + ' '.join(i['login'].encode(vim.eval("&encoding")) for i in issue["assignees"]))
   else:
-    b.append("## Assignee: ")
+    b.append("## Assignees: ")
 
   if number == "new":
     b.append("## Milestone: ")
@@ -642,7 +653,7 @@ def showIssue(number=False, repourl=False):
 
   if issue["body"]:
     lines = issue["body"].encode(vim.eval("&encoding")).split("\n")
-    b.append(map(lambda line: line.strip(), lines))
+    b.append(map(lambda line: line.rstrip(), lines))
 
   if number != "new":
     b.append("## Comments")
@@ -706,7 +717,7 @@ def saveGissue():
   issue = {
     'title': '',
     'body': '',
-    'assignee': '',
+    'assignees': '',
     'labels': '',
     'milestone': ''
   }
@@ -764,9 +775,9 @@ def saveGissue():
       issue['labels'] = labels[1].lstrip().split(', ')
       continue
 
-    assignee = line.split("## Assignee:")
-    if len(assignee) > 1:
-      issue['assignee'] = assignee[1].strip()
+    assignees = line.split("## Assignees:")
+    if len(assignees) > 1:
+      issue['assignees'] = assignees[1].lstrip().split(' ')
       continue
 
     if line == SHOW_COMMITS or line == SHOW_FILES_CHANGED or "## Branch Name:" in line:
@@ -781,8 +792,8 @@ def saveGissue():
 
   if number == "new":
 
-    if issue['assignee'] == '':
-      del issue['assignee']
+    if issue['assignees'] == '':
+      del issue['assignees']
     if issue['milestone'] == '':
       del issue['milestone']
     if issue['body'] == '':
