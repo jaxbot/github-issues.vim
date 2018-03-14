@@ -696,7 +696,7 @@ def showIssue(number=False, repourl=False):
 
         if "body" in event:
           lines = event["body"].encode(vim.eval("&encoding")).split("\n")
-          b.append(map(lambda line: line.strip(), lines))
+          b.append(map(lambda line: line.rstrip(), lines))
         else:
           eventstr = event["event"].encode(vim.eval("&encoding"))
           if "commit_id" in event and event["commit_id"]:
