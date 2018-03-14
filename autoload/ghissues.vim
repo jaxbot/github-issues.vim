@@ -231,7 +231,7 @@ def printIssueList(issues, repourl='search', labels=False, only_me=False):
 
   # Setup split
   if not vim.eval("g:github_same_window") == "1":
-    cmd = 'silent'
+    cmd = 'silent '
     if not vim.eval("g:gissues_list_vsplit") == "1":
       spl = 'new +set\ buftype=nofile'
       if vim.eval("g:gissues_split_height") != "0":
@@ -589,7 +589,7 @@ def showIssueBuffer(number, url = False):
     number = vim.eval("expand('<cword>')")
 
   if not vim.eval("g:github_same_window") == "1":
-    cmd = 'silent'
+    cmd = 'silent '
     if not vim.eval("g:gissues_issue_vsplit") == "1":
       spl = 'new +set\ buftype=nofile'
       if vim.eval("g:gissues_split_height") != "0":
