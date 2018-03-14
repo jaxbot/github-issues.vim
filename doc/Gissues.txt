@@ -151,6 +151,28 @@ Github Enterprise and will not work for Bitbucket, Gitlab, etc.
 When this is set to 1, github-issues will use the current window instead of
 splitting the screen via the ':new' command.
 >
+  g:gissues_issue_vsplit = 0
+
+When this set to one the issue details buffer will open in vertical buffer
+instead of horizontal. Works only if `g:github_same_window` is not set
+>
+  g:gissues_list_vsplit = 0
+
+Same as above but for the list of issues.
+>
+  g:gissues_split_expand = 0
+
+Setting to 1 will expand the buffer to full width for horizontal split and
+full height for vertical split instead of nesting inside parent split.
+>
+  g:gissues_split_height = 0
+
+Set the height of horizontal split, default 50% of parent.
+>
+  g:issues_vsplit_width = 0
+
+Same as above but for vertical split.
+>
   g:gissues_lazy_load = 0
 <
 When this is set to 1, omnicomplete will not be populated until it is

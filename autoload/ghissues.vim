@@ -229,8 +229,22 @@ def printIssueList(issues, repourl='search', labels=False, only_me=False):
   global globissues
   globissues = issues
 
+  # Setup split
   if not vim.eval("g:github_same_window") == "1":
-    vim.command("silent new")
+    cmd = 'silent'
+    if not vim.eval("g:gissues_list_vsplit") == "1":
+      spl = 'new +set\ buftype=nofile'
+      if vim.eval("g:gissues_split_height") != "0":
+        spl = ' ' + vim.eval("g:gissues_split_height") + spl
+      cmd = cmd + spl
+    else:
+      spl = 'vnew +set\ buftype=nofile'
+      if vim.eval("g:gissues_vsplit_width") != "0":
+        spl = ' ' + vim.eval("g:gissues_vsplit_width") + spl
+      cmd = cmd + spl
+    if vim.eval("g:gissues_split_expand") == "1":
+      cmd = 'botright ' + cmd
+    vim.command(cmd)
 
   if 'labels' not in locals():
     labels = ""
@@ -574,11 +588,24 @@ def showIssueBuffer(number, url = False):
     vim.command("normal! 0")
     number = vim.eval("expand('<cword>')")
 
-
   if not vim.eval("g:github_same_window") == "1":
-    vim.command("silent new +set\ buftype=nofile")
+    cmd = 'silent'
+    if not vim.eval("g:gissues_issue_vsplit") == "1":
+      spl = 'new +set\ buftype=nofile'
+      if vim.eval("g:gissues_split_height") != "0":
+        spl =  ' ' + vim.eval("g:gissues_split_height") + spl
+      cmd = cmd + spl
+    else:
+      spl = 'vnew +set\ buftype=nofile'
+      if vim.eval("g:gissues_vsplit_width") != "0":
+        spl = ' ' + vim.eval("g:gissues_vsplit_width") + spl
+      cmd = cmd + spl
+    if vim.eval("g:gissues_split_expand") == "1":
+      cmd = 'botright ' + cmd
+    vim.command(cmd)
 
   vim.command("edit gissues/" + repourl + "/" + number)
+
 
 # show an issue buffer in detail
 def showIssue(number=False, repourl=False):

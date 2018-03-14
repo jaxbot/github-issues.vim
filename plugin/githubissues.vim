@@ -338,3 +338,26 @@ if !exists("g:gissues_offline_cache")
   let g:gissues_offline_cache = 0
 endif
 
+if !exists("g:gissues_issue_vsplit")
+  let g:gissues_issue_vsplit = 0
+endif
+
+if !exists("g:gissues_list_vsplit")
+  let g:gissues_list_vsplit = 0
+endif
+
+if !exists("g:gissues_split_expand")
+  let g:gissues_split_expand = 0
+endif
+
+if !exists("g:gissues_split_height")
+  let g:gissues_split_height = 0
+endif
+
+if !exists("g:gissues_vsplit_width")
+  let g:gissues_vsplit_width = 0
+endif
+
+
+
+
