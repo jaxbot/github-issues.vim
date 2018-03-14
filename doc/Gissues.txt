@@ -75,6 +75,9 @@ to add comments.
 
   Image: (see reference [5])
 
+While creating or editing issues it is possible to add multiple space separated
+assignees.
+
 How awesome is that!?
 
 -------------------------------------------------------------------------------
