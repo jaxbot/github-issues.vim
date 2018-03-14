@@ -620,7 +620,7 @@ def showIssue(number=False, repourl=False):
 
   b.append("## State: " + issue["state"])
   if issue['assignees']:
-    b.append("## Assignees: " + issue["assignees"]["login"].encode(vim.eval("&encoding")))
+    b.append("## Assignees: " + ' '.join(i["login"].encode(vim.eval("&encoding")) for i in issue["assignees"]))
   else:
     b.append("## Assignees: ")
 
