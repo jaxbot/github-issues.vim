@@ -249,7 +249,7 @@ def rgb_distance(rgb1, rgb2):
   return r + g + b
 
 def rgb_to_xterm(rgb):
-  curDist = sys.maxint
+  curDist = float("inf")
   # Failsafe
   curColor = "x242_Grey42"
 
