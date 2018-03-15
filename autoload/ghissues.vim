@@ -1,10 +1,16 @@
 " core is written in Python for easy JSON/HTTP support
-" do not continue if Vim is not compiled with Python2.7 support
-if !has("python") || exists("g:github_issues_pyloaded")
+" do not continue if Vim is not compiled with Python support
+if exists("g:github_issues_pyloaded") || !has("python") && !has("python3")
   finish
 endif
 
-python <<EOF
+if has("python")
+	command! -nargs=1 Python python <args>
+else
+	command! -nargs=1 Python python3 <args>
+endif
+
+Python <<EOF
 import hashlib
 import json
 import os
@@ -14,7 +20,20 @@ import subprocess
 import threading
 import time
 import urllib
-import urllib2
+
+try:
+    # Python 2
+    import basestring
+    import urllib2
+except ImportError:
+    # Python 3 has no basestring
+    basestring = str
+
+    # Python 3 re-organizes urllib
+    from urllib.parse import urlencode
+    import urllib.request as urllib2
+    urllib.urlencode = urlencode
+
 import vim
 
 SHOW_ALL = "[Show all issues]"
@@ -97,14 +116,14 @@ def getRepoURI():
   # possible URLs
   possible_urls = vim.eval("g:github_issues_urls")
 
-  for line in all_remotes.split("\n"):
+  for line in all_remotes.decode().split("\n"):
     try:
       cur_remote, url = line.split("\t")
     except ValueError:
       continue
 
     # Filter out non-matching remotes.
-    if remote and remote != cur_remote:
+    if remote and remote.decode() != cur_remote:
       continue
 
     # Remove " (fetch)"/" (pull)" and ".git" suffixes.
@@ -958,7 +977,7 @@ def ghApi(endpoint, repourl=False, cache=True, repo=True):
     return None
 
 def getFilePathForURL(url):
-  return os.path.expanduser("~/.vim/.gissue-cache/") + hashlib.sha224(url).hexdigest()
+  return os.path.expanduser("~/.vim/.gissue-cache/") + hashlib.sha224(url.encode('utf-8')).hexdigest()
 
 # generates a github URL, including access token
 def ghUrl(endpoint, repourl=False, repo=True):
