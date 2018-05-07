@@ -1,4 +1,4 @@
-python <<EOF
+Python <<EOF
 xterm_colors = {
   "000000": "x016_Grey0",
   "00005f": "x017_NavyBlue",
@@ -249,7 +249,7 @@ def rgb_distance(rgb1, rgb2):
   return r + g + b
 
 def rgb_to_xterm(rgb):
-  curDist = sys.maxint
+  curDist = float("inf")
   # Failsafe
   curColor = "x242_Grey42"
 
