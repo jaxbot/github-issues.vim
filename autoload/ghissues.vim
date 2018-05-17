@@ -20,19 +20,15 @@ import subprocess
 import threading
 import time
 import urllib
+from past.builtins import basestring # Works in python 2 and 3
+from past.builtins import map, filter  # Python 2 map compatibility
 
 try:
     # Python 2
     # import basestring
-    from past.builtins import basestring # Works in python 2 and 3
     import urllib2
 except ImportError:
     print("Using Python3")
-    # Python 3 has no basestring
-    #basestring = str
-    from past.builtins import basestring # Works in python 2 and 3
-
-    from past.builtins import map, filter  # Python 2 map compatibility
 
     # Python 3 re-organizes urllib
     from urllib.parse import urlencode
@@ -862,13 +858,15 @@ def saveGissue():
   else:
     repourl = vim.eval("b:ghissue_repourl")
     url = ghUrl("/issues/" + number, repourl)
-    request = urllib2.Request(url, json.dumps(issue))
+    request = urllib2.Request(url, json.dumps(issue)) # TODO: Fix POST data should be bytes.
     request.get_method = lambda: 'PATCH'
     try:
       urllib2.urlopen(request, timeout=2)
     except urllib2.HTTPError as e:
       if "code" in e and e.code == 410 or e.code == 404:
         print("Could not update the issue as it does not belong to you!")
+
+  return
 
   if commentmode == 3:
     try:
