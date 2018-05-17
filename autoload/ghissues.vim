@@ -29,7 +29,8 @@ try:
 except ImportError:
     print("Using Python3")
     # Python 3 has no basestring
-    basestring = str
+    #basestring = str
+    from past.builtins import basestring # Works in python 2 and 3
 
     # Python 3 re-organizes urllib
     from urllib.parse import urlencode
