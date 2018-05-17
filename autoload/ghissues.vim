@@ -32,6 +32,8 @@ except ImportError:
     #basestring = str
     from past.builtins import basestring # Works in python 2 and 3
 
+    from past.builtins import map  # Python 2 map compatibility
+
     # Python 3 re-organizes urllib
     from urllib.parse import urlencode
     import urllib.request as urllib2
