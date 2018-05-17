@@ -866,7 +866,6 @@ def saveGissue():
       if "code" in e and e.code == 410 or e.code == 404:
         print("Could not update the issue as it does not belong to you!")
 
-  return
 
   if commentmode == 3:
     try:
