@@ -4,10 +4,10 @@ if exists("g:github_issues_pyloaded") || !has("python") && !has("python3")
   finish
 endif
 
-if has("python")
-	command! -nargs=1 Python python <args>
-else
+if has("python3")
 	command! -nargs=1 Python python3 <args>
+else
+	command! -nargs=1 Python python <args>
 endif
 
 Python <<EOF
@@ -842,7 +842,8 @@ def saveGissue():
     try:
       repourl = getUpstreamRepoURI()
       url = ghUrl("/issues",repourl)
-      request = urllib2.Request(url, json.dumps(issue))
+      data = json.dumps(issue).encode("utf-8")
+      request = urllib2.Request(url, data)  
       data = json.loads(urllib2.urlopen(request, timeout=2).read())
       parens[2] = str(data['number'])
       vim.current.buffer.name = "gissues/" + parens[0] + "/" + parens[1] + "/" + parens[2]
@@ -858,7 +859,8 @@ def saveGissue():
   else:
     repourl = vim.eval("b:ghissue_repourl")
     url = ghUrl("/issues/" + number, repourl)
-    request = urllib2.Request(url, json.dumps(issue)) # TODO: Fix POST data should be bytes.
+    data = json.dumps(issue).encode("utf-8")
+    request = urllib2.Request(url, data)  # TODO: Fix POST data should be bytes.
     request.get_method = lambda: 'PATCH'
     try:
       urllib2.urlopen(request, timeout=2)
@@ -870,7 +872,7 @@ def saveGissue():
   if commentmode == 3:
     try:
       url = ghUrl("/issues/" + parens[2] + "/comments", repourl)
-      data = json.dumps({'body': comment})
+      data = json.dumps({'body': comment}).encode("utf-8")
       request = urllib2.Request(url, data)
       urllib2.urlopen(request, timeout=2)
     except urllib2.HTTPError as e:
