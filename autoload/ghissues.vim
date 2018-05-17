@@ -1,10 +1,16 @@
 " core is written in Python for easy JSON/HTTP support
-" do not continue if Vim is not compiled with Python2.7 support
-if !has("python") || exists("g:github_issues_pyloaded")
+" do not continue if Vim is not compiled with Python support
+if exists("g:github_issues_pyloaded") || !has("python") && !has("python3")
   finish
 endif
 
-python <<EOF
+if has("python3")
+	command! -nargs=1 Python python3 <args>
+else
+	command! -nargs=1 Python python <args>
+endif
+
+Python <<EOF
 import hashlib
 import json
 import os
@@ -14,7 +20,21 @@ import subprocess
 import threading
 import time
 import urllib
-import urllib2
+from past.builtins import basestring # Works in python 2 and 3
+from past.builtins import map, filter  # Python 2 map compatibility
+
+try:
+    # Python 2
+    # import basestring
+    import urllib2
+except ImportError:
+    print("Using Python3")
+
+    # Python 3 re-organizes urllib
+    from urllib.parse import urlencode
+    import urllib.request as urllib2
+    urllib.urlencode = urlencode
+
 import vim
 
 SHOW_ALL = "[Show all issues]"
@@ -97,14 +117,14 @@ def getRepoURI():
   # possible URLs
   possible_urls = vim.eval("g:github_issues_urls")
 
-  for line in all_remotes.split("\n"):
+  for line in all_remotes.decode().split("\n"):
     try:
       cur_remote, url = line.split("\t")
     except ValueError:
       continue
 
     # Filter out non-matching remotes.
-    if remote and remote != cur_remote:
+    if remote and remote.decode() != cur_remote:
       continue
 
     # Remove " (fetch)"/" (pull)" and ".git" suffixes.
@@ -641,13 +661,15 @@ def showIssue(number=False, repourl=False):
     vim.command("let b:ghissue_number="+number)
     vim.command("let b:ghissue_repourl=\""+repourl+"\"")
 
-  b.append("## Title: " + issue["title"].encode(vim.eval("&encoding")) + " (" + str(issue["number"]) + ")")
+  encoding = vim.eval("&encoding")
+
+  b.append("## Title: " + issue["title"].encode(encoding).decode(encoding) + " (" + str(issue["number"]) + ")")
   if issue["user"]["login"]:
-    b.append("## Reported By: " + issue["user"]["login"].encode(vim.eval("&encoding")))
+    b.append("## Reported By: " + issue["user"]["login"].encode(encoding).decode(encoding))
 
   b.append("## State: " + issue["state"])
   if issue['assignees']:
-    b.append("## Assignees: " + ' '.join(i["login"].encode(vim.eval("&encoding")) for i in issue["assignees"]))
+    b.append("## Assignees: " + ' '.join(i["login"].encode(encoding).decode(encoding) for i in issue["assignees"]))
   else:
     b.append("## Assignees: ")
 
@@ -667,8 +689,9 @@ def showIssue(number=False, repourl=False):
     b.append(SHOW_COMMITS)
     b.append(SHOW_FILES_CHANGED)
 
+  # This part breaks Python 3
   if issue["body"]:
-    lines = issue["body"].encode(vim.eval("&encoding")).split("\n")
+    lines = issue["body"].encode(encoding).decode(encoding).split("\n")
     b.append(map(lambda line: line.rstrip(), lines))
 
   if number != "new":
@@ -692,13 +715,13 @@ def showIssue(number=False, repourl=False):
         else:
           user = event["actor"]["login"]
 
-        b.append(user.encode(vim.eval("&encoding")) + "(" + event["created_at"] + ")")
+        b.append(user.encode(encoding).decode(encoding) + "(" + event["created_at"] + ")")
 
         if "body" in event:
-          lines = event["body"].encode(vim.eval("&encoding")).split("\n")
+          lines = event["body"].encode(encoding).decode(encoding).split("\n")
           b.append(map(lambda line: line.rstrip(), lines))
         else:
-          eventstr = event["event"].encode(vim.eval("&encoding"))
+          eventstr = event["event"].encode(encoding).decode(encoding)
           if "commit_id" in event and event["commit_id"]:
             eventstr += " from " + event["commit_id"]
           b.append(eventstr)
@@ -729,6 +752,7 @@ def saveGissue():
 
   parens = getFilenameParens()
   number = parens[2]
+  encoding = "utf-8" # TODO: Get this from vim
 
   issue = {
     'title': '',
@@ -819,7 +843,8 @@ def saveGissue():
     try:
       repourl = getUpstreamRepoURI()
       url = ghUrl("/issues",repourl)
-      request = urllib2.Request(url, json.dumps(issue))
+      data = json.dumps(issue).encode(encoding)
+      request = urllib2.Request(url, data)  
       data = json.loads(urllib2.urlopen(request, timeout=2).read())
       parens[2] = str(data['number'])
       vim.current.buffer.name = "gissues/" + parens[0] + "/" + parens[1] + "/" + parens[2]
@@ -835,7 +860,8 @@ def saveGissue():
   else:
     repourl = vim.eval("b:ghissue_repourl")
     url = ghUrl("/issues/" + number, repourl)
-    request = urllib2.Request(url, json.dumps(issue))
+    data = json.dumps(issue).encode(encoding)
+    request = urllib2.Request(url, data)  # TODO: Fix POST data should be bytes.
     request.get_method = lambda: 'PATCH'
     try:
       urllib2.urlopen(request, timeout=2)
@@ -843,10 +869,11 @@ def saveGissue():
       if "code" in e and e.code == 410 or e.code == 404:
         print("Could not update the issue as it does not belong to you!")
 
+
   if commentmode == 3:
     try:
       url = ghUrl("/issues/" + parens[2] + "/comments", repourl)
-      data = json.dumps({'body': comment})
+      data = json.dumps({'body': comment}).encode(encoding)
       request = urllib2.Request(url, data)
       urllib2.urlopen(request, timeout=2)
     except urllib2.HTTPError as e:
@@ -958,7 +985,7 @@ def ghApi(endpoint, repourl=False, cache=True, repo=True):
     return None
 
 def getFilePathForURL(url):
-  return os.path.expanduser("~/.vim/.gissue-cache/") + hashlib.sha224(url).hexdigest()
+  return os.path.expanduser("~/.vim/.gissue-cache/") + hashlib.sha224(url.encode('utf-8')).hexdigest()
 
 # generates a github URL, including access token
 def ghUrl(endpoint, repourl=False, repo=True):
