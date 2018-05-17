@@ -119,10 +119,10 @@ function! s:showThisIssue(...)
     Python showIssue(vim.eval("a:1"),vim.eval("a:2"))
   else
     Python <<EOF
-name = "gissues/" + curUri + "/" + vim.eval("a:1")
-vim.command("edit " + name)
-showIssue(vim.eval("a:1"), curUri)
-EOF
+    name = "gissues/" + curUri + "/" + vim.eval("a:1")
+    vim.command("edit " + name)
+    Python showIssue(vim.eval("a:1"), curUri) 
+    EOF
   endif
 
   " map the enter key to show issue or click link
