@@ -23,9 +23,11 @@ import urllib
 
 try:
     # Python 2
-    import basestring
+    # import basestring
+    from past.builtins import basestring # Works in python 2 and 3
     import urllib2
 except ImportError:
+    print("Using Python3")
     # Python 3 has no basestring
     basestring = str
 
