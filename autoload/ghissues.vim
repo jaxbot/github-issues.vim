@@ -752,6 +752,7 @@ def saveGissue():
 
   parens = getFilenameParens()
   number = parens[2]
+  encoding = "utf-8" # TODO: Get this from vim
 
   issue = {
     'title': '',
@@ -842,7 +843,7 @@ def saveGissue():
     try:
       repourl = getUpstreamRepoURI()
       url = ghUrl("/issues",repourl)
-      data = json.dumps(issue).encode("utf-8")
+      data = json.dumps(issue).encode(encoding)
       request = urllib2.Request(url, data)  
       data = json.loads(urllib2.urlopen(request, timeout=2).read())
       parens[2] = str(data['number'])
@@ -859,7 +860,7 @@ def saveGissue():
   else:
     repourl = vim.eval("b:ghissue_repourl")
     url = ghUrl("/issues/" + number, repourl)
-    data = json.dumps(issue).encode("utf-8")
+    data = json.dumps(issue).encode(encoding)
     request = urllib2.Request(url, data)  # TODO: Fix POST data should be bytes.
     request.get_method = lambda: 'PATCH'
     try:
@@ -872,7 +873,7 @@ def saveGissue():
   if commentmode == 3:
     try:
       url = ghUrl("/issues/" + parens[2] + "/comments", repourl)
-      data = json.dumps({'body': comment}).encode("utf-8")
+      data = json.dumps({'body': comment}).encode(encoding)
       request = urllib2.Request(url, data)
       urllib2.urlopen(request, timeout=2)
     except urllib2.HTTPError as e:
