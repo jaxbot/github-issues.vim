@@ -663,13 +663,15 @@ def showIssue(number=False, repourl=False):
     vim.command("let b:ghissue_number="+number)
     vim.command("let b:ghissue_repourl=\""+repourl+"\"")
 
-  b.append("## Title: " + issue["title"].encode(vim.eval("&encoding")) + " (" + str(issue["number"]) + ")")
+  encoding = vim.eval("&encoding")
+
+  b.append("## Title: " + issue["title"].encode(encoding).decode(encoding) + " (" + str(issue["number"]) + ")")
   if issue["user"]["login"]:
-    b.append("## Reported By: " + issue["user"]["login"].encode(vim.eval("&encoding")))
+    b.append("## Reported By: " + issue["user"]["login"].encode(encoding).decode(encoding))
 
   b.append("## State: " + issue["state"])
   if issue['assignees']:
-    b.append("## Assignees: " + ' '.join(i["login"].encode(vim.eval("&encoding")) for i in issue["assignees"]))
+    b.append("## Assignees: " + ' '.join(i["login"].encode(encoding).decode(encoding) for i in issue["assignees"]))
   else:
     b.append("## Assignees: ")
 
@@ -689,8 +691,9 @@ def showIssue(number=False, repourl=False):
     b.append(SHOW_COMMITS)
     b.append(SHOW_FILES_CHANGED)
 
+  # This part breaks Python 3
   if issue["body"]:
-    lines = issue["body"].encode(vim.eval("&encoding")).split("\n")
+    lines = issue["body"].encode(encoding).decode(encoding).split("\n")
     b.append(map(lambda line: line.rstrip(), lines))
 
   if number != "new":
@@ -714,13 +717,13 @@ def showIssue(number=False, repourl=False):
         else:
           user = event["actor"]["login"]
 
-        b.append(user.encode(vim.eval("&encoding")) + "(" + event["created_at"] + ")")
+        b.append(user.encode(encoding).decode(encoding) + "(" + event["created_at"] + ")")
 
         if "body" in event:
-          lines = event["body"].encode(vim.eval("&encoding")).split("\n")
+          lines = event["body"].encode(encoding).decode(encoding).split("\n")
           b.append(map(lambda line: line.rstrip(), lines))
         else:
-          eventstr = event["event"].encode(vim.eval("&encoding"))
+          eventstr = event["event"].encode(encoding).decode(encoding)
           if "commit_id" in event and event["commit_id"]:
             eventstr += " from " + event["commit_id"]
           b.append(eventstr)
