@@ -119,10 +119,10 @@ function! s:showThisIssue(...)
     Python showIssue(vim.eval("a:1"),vim.eval("a:2"))
   else
     Python <<EOF
-name = "gissues/" + curUri + "/" + vim.eval("a:1")
-vim.command("edit " + name)
-showIssue(vim.eval("a:1"), curUri)
-EOF
+    name = "gissues/" + curUri + "/" + vim.eval("a:1")
+    vim.command("edit " + name)
+    Python showIssue(vim.eval("a:1"), curUri) 
+    EOF
   endif
 
   " map the enter key to show issue or click link
@@ -337,4 +337,27 @@ endif
 if !exists("g:gissues_offline_cache")
   let g:gissues_offline_cache = 0
 endif
+
+if !exists("g:gissues_issue_vsplit")
+  let g:gissues_issue_vsplit = 0
+endif
+
+if !exists("g:gissues_list_vsplit")
+  let g:gissues_list_vsplit = 0
+endif
+
+if !exists("g:gissues_split_expand")
+  let g:gissues_split_expand = 0
+endif
+
+if !exists("g:gissues_split_height")
+  let g:gissues_split_height = 0
+endif
+
+if !exists("g:gissues_vsplit_width")
+  let g:gissues_vsplit_width = 0
+endif
+
+
+
 
