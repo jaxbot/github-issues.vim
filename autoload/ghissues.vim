@@ -4,12 +4,14 @@ if exists("g:github_issues_pyloaded") || !has("python") && !has("python3")
   finish
 endif
 
+let s:path = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/../rplugin/python/ghissues.py'
+
 if has("python3")
-	command! -nargs=1 Python python3 <args>
-  py3file rplugin/python/ghissues.py
+  command! -nargs=1 Python python3 <args>
+  execute 'py3file' . s:path
 else
-	command! -nargs=1 Python python <args>
-  pyfile rplugin/python/ghissues.py
+  command! -nargs=1 Python python <args>
+  execute 'pyfile' . s:path
 endif
 
 
